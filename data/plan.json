@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "startWeightKg": 89,
+  "goalWeightKg": 78,
+  "goalDate": "2026-12-03",
+  "weeks": 12,
+  "calories": { "min": 2250, "max": 2400 },
+  "proteinGrams": { "min": 170, "max": 180 },
+  "waterLitres": 3.5,
+  "workoutsPerWeek": 5,
+  "habits": ["workout", "protein", "water", "sleep"],
+  "phases": [
+    { "weeks": [1,2,3], "name": "Foundation", "focus": "Consistency, technique and routine" },
+    { "weeks": [4,5,6], "name": "Build", "focus": "Progressive overload and nutrition adherence" },
+    { "weeks": [7,8,9], "name": "Lean Out", "focus": "Fat-loss consistency while protecting strength" },
+    { "weeks": [10,11,12], "name": "Function Ready", "focus": "Maintain strength, tighten execution and avoid crash dieting" }
+  ]
+}
