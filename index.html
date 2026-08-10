@@ -7,10 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="December Tracker">
-  <title>December Family Function Tracker</title>
+  <meta name="description" content="Offline-first 12-week body recomposition tracker for the December family function goal.">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.svg">
   <link rel="stylesheet" href="style.css">
+  <title>December Family Function Tracker</title>
 </head>
 <body>
   <header class="topbar">
@@ -26,8 +27,8 @@
 
     <section class="stats-grid">
       <article class="stat card"><span>Current</span><strong id="currentWeight">89.0 kg</strong><small id="weightChange">Start: 89.0 kg</small></article>
-      <article class="stat card"><span>Goal</span><strong id="goalWeight">78.0 kg</strong><small>Target weight</small></article>
-      <article class="stat card"><span>Progress</span><strong id="progressPct">0%</strong><small>toward goal</small></article>
+      <article class="stat card"><span>Goal</span><strong id="goalWeight">78.0 kg</strong><small id="weightRemaining">11.0 kg to go</small></article>
+      <article class="stat card"><span>Progress</span><strong id="progressPct">0%</strong><small id="planStatus">Not enough data</small></article>
       <article class="stat card"><span>Streak</span><strong id="streak">0 days</strong><small>daily check-ins</small></article>
     </section>
 
@@ -46,18 +47,30 @@
         <button class="check card" data-habit="water"><span>💧</span><b>Water</b><small>3.5L target</small></button>
         <button class="check card" data-habit="sleep"><span>😴</span><b>Sleep</b><small>7+ hours</small></button>
       </div>
-      <div class="card quick-log"><div><h3>Log today's weight</h3><p>Use your morning weight for the cleanest trend.</p></div><div class="inline-form"><input id="weightInput" type="number" step="0.1" min="30" max="250" placeholder="kg"><button id="saveWeight" class="primary">Save</button></div></div>
-      <div class="card"><div class="section-head"><h3>12-week focus</h3><span id="weekLabel">Week 1</span></div><div class="progress"><span id="weekProgress"></span></div><div class="milestones"><span>Foundation</span><span>Build</span><span>Lean out</span><span>Function ready</span></div></div>
+
+      <div class="card quick-log">
+        <div><h3>Log today's weight</h3><p>Morning weight gives the cleanest trend. Saving again today updates today's entry.</p></div>
+        <div class="inline-form"><input id="weightInput" type="number" step="0.1" min="30" max="250" inputmode="decimal" placeholder="kg" aria-label="Weight in kilograms"><button id="saveWeight" class="primary">Save</button></div>
+      </div>
+
+      <div class="insight-grid">
+        <article class="card insight"><span>Target this week</span><strong id="weeklyTarget">—</strong><small id="weeklyDelta">—</small></article>
+        <article class="card insight"><span>Total change</span><strong id="totalChange">0.0 kg</strong><small id="changeDirection">From starting weight</small></article>
+        <article class="card insight"><span>12-week pace</span><strong id="requiredPace">0.92 kg/wk</strong><small>planned average</small></article>
+      </div>
+
+      <div class="card focus-card"><div class="section-head"><div><p class="eyebrow">THIS WEEK</p><h3 id="phaseTitle">Foundation</h3></div><span id="weekLabel">Week 1</span></div><div class="progress"><span id="weekProgress"></span></div><div class="milestones"><span>Foundation</span><span>Build</span><span>Lean out</span><span>Function ready</span></div><p id="phaseAdvice" class="muted-copy">Build consistency before chasing speed.</p></div>
     </section>
 
     <section id="weight" class="panel">
       <div class="section-head"><div><p class="eyebrow">TREND</p><h3>Weight history</h3></div><button id="clearWeights" class="text-btn">Reset</button></div>
-      <div class="card chart-card"><canvas id="weightChart" height="220"></canvas></div>
+      <div class="card chart-card"><canvas id="weightChart" height="220" aria-label="Weight trend chart"></canvas></div>
       <div id="weightList" class="list"></div>
     </section>
 
     <section id="workout" class="panel">
       <div class="section-head"><div><p class="eyebrow">TRAINING</p><h3>Today's workout</h3></div><span class="pill" id="workoutDay">Day 1</span></div>
+      <div class="card workout-note"><b>5 sessions/week</b><span>Focus on controlled reps and progressive overload. Rest when recovery is poor.</span></div>
       <div id="exerciseList" class="exercise-list"></div>
       <button id="completeWorkout" class="primary full">Mark workout complete</button>
     </section>
