@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "program": "12-week recomposition",
+  "days": [
+    {"day":1,"focus":"Full Body A","exercises":["Machine chest press","Lat pulldown","Leg press","Romanian deadlift","Cable lateral raise","Plank"]},
+    {"day":2,"focus":"Upper Body","exercises":["Incline press","Seated row","Shoulder press","Lat pulldown","Biceps curl","Triceps pushdown"]},
+    {"day":3,"focus":"Lower Body","exercises":["Squat or hack squat","Romanian deadlift","Leg extension","Leg curl","Calf raise","Cable crunch"]},
+    {"day":4,"focus":"Recovery","exercises":["Walking","Mobility","Light core"]},
+    {"day":5,"focus":"Full Body B","exercises":["Chest press","Cable row","Leg press","Hip hinge","Lateral raise","Plank"]}
+  ]
+}
