@@ -14,29 +14,14 @@
   <title>Tausif Pathan</title>
 </head>
 <body>
-  <header class="topbar">
-    <div><p class="eyebrow">12-WEEK TRANSFORMATION</p><h1>Tausif Pathan</h1></div>
-    <button id="themeBtn" class="icon-btn" aria-label="Toggle theme">◐</button>
-  </header>
+  <header class="topbar"><div><p class="eyebrow">12-WEEK TRANSFORMATION</p><h1>Tausif Pathan</h1></div><button id="themeBtn" class="icon-btn" aria-label="Toggle theme">◐</button></header>
   <main class="app-shell">
-    <section class="hero card">
-      <div><span class="pill">Family Function</span><h2 id="heroTitle">Your December goal starts now.</h2><p>Track weight, workouts, food, waist and habits in one private offline dashboard.</p></div>
-      <div class="hero-stat"><strong id="daysLeft">—</strong><span>days to goal</span></div>
-    </section>
-    <section class="stats-grid">
-      <article class="stat card"><span>Current</span><strong id="currentWeight">89.0 kg</strong><small id="weightChange">Start: 89.0 kg</small></article>
-      <article class="stat card"><span>Goal</span><strong id="goalWeight">78.0 kg</strong><small id="weightRemaining">11.0 kg to go</small></article>
-      <article class="stat card"><span>Progress</span><strong id="progressPct">0%</strong><small id="planStatus">Not enough data</small></article>
-      <article class="stat card"><span>Streak</span><strong id="streak">0 days</strong><small>daily check-ins</small></article>
-    </section>
-    <nav class="tabs" aria-label="Sections">
-      <button class="tab active" data-tab="dashboard">Dashboard</button><button class="tab" data-tab="weight">Weight</button><button class="tab" data-tab="workout">Workout</button><button class="tab" data-tab="nutrition">Nutrition</button>
-    </nav>
+    <section class="hero card"><div><span class="pill">Family Function</span><h2 id="heroTitle">Your December goal starts now.</h2><p>Track weight, workouts, food, waist and habits in one private offline dashboard.</p></div><div class="hero-stat"><strong id="daysLeft">—</strong><span>days to goal</span></div></section>
+    <section class="stats-grid"><article class="stat card"><span>Current</span><strong id="currentWeight">89.0 kg</strong><small id="weightChange">Start: 89.0 kg</small></article><article class="stat card"><span>Goal</span><strong id="goalWeight">78.0 kg</strong><small id="weightRemaining">11.0 kg to go</small></article><article class="stat card"><span>Progress</span><strong id="progressPct">0%</strong><small id="planStatus">Not enough data</small></article><article class="stat card"><span>Streak</span><strong id="streak">0 days</strong><small>daily check-ins</small></article></section>
+    <nav class="tabs" aria-label="Sections"><button class="tab active" data-tab="dashboard">Dashboard</button><button class="tab" data-tab="weight">Weight</button><button class="tab" data-tab="workout">Workout</button><button class="tab" data-tab="nutrition">Nutrition</button></nav>
     <section id="dashboard" class="panel active">
       <div class="section-head"><div><p class="eyebrow">TODAY</p><h3>Daily check-in</h3></div><span id="todayLabel"></span></div>
-      <div class="check-grid">
-        <button class="check card" data-habit="workout"><span>🏋️</span><b>Workout</b><small>Completed</small></button><button class="check card" data-habit="protein"><span>🥚</span><b>Protein</b><small>Target hit</small></button><button class="check card" data-habit="water"><span>💧</span><b>Water</b><small>3.5L target</small></button><button class="check card" data-habit="sleep"><span>😴</span><b>Sleep</b><small>7+ hours</small></button>
-      </div>
+      <div class="check-grid"><button class="check card" data-habit="workout"><span>🏋️</span><b>Workout</b><small>Completed</small></button><button class="check card" data-habit="protein"><span>🥚</span><b>Protein</b><small>Target hit</small></button><button class="check card" data-habit="water"><span>💧</span><b>Water</b><small>3.5L target</small></button><button class="check card" data-habit="sleep"><span>😴</span><b>Sleep</b><small>7+ hours</small></button></div>
       <div class="card quick-log"><div><h3>Log today's weight</h3><p>Morning weight gives the cleanest trend. Saving again today updates today's entry.</p></div><div class="inline-form"><input id="weightInput" type="number" step="0.1" min="30" max="250" inputmode="decimal" placeholder="kg" aria-label="Weight in kilograms"><button id="saveWeight" class="primary">Save</button></div></div>
       <div class="insight-grid"><article class="card insight"><span>Target this week</span><strong id="weeklyTarget">—</strong><small id="weeklyDelta">—</small></article><article class="card insight"><span>Total change</span><strong id="totalChange">0.0 kg</strong><small id="changeDirection">From starting weight</small></article><article class="card insight"><span>12-week pace</span><strong id="requiredPace">0.92 kg/wk</strong><small>planned average</small></article></div>
       <div class="card focus-card"><div class="section-head"><div><p class="eyebrow">THIS WEEK</p><h3 id="phaseTitle">Foundation</h3></div><span id="weekLabel">Week 1</span></div><div class="progress"><span id="weekProgress"></span></div><div class="milestones"><span>Foundation</span><span>Build</span><span>Lean out</span><span>Function ready</span></div><p id="phaseAdvice" class="muted-copy">Build consistency before chasing speed.</p></div>
@@ -52,21 +37,23 @@
       <div class="section-head"><div><p class="eyebrow">NUTRITION</p><h3>Today's meals</h3></div><span class="pill">Recomp</span></div>
       <div class="nutrition-grid"><div class="card nutrient"><span>Calories</span><strong>2,250–2,400</strong><small>kcal/day</small></div><div class="card nutrient"><span>Protein</span><strong>170–180g</strong><small>daily target</small></div><div class="card nutrient"><span>Water</span><strong>3.5–4L</strong><small>daily target</small></div><div class="card nutrient"><span>Steps</span><strong>8,000+</strong><small>daily target</small></div></div>
       <div class="card log-card"><div class="section-head"><div><p class="eyebrow">QUICK LOG</p><h3>3 meal log</h3></div><span id="nutritionStatus">Not logged</span></div>
+        <p class="muted-copy food-help">Type a food name, choose a suggestion, then enter the amount in grams. Calories and protein are calculated automatically on this device.</p>
+        <datalist id="foodSuggestions"></datalist>
         <div class="meal-list">
-          <article class="meal-row"><div class="meal-title"><span>🌅</span><div><b>Breakfast</b><small>Start the day protein-first</small></div></div><div class="meal-fields"><input id="breakfastName" type="text" placeholder="What did you eat?" aria-label="Breakfast food"><input id="breakfastCalories" type="number" min="0" max="5000" inputmode="numeric" placeholder="kcal" aria-label="Breakfast calories"><input id="breakfastProtein" type="number" min="0" max="200" inputmode="numeric" placeholder="protein g" aria-label="Breakfast protein"></div></article>
-          <article class="meal-row"><div class="meal-title"><span>☀️</span><div><b>Lunch</b><small>Balanced meal and vegetables</small></div></div><div class="meal-fields"><input id="lunchName" type="text" placeholder="What did you eat?" aria-label="Lunch food"><input id="lunchCalories" type="number" min="0" max="5000" inputmode="numeric" placeholder="kcal" aria-label="Lunch calories"><input id="lunchProtein" type="number" min="0" max="200" inputmode="numeric" placeholder="protein g" aria-label="Lunch protein"></div></article>
-          <article class="meal-row"><div class="meal-title"><span>🌙</span><div><b>Dinner</b><small>Protein-focused and controlled</small></div></div><div class="meal-fields"><input id="dinnerName" type="text" placeholder="What did you eat?" aria-label="Dinner food"><input id="dinnerCalories" type="number" min="0" max="5000" inputmode="numeric" placeholder="kcal" aria-label="Dinner calories"><input id="dinnerProtein" type="number" min="0" max="200" inputmode="numeric" placeholder="protein g" aria-label="Dinner protein"></div></article>
+          <article class="meal-row"><div class="meal-title"><span>🌅</span><div><b>Breakfast</b><small>Start the day protein-first</small></div></div><div class="meal-fields"><input id="breakfastName" list="foodSuggestions" type="text" placeholder="Food e.g. eggs" aria-label="Breakfast food"><input id="breakfastGrams" type="number" min="1" max="2000" inputmode="decimal" placeholder="grams" aria-label="Breakfast amount in grams"><input id="breakfastCalories" type="number" min="0" max="5000" inputmode="numeric" placeholder="kcal" aria-label="Breakfast calories"><input id="breakfastProtein" type="number" min="0" max="200" inputmode="decimal" placeholder="protein g" aria-label="Breakfast protein"></div></article>
+          <article class="meal-row"><div class="meal-title"><span>☀️</span><div><b>Lunch</b><small>Balanced meal and vegetables</small></div></div><div class="meal-fields"><input id="lunchName" list="foodSuggestions" type="text" placeholder="Food e.g. chicken" aria-label="Lunch food"><input id="lunchGrams" type="number" min="1" max="2000" inputmode="decimal" placeholder="grams" aria-label="Lunch amount in grams"><input id="lunchCalories" type="number" min="0" max="5000" inputmode="numeric" placeholder="kcal" aria-label="Lunch calories"><input id="lunchProtein" type="number" min="0" max="200" inputmode="decimal" placeholder="protein g" aria-label="Lunch protein"></div></article>
+          <article class="meal-row"><div class="meal-title"><span>🌙</span><div><b>Dinner</b><small>Protein-focused and controlled</small></div></div><div class="meal-fields"><input id="dinnerName" list="foodSuggestions" type="text" placeholder="Food e.g. dal" aria-label="Dinner food"><input id="dinnerGrams" type="number" min="1" max="2000" inputmode="decimal" placeholder="grams" aria-label="Dinner amount in grams"><input id="dinnerCalories" type="number" min="0" max="5000" inputmode="numeric" placeholder="kcal" aria-label="Dinner calories"><input id="dinnerProtein" type="number" min="0" max="200" inputmode="decimal" placeholder="protein g" aria-label="Dinner protein"></div></article>
         </div>
         <div class="meal-totals"><span>Daily total <b id="mealTotalCalories">0 kcal</b></span><span><b id="mealTotalProtein">0g</b> protein</span></div>
         <div class="form-grid meal-hydration"><label>Water (L)<input id="waterInput" type="number" min="0" max="10" step="0.1" inputmode="decimal" placeholder="e.g. 3.5"></label><label>Steps<input id="stepsInput" type="number" min="0" max="100000" inputmode="numeric" placeholder="e.g. 8000"></label></div>
         <button id="saveNutrition" class="primary full">Save today's 3 meals</button>
         <div class="target-bars"><div><div class="bar-label"><span>Calories</span><b id="calorieProgress">0%</b></div><div class="mini-progress"><span id="calorieBar"></span></div></div><div><div class="bar-label"><span>Protein</span><b id="proteinProgress">0%</b></div><div class="mini-progress"><span id="proteinBar"></span></div></div><div><div class="bar-label"><span>Water</span><b id="waterProgress">0%</b></div><div class="mini-progress"><span id="waterBar"></span></div></div><div><div class="bar-label"><span>Steps</span><b id="stepsProgress">0%</b></div><div class="mini-progress"><span id="stepsBar"></span></div></div></div>
       </div>
-      <div class="card advice"><h3>Simple rule</h3><p>Build each meal around protein first, keep portions consistent, and log honestly. The tracker is designed to show trends rather than punish individual days.</p></div>
+      <div class="card advice"><h3>Simple rule</h3><p>Build each meal around protein first, keep portions consistent, and log honestly. The calculator uses approximate nutrition values, so packaged foods and restaurant meals can vary.</p></div>
       <div class="section-head"><div><p class="eyebrow">RECENT</p><h3>7-day nutrition</h3></div></div><div id="nutritionList" class="list"></div>
     </section>
   </main>
   <footer>Offline-first • Data stays on this device</footer>
-  <script src="plan.js"></script><script src="app.js"></script>
+  <script src="plan.js"></script><script src="app.js"></script><script src="food-data.js"></script>
 </body>
 </html>
