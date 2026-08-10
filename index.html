@@ -6,16 +6,16 @@
   <meta name="theme-color" content="#111827">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="December Tracker">
-  <meta name="description" content="Offline-first 12-week body recomposition tracker for the December family function goal.">
+  <meta name="apple-mobile-web-app-title" content="Tausif Pathan">
+  <meta name="description" content="Offline-first 12-week body recomposition tracker for Tausif Pathan.">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.svg">
   <link rel="stylesheet" href="style.css">
-  <title>December Family Function Tracker</title>
+  <title>Tausif Pathan</title>
 </head>
 <body>
   <header class="topbar">
-    <div><p class="eyebrow">12-WEEK TRANSFORMATION</p><h1>December Tracker</h1></div>
+    <div><p class="eyebrow">12-WEEK TRANSFORMATION</p><h1>Tausif Pathan</h1></div>
     <button id="themeBtn" class="icon-btn" aria-label="Toggle theme">◐</button>
   </header>
   <main class="app-shell">
@@ -47,12 +47,22 @@
       <div class="insight-grid"><article class="card insight"><span>Latest waist</span><strong id="latestWaist">—</strong><small>cm</small></article><article class="card insight"><span>Waist change</span><strong id="waistChange">0.0 cm</strong><small id="waistDirection">No baseline yet</small></article><article class="card insight"><span>Check-ins</span><strong id="measurementCount">0</strong><small>waist entries</small></article></div>
     </section>
     <section id="weight" class="panel"><div class="section-head"><div><p class="eyebrow">TREND</p><h3>Weight history</h3></div><button id="clearWeights" class="text-btn">Reset</button></div><div class="card chart-card"><canvas id="weightChart" height="220" aria-label="Weight trend chart"></canvas></div><div id="weightList" class="list"></div></section>
-    <section id="workout" class="panel"><div class="section-head"><div><p class="eyebrow">TRAINING</p><h3>Today's workout</h3></div><span class="pill" id="workoutDay">Day 1</span></div><div class="card workout-note"><b>5 sessions/week</b><span>Focus on controlled reps and progressive overload. Rest when recovery is poor.</span></div><div id="exerciseList" class="exercise-list"></div><button id="completeWorkout" class="primary full">Mark workout complete</button></section>
+    <section id="workout" class="panel"><div class="section-head"><div><p class="eyebrow">TRAINING</p><h3>Today's workout</h3></div><span class="pill" id="workoutDay">Day 1</span></div><div class="card workout-note"><b>5 sessions/week</b><span>Open the form video, then record the exact sets, reps and weight you completed.</span></div><div id="exerciseList" class="exercise-list"></div><button id="completeWorkout" class="primary full">Mark workout complete</button></section>
     <section id="nutrition" class="panel">
-      <div class="section-head"><div><p class="eyebrow">NUTRITION</p><h3>Today's nutrition</h3></div><span class="pill">Recomp</span></div>
+      <div class="section-head"><div><p class="eyebrow">NUTRITION</p><h3>Today's meals</h3></div><span class="pill">Recomp</span></div>
       <div class="nutrition-grid"><div class="card nutrient"><span>Calories</span><strong>2,250–2,400</strong><small>kcal/day</small></div><div class="card nutrient"><span>Protein</span><strong>170–180g</strong><small>daily target</small></div><div class="card nutrient"><span>Water</span><strong>3.5–4L</strong><small>daily target</small></div><div class="card nutrient"><span>Steps</span><strong>8,000+</strong><small>daily target</small></div></div>
-      <div class="card log-card"><div class="section-head"><div><p class="eyebrow">QUICK LOG</p><h3>Today's intake</h3></div><span id="nutritionStatus">Not logged</span></div><div class="form-grid"><label>Calories<input id="calorieInput" type="number" min="0" max="10000" inputmode="numeric" placeholder="e.g. 2300"></label><label>Protein (g)<input id="proteinInput" type="number" min="0" max="500" inputmode="numeric" placeholder="e.g. 175"></label><label>Water (L)<input id="waterInput" type="number" min="0" max="10" step="0.1" inputmode="decimal" placeholder="e.g. 3.5"></label><label>Steps<input id="stepsInput" type="number" min="0" max="100000" inputmode="numeric" placeholder="e.g. 8000"></label></div><button id="saveNutrition" class="primary full">Save today's nutrition</button><div class="target-bars"><div><div class="bar-label"><span>Calories</span><b id="calorieProgress">0%</b></div><div class="mini-progress"><span id="calorieBar"></span></div></div><div><div class="bar-label"><span>Protein</span><b id="proteinProgress">0%</b></div><div class="mini-progress"><span id="proteinBar"></span></div></div><div><div class="bar-label"><span>Water</span><b id="waterProgress">0%</b></div><div class="mini-progress"><span id="waterBar"></span></div></div><div><div class="bar-label"><span>Steps</span><b id="stepsProgress">0%</b></div><div class="mini-progress"><span id="stepsBar"></span></div></div></div></div>
-      <div class="card advice"><h3>Simple rule</h3><p>Build meals around protein first, keep portions consistent, and log honestly. The tracker is designed to show trends rather than punish individual days.</p></div>
+      <div class="card log-card"><div class="section-head"><div><p class="eyebrow">QUICK LOG</p><h3>3 meal log</h3></div><span id="nutritionStatus">Not logged</span></div>
+        <div class="meal-list">
+          <article class="meal-row"><div class="meal-title"><span>🌅</span><div><b>Breakfast</b><small>Start the day protein-first</small></div></div><div class="meal-fields"><input id="breakfastName" type="text" placeholder="What did you eat?" aria-label="Breakfast food"><input id="breakfastCalories" type="number" min="0" max="5000" inputmode="numeric" placeholder="kcal" aria-label="Breakfast calories"><input id="breakfastProtein" type="number" min="0" max="200" inputmode="numeric" placeholder="protein g" aria-label="Breakfast protein"></div></article>
+          <article class="meal-row"><div class="meal-title"><span>☀️</span><div><b>Lunch</b><small>Balanced meal and vegetables</small></div></div><div class="meal-fields"><input id="lunchName" type="text" placeholder="What did you eat?" aria-label="Lunch food"><input id="lunchCalories" type="number" min="0" max="5000" inputmode="numeric" placeholder="kcal" aria-label="Lunch calories"><input id="lunchProtein" type="number" min="0" max="200" inputmode="numeric" placeholder="protein g" aria-label="Lunch protein"></div></article>
+          <article class="meal-row"><div class="meal-title"><span>🌙</span><div><b>Dinner</b><small>Protein-focused and controlled</small></div></div><div class="meal-fields"><input id="dinnerName" type="text" placeholder="What did you eat?" aria-label="Dinner food"><input id="dinnerCalories" type="number" min="0" max="5000" inputmode="numeric" placeholder="kcal" aria-label="Dinner calories"><input id="dinnerProtein" type="number" min="0" max="200" inputmode="numeric" placeholder="protein g" aria-label="Dinner protein"></div></article>
+        </div>
+        <div class="meal-totals"><span>Daily total <b id="mealTotalCalories">0 kcal</b></span><span><b id="mealTotalProtein">0g</b> protein</span></div>
+        <div class="form-grid meal-hydration"><label>Water (L)<input id="waterInput" type="number" min="0" max="10" step="0.1" inputmode="decimal" placeholder="e.g. 3.5"></label><label>Steps<input id="stepsInput" type="number" min="0" max="100000" inputmode="numeric" placeholder="e.g. 8000"></label></div>
+        <button id="saveNutrition" class="primary full">Save today's 3 meals</button>
+        <div class="target-bars"><div><div class="bar-label"><span>Calories</span><b id="calorieProgress">0%</b></div><div class="mini-progress"><span id="calorieBar"></span></div></div><div><div class="bar-label"><span>Protein</span><b id="proteinProgress">0%</b></div><div class="mini-progress"><span id="proteinBar"></span></div></div><div><div class="bar-label"><span>Water</span><b id="waterProgress">0%</b></div><div class="mini-progress"><span id="waterBar"></span></div></div><div><div class="bar-label"><span>Steps</span><b id="stepsProgress">0%</b></div><div class="mini-progress"><span id="stepsBar"></span></div></div></div>
+      </div>
+      <div class="card advice"><h3>Simple rule</h3><p>Build each meal around protein first, keep portions consistent, and log honestly. The tracker is designed to show trends rather than punish individual days.</p></div>
       <div class="section-head"><div><p class="eyebrow">RECENT</p><h3>7-day nutrition</h3></div></div><div id="nutritionList" class="list"></div>
     </section>
   </main>
