@@ -1,35 +1,31 @@
-/* Offline Indian-food nutrition calculator. Values are approximate per 100 g edible portion. */
-window.FOOD_DB = [
- {name:'Egg, whole',aliases:['egg','eggs','boiled egg','fried egg'],calories:143,protein:12.6,defaultGrams:50},
- {name:'Chicken breast, cooked',aliases:['chicken breast','grilled chicken','chicken'],calories:165,protein:31,defaultGrams:100},
- {name:'Chicken curry',aliases:['chicken gravy','chicken masala'],calories:190,protein:18,defaultGrams:150},
- {name:'Mutton curry',aliases:['mutton gravy','mutton masala'],calories:250,protein:25,defaultGrams:150},
- {name:'Fish, cooked',aliases:['fish','grilled fish','fried fish'],calories:180,protein:26,defaultGrams:150},
- {name:'Dal, cooked',aliases:['dal','daal','lentils'],calories:116,protein:9,defaultGrams:150},
- {name:'Chapati / roti',aliases:['chapati','roti','roti wheat'],calories:297,protein:10,defaultGrams:40},
- {name:'White rice, cooked',aliases:['rice','white rice','cooked rice'],calories:130,protein:2.7,defaultGrams:150},
- {name:'Biryani',aliases:['chicken biryani','mutton biryani'],calories:200,protein:8,defaultGrams:200},
- {name:'Paneer',aliases:['cottage cheese','paneer cheese'],calories:265,protein:18.3,defaultGrams:100},
- {name:'Curd / yogurt',aliases:['curd','yogurt','dahi'],calories:61,protein:3.5,defaultGrams:150},
- {name:'Milk, whole',aliases:['milk','full cream milk'],calories:61,protein:3.2,defaultGrams:250},
- {name:'Oats, dry',aliases:['oats','rolled oats'],calories:389,protein:16.9,defaultGrams:60},
- {name:'Banana',aliases:['banana'],calories:89,protein:1.1,defaultGrams:100},
- {name:'Apple',aliases:['apple'],calories:52,protein:0.3,defaultGrams:150},
- {name:'Almonds',aliases:['almond','badam','badaam'],calories:579,protein:21.2,defaultGrams:20},
- {name:'Cashews',aliases:['cashew','kaju'],calories:553,protein:18.2,defaultGrams:20},
- {name:'Potato, cooked',aliases:['potato','aloo'],calories:87,protein:1.9,defaultGrams:150},
- {name:'Bhindi / okra',aliases:['bhindi','okra'],calories:33,protein:1.9,defaultGrams:150},
- {name:'Baingan / eggplant',aliases:['baingan','eggplant','brinjal'],calories:35,protein:1,defaultGrams:150},
- {name:'Karela / bitter gourd',aliases:['karela','bitter gourd'],calories:34,protein:3.6,defaultGrams:150},
- {name:'Ghee',aliases:['ghee','cow ghee'],calories:900,protein:0,defaultGrams:5}
+/* Offline food database. Approximate values per 100 g edible portion. */
+window.FOOD_DB=[
+{name:'Egg, whole',aliases:['egg','eggs','boiled egg','fried egg'],calories:143,protein:12.6,carbs:0.7,fat:9.5,defaultGrams:50},
+{name:'Egg white',aliases:['egg whites','white egg'],calories:52,protein:10.9,carbs:0.7,fat:0.2,defaultGrams:33},
+{name:'Chicken breast, cooked',aliases:['chicken breast','grilled chicken','chicken'],calories:165,protein:31,carbs:0,fat:3.6,defaultGrams:150},
+{name:'Chicken curry',aliases:['chicken gravy','chicken masala'],calories:190,protein:18,carbs:6,fat:10,defaultGrams:150},
+{name:'Mutton curry',aliases:['mutton gravy','mutton masala'],calories:250,protein:25,carbs:5,fat:15,defaultGrams:150},
+{name:'Fish, cooked',aliases:['fish','grilled fish'],calories:180,protein:26,carbs:0,fat:8,defaultGrams:150},
+{name:'Dal, cooked',aliases:['dal','daal','lentils'],calories:116,protein:9,carbs:20,fat:0.4,defaultGrams:150},
+{name:'Chapati / roti',aliases:['chapati','roti','roti wheat'],calories:297,protein:10,carbs:55,fat:6,defaultGrams:40},
+{name:'White rice, cooked',aliases:['rice','white rice','cooked rice'],calories:130,protein:2.7,carbs:28,fat:0.3,defaultGrams:150},
+{name:'Biryani',aliases:['chicken biryani','mutton biryani'],calories:200,protein:8,carbs:28,fat:7,defaultGrams:200},
+{name:'Paneer',aliases:['cottage cheese','paneer cheese'],calories:265,protein:18.3,carbs:1.2,fat:20.8,defaultGrams:100},
+{name:'Curd / yogurt',aliases:['curd','yogurt','dahi'],calories:61,protein:3.5,carbs:4.7,fat:3.3,defaultGrams:150},
+{name:'Greek yogurt, low fat',aliases:['greek yogurt'],calories:73,protein:9.9,carbs:3.9,fat:1.9,defaultGrams:150},
+{name:'Milk, whole',aliases:['milk','full cream milk'],calories:61,protein:3.2,carbs:4.8,fat:3.3,defaultGrams:250},
+{name:'Whey protein',aliases:['whey','protein powder'],calories:400,protein:80,carbs:8,fat:6,defaultGrams:30},
+{name:'Oats, dry',aliases:['oats','rolled oats'],calories:389,protein:16.9,carbs:66.3,fat:6.9,defaultGrams:50},
+{name:'Banana',aliases:['banana'],calories:89,protein:1.1,carbs:22.8,fat:0.3,defaultGrams:100},
+{name:'Apple',aliases:['apple'],calories:52,protein:0.3,carbs:13.8,fat:0.2,defaultGrams:150},
+{name:'Avocado',aliases:['avocado'],calories:160,protein:2,carbs:8.5,fat:14.7,defaultGrams:100},
+{name:'Almonds',aliases:['almond','badam','badaam'],calories:579,protein:21.2,carbs:21.6,fat:49.9,defaultGrams:20},
+{name:'Cashews',aliases:['cashew','kaju'],calories:553,protein:18.2,carbs:30.2,fat:43.9,defaultGrams:20},
+{name:'Potato, cooked',aliases:['potato','aloo'],calories:87,protein:1.9,carbs:20.1,fat:0.1,defaultGrams:150},
+{name:'Bhindi / okra',aliases:['bhindi','okra'],calories:33,protein:1.9,carbs:7.5,fat:0.2,defaultGrams:150},
+{name:'Baingan / eggplant',aliases:['baingan','eggplant','brinjal'],calories:35,protein:1,carbs:8.7,fat:0.2,defaultGrams:150},
+{name:'Karela / bitter gourd',aliases:['karela','bitter gourd'],calories:34,protein:3.6,carbs:6.8,fat:0.2,defaultGrams:150},
+{name:'Mixed vegetables, cooked',aliases:['mixed veg','vegetables'],calories:65,protein:3,carbs:12,fat:1,defaultGrams:150},
+{name:'Ghee',aliases:['ghee','cow ghee'],calories:900,protein:0,carbs:0,fat:100,defaultGrams:5},
+{name:'Tea with milk + sugar',aliases:['tea','chai'],calories:45,protein:1,carbs:7,fat:1.5,defaultGrams:100}
 ];
-(function(){
- const db=window.FOOD_DB;
- const normalize=s=>String(s||'').trim().toLowerCase();
- const findFood=s=>{const q=normalize(s);return db.find(f=>normalize(f.name)===q||f.aliases.some(a=>normalize(a)===q))||db.find(f=>normalize(f.name).includes(q)||f.aliases.some(a=>normalize(a).includes(q)));};
- const refreshTotals=()=>{let c=0,p=0;['breakfast','lunch','dinner'].forEach(m=>{c+=Number(document.getElementById(m+'Calories')?.value)||0;p+=Number(document.getElementById(m+'Protein')?.value)||0;});const cEl=document.getElementById('mealTotalCalories'),pEl=document.getElementById('mealTotalProtein');if(cEl)cEl.textContent=`${Math.round(c)} kcal`;if(pEl)pEl.textContent=`${Math.round(p*10)/10}g`;};
- const calculate=(meal)=>{const name=document.getElementById(meal+'Name'),grams=document.getElementById(meal+'Grams'),cal=document.getElementById(meal+'Calories'),protein=document.getElementById(meal+'Protein');if(!name||!grams)return;const food=findFood(name.value);if(!food){refreshTotals();return;}const g=Number(grams.value)||food.defaultGrams;grams.value=g;cal.value=Math.round(food.calories*g/100);protein.value=Math.round(food.protein*g/100*10)/10;name.dataset.food=food.name;name.title=`${food.name}: ${food.calories} kcal and ${food.protein} g protein per 100 g`;refreshTotals();};
- const init=()=>{const list=document.getElementById('foodSuggestions');if(list)list.innerHTML=db.map(f=>`<option value="${f.name}"></option>`).join('');['breakfast','lunch','dinner'].forEach(meal=>{['Name','Grams'].forEach(s=>document.getElementById(meal+s)?.addEventListener('input',()=>calculate(meal)));document.getElementById(meal+'Name')?.addEventListener('change',()=>calculate(meal));});['breakfast','lunch','dinner'].forEach(calculate);refreshTotals();};
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
- window.foodCalculator={calculate,findFood};
-})();
