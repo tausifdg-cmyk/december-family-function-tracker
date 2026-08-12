@@ -1,0 +1,29 @@
+name: iOS Native Build Check
+
+on:
+  push:
+    paths:
+      - 'ios-native/**'
+      - '.github/workflows/ios-native-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        working-directory: ios-native
+        run: xcodegen generate
+      - name: Build for iPhone Simulator
+        working-directory: ios-native
+        run: |
+          xcodebuild \
+            -project TausifTracker.xcodeproj \
+            -scheme TausifTracker \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
