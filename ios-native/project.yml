@@ -1,0 +1,30 @@
+name: TausifTracker
+options:
+  bundleIdPrefix: com.tausifpathan
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    SWIFT_VERSION: 5.10
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+targets:
+  TausifTracker:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+    info:
+      path: Info.plist
+    entitlements:
+      path: TausifTracker.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tausifpathan.bodyrecomp
+        PRODUCT_NAME: Tausif Tracker
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: NO
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIStatusBarStyle: UIStatusBarStyleLightContent
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    dependencies: []
