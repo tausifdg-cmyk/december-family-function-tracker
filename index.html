@@ -8,168 +8,18 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Tausif Pathan">
 <meta name="description" content="Visual body recomposition tracker for food, training, energy balance and progress.">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.svg">
-<link rel="stylesheet" href="style.css">
-<title>Tausif Pathan</title>
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icons/icon-192.svg"><link rel="stylesheet" href="style.css"><title>Tausif Pathan</title>
 </head>
 <body>
-<header class="topbar">
-  <div><p class="eyebrow">DECEMBER TRANSFORMATION</p><h1>Tausif Pathan</h1></div>
-  <button id="themeBtn" class="icon-btn" aria-label="Toggle theme">◐</button>
-</header>
-
+<header class="topbar"><div><p class="eyebrow">DECEMBER TRANSFORMATION</p><h1>Tausif Pathan</h1></div><button id="themeBtn" class="icon-btn" aria-label="Toggle theme">◐</button></header>
 <main class="app-shell">
-  <section class="hero card">
-    <div><span class="pill">Body Recomp</span><h2>Eat. Train. Measure. Adjust.</h2><p>One place to see exactly what went in, what you burned, how you trained and whether you are moving toward December.</p></div>
-    <div class="hero-stat"><strong id="daysLeft">—</strong><span>days left</span></div>
-  </section>
-
-  <section class="energy-strip">
-    <article class="metric-card"><span>Food intake</span><strong id="dashIntake">0</strong><small>kcal today</small></article>
-    <article class="metric-card"><span>Estimated burn</span><strong id="dashBurn">0</strong><small>kcal today</small></article>
-    <article class="metric-card"><span>Energy balance</span><strong id="dashBalance">0</strong><small id="dashBalanceLabel">kcal</small></article>
-    <article class="metric-card"><span>Protein</span><strong id="dashProtein">0g</strong><small id="dashProteinTarget">of target</small></article>
-  </section>
-
-  <nav class="tabs" aria-label="Sections">
-    <button class="tab active" data-tab="today">Today</button>
-    <button class="tab" data-tab="workout">Workout</button>
-    <button class="tab" data-tab="food">Food</button>
-    <button class="tab" data-tab="progress">Progress</button>
-    <button class="tab" data-tab="settings">Settings</button>
-  </nav>
-
-  <section id="today" class="panel active">
-    <div class="section-head"><div><p class="eyebrow">TODAY</p><h3 id="todayLabel">Daily dashboard</h3></div><span class="pill" id="todayStatus">Start logging</span></div>
-
-    <section class="card balance-card">
-      <div class="balance-head"><div><span>Daily energy budget</span><strong id="budgetHeadline">—</strong></div><div class="balance-ring" id="balanceRing"><b id="balanceRingText">0%</b></div></div>
-      <div class="energy-flow">
-        <div><span>Base burn</span><b id="baseBurn">0 kcal</b></div>
-        <span class="flow-plus">+</span>
-        <div><span>Steps</span><b id="stepBurn">0 kcal</b></div>
-        <span class="flow-plus">+</span>
-        <div><span>Exercise</span><b id="exerciseBurn">0 kcal</b></div>
-        <span class="flow-eq">=</span>
-        <div><span>Total burn</span><b id="totalBurn">0 kcal</b></div>
-      </div>
-      <p class="muted-copy">Burn is an estimate based on your body settings, steps and logged training. Use the trend over time, not a single day's number.</p>
-    </section>
-
-    <div class="section-head"><div><p class="eyebrow">QUICK UPDATE</p><h3>Body + activity</h3></div></div>
-    <section class="card form-card">
-      <div class="form-grid four">
-        <label>Weight (kg)<input id="weightInput" type="number" step="0.1" inputmode="decimal" placeholder="89.0"></label>
-        <label>Waist (cm)<input id="waistInput" type="number" step="0.1" inputmode="decimal" placeholder="100"></label>
-        <label>Steps<input id="stepsInput" type="number" step="100" inputmode="numeric" placeholder="8000"></label>
-        <label>Water (L)<input id="waterInput" type="number" step="0.1" inputmode="decimal" placeholder="3.5"></label>
-      </div>
-      <button id="saveDaily" class="primary full">Save today's numbers</button>
-    </section>
-
-    <div class="section-head"><div><p class="eyebrow">TARGETS</p><h3>Today's scorecard</h3></div></div>
-    <section class="score-grid">
-      <article class="card score-item"><div><span>Calories</span><b id="scoreCalories">0 / 2100</b></div><div class="mini-progress"><span id="scoreCaloriesBar"></span></div></article>
-      <article class="card score-item"><div><span>Protein</span><b id="scoreProtein">0 / 170g</b></div><div class="mini-progress"><span id="scoreProteinBar"></span></div></article>
-      <article class="card score-item"><div><span>Steps</span><b id="scoreSteps">0 / 8000</b></div><div class="mini-progress"><span id="scoreStepsBar"></span></div></article>
-      <article class="card score-item"><div><span>Water</span><b id="scoreWater">0 / 3.5L</b></div><div class="mini-progress"><span id="scoreWaterBar"></span></div></article>
-    </section>
-
-    <div class="section-head"><div><p class="eyebrow">WEEK</p><h3>7-day summary</h3></div></div>
-    <section class="insight-grid">
-      <article class="card insight"><span>Avg intake</span><strong id="weekIntake">0</strong><small>kcal/day</small></article>
-      <article class="card insight"><span>Avg balance</span><strong id="weekBalance">0</strong><small>kcal/day</small></article>
-      <article class="card insight"><span>Workouts</span><strong id="weekWorkouts">0</strong><small>last 7 days</small></article>
-    </section>
-  </section>
-
-  <section id="workout" class="panel">
-    <div class="section-head"><div><p class="eyebrow">TRAINING</p><h3>Workout logger</h3></div><button id="editWorkoutBtn" class="secondary">Edit plan</button></div>
-    <div class="day-picker" id="dayPicker"></div>
-    <section class="card workout-summary">
-      <div><span>Session</span><strong id="sessionName">—</strong><small id="sessionFocus">—</small></div>
-      <div><span>Duration</span><strong><span id="sessionMinutes">0</span> min</strong><small>editable below</small></div>
-      <div><span>Est. burn</span><strong id="sessionBurn">0 kcal</strong><small>from duration + intensity</small></div>
-    </section>
-    <section class="card workout-controls">
-      <div class="form-grid two"><label>Duration (min)<input id="workoutMinutes" type="number" min="0" max="240" step="5" value="60"></label><label>Intensity<select id="workoutIntensity"><option value="4">Light</option><option value="5.5" selected>Moderate</option><option value="7">Hard</option><option value="8">Very hard</option></select></label></div>
-    </section>
-    <div id="exerciseList" class="exercise-list"></div>
-    <button id="saveWorkout" class="primary full">Save workout</button>
-
-    <section id="workoutEditor" class="card editor hidden">
-      <div class="section-head compact"><div><p class="eyebrow">PLAN EDITOR</p><h3>Edit selected day</h3></div><button id="closeWorkoutEditor" class="text-btn">Close</button></div>
-      <div class="form-grid two"><label>Session name<input id="editSessionName" type="text"></label><label>Focus<input id="editSessionFocus" type="text"></label></div>
-      <div id="editExerciseList" class="editor-list"></div>
-      <button id="addExercise" class="secondary full">+ Add exercise</button>
-      <button id="saveWorkoutPlan" class="primary full">Save plan changes</button>
-    </section>
-  </section>
-
-  <section id="food" class="panel">
-    <div class="section-head"><div><p class="eyebrow">NUTRITION</p><h3>Meal logger</h3></div><button id="manageFoodsBtn" class="secondary">Food database</button></div>
-    <section class="nutrition-grid">
-      <article class="metric-card"><span>Calories</span><strong id="foodCalories">0</strong><small id="foodCalTarget">target 2100</small></article>
-      <article class="metric-card"><span>Protein</span><strong id="foodProtein">0g</strong><small id="foodProteinTarget">target 170g</small></article>
-      <article class="metric-card"><span>Carbs</span><strong id="foodCarbs">0g</strong><small>today</small></article>
-      <article class="metric-card"><span>Fat</span><strong id="foodFat">0g</strong><small>today</small></article>
-    </section>
-    <datalist id="foodSuggestions"></datalist>
-    <div id="mealSections"></div>
-
-    <section id="foodManager" class="card editor hidden">
-      <div class="section-head compact"><div><p class="eyebrow">FOOD DATABASE</p><h3>Add or edit food</h3></div><button id="closeFoodManager" class="text-btn">Close</button></div>
-      <p class="muted-copy">Values are per 100 g. Add your own packaged foods, recipes or common home portions.</p>
-      <div class="form-grid two">
-        <label>Food name<input id="customFoodName" type="text" placeholder="e.g. Homemade chicken curry"></label>
-        <label>Default serving (g)<input id="customFoodServing" type="number" value="100"></label>
-        <label>Calories / 100g<input id="customFoodCalories" type="number"></label>
-        <label>Protein / 100g<input id="customFoodProtein" type="number" step="0.1"></label>
-        <label>Carbs / 100g<input id="customFoodCarbs" type="number" step="0.1"></label>
-        <label>Fat / 100g<input id="customFoodFat" type="number" step="0.1"></label>
-      </div>
-      <button id="saveCustomFood" class="primary full">Save food</button>
-      <div id="customFoodList" class="list"></div>
-    </section>
-  </section>
-
-  <section id="progress" class="panel">
-    <div class="section-head"><div><p class="eyebrow">PROGRESS</p><h3>Transformation trend</h3></div></div>
-    <section class="stats-grid">
-      <article class="metric-card"><span>Current weight</span><strong id="currentWeight">—</strong><small id="weightChange">from start</small></article>
-      <article class="metric-card"><span>Goal weight</span><strong id="goalWeight">—</strong><small id="weightRemaining">remaining</small></article>
-      <article class="metric-card"><span>Latest waist</span><strong id="latestWaist">—</strong><small id="waistChange">from baseline</small></article>
-      <article class="metric-card"><span>Progress</span><strong id="progressPct">0%</strong><small>toward goal</small></article>
-    </section>
-    <section class="card chart-card"><canvas id="weightChart" height="220" aria-label="Weight trend chart"></canvas></section>
-    <div class="section-head"><div><p class="eyebrow">HISTORY</p><h3>Recent check-ins</h3></div></div>
-    <div id="progressList" class="list"></div>
-  </section>
-
-  <section id="settings" class="panel">
-    <div class="section-head"><div><p class="eyebrow">SETTINGS</p><h3>All targets are editable</h3></div></div>
-    <section class="card form-card">
-      <div class="form-grid two">
-        <label>Age<input id="setAge" type="number"></label>
-        <label>Height (cm)<input id="setHeight" type="number"></label>
-        <label>Starting weight (kg)<input id="setStartWeight" type="number" step="0.1"></label>
-        <label>Goal weight (kg)<input id="setGoalWeight" type="number" step="0.1"></label>
-        <label>Goal date<input id="setGoalDate" type="date"></label>
-        <label>Daily calorie target<input id="setCalories" type="number"></label>
-        <label>Protein target (g)<input id="setProtein" type="number"></label>
-        <label>Step target<input id="setSteps" type="number"></label>
-        <label>Water target (L)<input id="setWater" type="number" step="0.1"></label>
-        <label>Sex<select id="setSex"><option value="male">Male</option><option value="female">Female</option></select></label>
-      </div>
-      <div class="settings-note"><b>How burn is calculated</b><p id="bmrExplanation">—</p></div>
-      <button id="saveSettings" class="primary full">Save settings</button>
-    </section>
-  </section>
-</main>
-<footer>Offline-first • Your logs stay on this device • Burn estimates are approximate</footer>
-<script src="food-data.js"></script>
-<script src="app.js"></script>
-<script src="health-sync.js"></script>
-</body>
-</html>
+<section class="hero card"><div><span class="pill">Body Recomp</span><h2>Eat. Train. Measure. Adjust.</h2><p>One place to see exactly what went in, what you burned, how you trained and whether you are moving toward December.</p></div><div class="hero-stat"><strong id="daysLeft">—</strong><span>days left</span></div></section>
+<section class="energy-strip"><article class="metric-card"><span>Food intake</span><strong id="dashIntake">0</strong><small>kcal today</small></article><article class="metric-card"><span>Estimated burn</span><strong id="dashBurn">0</strong><small>kcal today</small></article><article class="metric-card"><span>Energy balance</span><strong id="dashBalance">0</strong><small id="dashBalanceLabel">kcal</small></article><article class="metric-card"><span>Protein</span><strong id="dashProtein">0g</strong><small id="dashProteinTarget">of target</small></article></section>
+<nav class="tabs"><button class="tab active" data-tab="today">Today</button><button class="tab" data-tab="workout">Workout</button><button class="tab" data-tab="food">Food</button><button class="tab" data-tab="progress">Progress</button><button class="tab" data-tab="settings">Settings</button></nav>
+<section id="today" class="panel active"><div class="section-head"><div><p class="eyebrow">TODAY</p><h3 id="todayLabel">Daily dashboard</h3></div><span class="pill" id="todayStatus">Start logging</span></div><section class="card balance-card"><div class="balance-head"><div><span>Daily energy budget</span><strong id="budgetHeadline">—</strong></div><div class="balance-ring" id="balanceRing"><b id="balanceRingText">0%</b></div></div><div class="energy-flow"><div><span>Base burn</span><b id="baseBurn">0 kcal</b></div><span>+</span><div><span>Steps</span><b id="stepBurn">0 kcal</b></div><span>+</span><div><span>Exercise</span><b id="exerciseBurn">0 kcal</b></div><span>=</span><div><span>Total burn</span><b id="totalBurn">0 kcal</b></div></div><p class="muted-copy">Burn is an estimate. Use the trend over time.</p></section><div class="section-head"><div><p class="eyebrow">QUICK UPDATE</p><h3>Body + activity</h3></div></div><section class="card form-card"><div class="form-grid four"><label>Weight (kg)<input id="weightInput" type="number" step="0.1"></label><label>Waist (cm)<input id="waistInput" type="number" step="0.1"></label><label>Steps<input id="stepsInput" type="number" step="100"></label><label>Water (L)<input id="waterInput" type="number" step="0.1"></label></div><button id="saveDaily" class="primary full">Save today's numbers</button></section><section class="score-grid"><article class="card score-item"><div><span>Calories</span><b id="scoreCalories"></b></div><div class="mini-progress"><span id="scoreCaloriesBar"></span></div></article><article class="card score-item"><div><span>Protein</span><b id="scoreProtein"></b></div><div class="mini-progress"><span id="scoreProteinBar"></span></div></article><article class="card score-item"><div><span>Steps</span><b id="scoreSteps"></b></div><div class="mini-progress"><span id="scoreStepsBar"></span></div></article><article class="card score-item"><div><span>Water</span><b id="scoreWater"></b></div><div class="mini-progress"><span id="scoreWaterBar"></span></div></article></section><section class="insight-grid"><article class="card insight"><span>Avg intake</span><strong id="weekIntake">0</strong><small>kcal/day</small></article><article class="card insight"><span>Avg balance</span><strong id="weekBalance">0</strong><small>kcal/day</small></article><article class="card insight"><span>Workouts</span><strong id="weekWorkouts">0</strong><small>last 7 days</small></article></section></section>
+<section id="workout" class="panel"><div class="section-head"><div><p class="eyebrow">TRAINING</p><h3>Workout logger</h3></div><button id="editWorkoutBtn" class="secondary">Edit plan</button></div><div class="day-picker" id="dayPicker"></div><section class="card workout-summary"><div><span>Session</span><strong id="sessionName">—</strong><small id="sessionFocus">—</small></div><div><span>Duration</span><strong><span id="sessionMinutes">0</span> min</strong></div><div><span>Est. burn</span><strong id="sessionBurn">0 kcal</strong></div></section><section class="card workout-controls"><div class="form-grid two"><label>Duration (min)<input id="workoutMinutes" type="number" value="60"></label><label>Intensity<select id="workoutIntensity"><option value="4">Light</option><option value="5.5" selected>Moderate</option><option value="7">Hard</option><option value="8">Very hard</option></select></label></div></section><div id="exerciseList" class="exercise-list"></div><button id="saveWorkout" class="primary full">Save workout</button><section id="workoutEditor" class="card editor hidden"><div class="section-head compact"><div><p class="eyebrow">PLAN EDITOR</p><h3>Edit selected day</h3></div><button id="closeWorkoutEditor" class="text-btn">Close</button></div><div class="form-grid two"><label>Session name<input id="editSessionName"></label><label>Focus<input id="editSessionFocus"></label></div><div id="editExerciseList" class="editor-list"></div><button id="addExercise" class="secondary full">+ Add exercise</button><button id="saveWorkoutPlan" class="primary full">Save plan changes</button></section></section>
+<section id="food" class="panel"><div class="section-head"><div><p class="eyebrow">NUTRITION</p><h3>Meal logger</h3></div><button id="manageFoodsBtn" class="secondary">Food database</button></div><section class="nutrition-grid"><article class="metric-card"><span>Calories</span><strong id="foodCalories">0</strong><small id="foodCalTarget"></small></article><article class="metric-card"><span>Protein</span><strong id="foodProtein">0g</strong><small id="foodProteinTarget"></small></article><article class="metric-card"><span>Carbs</span><strong id="foodCarbs">0g</strong></article><article class="metric-card"><span>Fat</span><strong id="foodFat">0g</strong></article></section><datalist id="foodSuggestions"></datalist><div id="mealSections"></div><section id="foodManager" class="card editor hidden"><div class="section-head compact"><div><p class="eyebrow">FOOD DATABASE</p><h3>Add or edit food</h3></div><button id="closeFoodManager" class="text-btn">Close</button></div><p class="muted-copy">Values are per 100 g.</p><div class="form-grid two"><label>Food name<input id="customFoodName"></label><label>Default serving (g)<input id="customFoodServing" type="number" value="100"></label><label>Calories / 100g<input id="customFoodCalories" type="number"></label><label>Protein / 100g<input id="customFoodProtein" type="number"></label><label>Carbs / 100g<input id="customFoodCarbs" type="number"></label><label>Fat / 100g<input id="customFoodFat" type="number"></label></div><button id="saveCustomFood" class="primary full">Save food</button><div id="customFoodList" class="list"></div></section></section>
+<section id="progress" class="panel"><div class="section-head"><div><p class="eyebrow">PROGRESS</p><h3>Transformation trend</h3></div></div><section class="stats-grid"><article class="metric-card"><span>Current weight</span><strong id="currentWeight">—</strong><small id="weightChange"></small></article><article class="metric-card"><span>Goal weight</span><strong id="goalWeight">—</strong><small id="weightRemaining"></small></article><article class="metric-card"><span>Latest waist</span><strong id="latestWaist">—</strong><small id="waistChange"></small></article><article class="metric-card"><span>Progress</span><strong id="progressPct">0%</strong></article></section><section class="card chart-card"><canvas id="weightChart" height="220"></canvas></section><div id="progressList" class="list"></div></section>
+<section id="settings" class="panel"><div class="section-head"><div><p class="eyebrow">SETTINGS</p><h3>All targets are editable</h3></div></div><section class="card form-card"><div class="form-grid two"><label>Age<input id="setAge" type="number"></label><label>Height (cm)<input id="setHeight" type="number"></label><label>Starting weight<input id="setStartWeight" type="number"></label><label>Goal weight<input id="setGoalWeight" type="number"></label><label>Goal date<input id="setGoalDate" type="date"></label><label>Daily calories<input id="setCalories" type="number"></label><label>Protein target<input id="setProtein" type="number"></label><label>Step target<input id="setSteps" type="number"></label><label>Water target<input id="setWater" type="number"></label><label>Sex<select id="setSex"><option value="male">Male</option><option value="female">Female</option></select></label></div><div class="settings-note"><b>How burn is calculated</b><p id="bmrExplanation">—</p></div><button id="saveSettings" class="primary full">Save settings</button></section></section>
+</main><footer>Offline-first • Burn estimates are approximate</footer>
+<script src="food-data.js"></script><script src="app.js"></script><script src="health-sync.js"></script><script src="workout-videos.js"></script></body></html>
