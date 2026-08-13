@@ -1,1 +1,20 @@
-document.addEventListener('DOMContentLoaded',function(){var old=document.getElementById('waistInput');if(!old)return;var label=old.closest('label');if(!label)return;label.innerHTML='Belly / abdomen (in)<input id="abdomenInput" type="number" step="0.1" inputmode="decimal">';var x=document.createElement('label');x.innerHTML='Waist / pant line (in)<input id="pantWaistInput" type="number" step="0.1" inputmode="decimal">';label.insertAdjacentElement('afterend',x);});
+document.addEventListener('DOMContentLoaded',function(){
+'use strict';
+var q=function(s){return document.querySelector(s)};
+var today=q('#today');
+if(today&&!q('#quickActions')){
+ var balance=today.querySelector('.balance-card');
+ var qa=document.createElement('section');
+ qa.id='quickActions';qa.className='quick-actions';
+ qa.innerHTML='<button data-tab-go="food"><b>＋</b><span>Log Food</span></button><button data-tab-go="workout"><b>✓</b><span>Workout</span></button><button data-focus="weightInput"><b>⚖</b><span>Weight</span></button><button data-focus="waterInput"><b>◉</b><span>Water</span></button>';
+ if(balance)balance.insertAdjacentElement('afterend',qa);
+ qa.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var tab=b.getAttribute('data-tab-go');if(tab){var t=q('.tab[data-tab="'+tab+'"]');if(t)t.click()}var id=b.getAttribute('data-focus');if(id){var el=q('#'+id);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(function(){el.focus()},300)}}});
+ var scores=today.querySelector('.score-grid');
+ var macro=document.createElement('section');macro.className='card macro-summary';macro.id='macroSummary';
+ macro.innerHTML='<div class="macro-head"><div><p class="eyebrow">TODAY\'S MACROS</p><h3>Nutrition balance</h3></div><span id="macroKcal" class="pill">0 kcal</span></div><div class="macro-line"><span>Protein</span><div><i id="macroProteinBar"></i></div><b id="macroProteinText">0g</b></div><div class="macro-line"><span>Carbs</span><div><i id="macroCarbBar"></i></div><b id="macroCarbText">0g</b></div><div class="macro-line"><span>Fat</span><div><i id="macroFatBar"></i></div><b id="macroFatText">0g</b></div>';
+ if(scores)scores.insertAdjacentElement('beforebegin',macro);
+}
+var old=q('#waistInput');if(old){var label=old.closest('label');if(label&&!q('#abdomenInput')){label.innerHTML='Belly / abdomen (in)<input id="abdomenInput" type="number" step="0.1" inputmode="decimal">';var x=document.createElement('label');x.innerHTML='Waist / pant line (in)<input id="pantWaistInput" type="number" step="0.1" inputmode="decimal">';label.insertAdjacentElement('afterend',x)}}
+function updateMacros(){try{if(typeof state==='undefined'||typeof totals!=='function')return;var z=totals(),c=state.config||{};var proteinTarget=Number(c.protein)||1,cal=Number(c.calories)||2000,fatTarget=65,carbTarget=Math.max(1,Math.round((cal-proteinTarget*4-fatTarget*9)/4));var set=function(id,val){var e=q(id);if(e)e.textContent=val};var bar=function(id,v,t){var e=q(id);if(e)e.style.width=Math.min(100,Math.round((Number(v)||0)/Math.max(1,t)*100))+'%'};set('#macroKcal',Math.round(z.calories)+' / '+cal+' kcal');set('#macroProteinText',Math.round(z.protein)+' / '+proteinTarget+'g');set('#macroCarbText',Math.round(z.carbs)+' / '+carbTarget+'g');set('#macroFatText',Math.round(z.fat)+' / '+fatTarget+'g');bar('#macroProteinBar',z.protein,proteinTarget);bar('#macroCarbBar',z.carbs,carbTarget);bar('#macroFatBar',z.fat,fatTarget)}catch(e){console.error(e)}}
+updateMacros();document.addEventListener('click',function(){setTimeout(updateMacros,80)});document.addEventListener('change',function(){setTimeout(updateMacros,80)});
+});
