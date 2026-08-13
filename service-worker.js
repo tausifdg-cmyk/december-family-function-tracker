@@ -1,5 +1,5 @@
-const CACHE='december-tracker-v22';
-const ASSETS=['./','./index.html','./style.css','./app.js','./food-data.js','./health-sync.js','./workout-videos.js','./ui-upgrades.js','./entry-recovery.js','./measurement-upgrade.js','./phone-steps.js','./report-downloads.js','./auth-onboarding.js','./brand.js','./supabase-cloud.js','./premium-ui.js','./smart-food-logger.js','./manifest.json','./icons/icon-192.svg','./icons/icon-512.svg'];
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
+const CACHE='mybody-v23';
+const ASSETS=['./style.css?v=23','./app.js?v=23','./food-data.js?v=23','./auth-onboarding.js?v=23','./manifest.json?v=23'];
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(ASSETS.map(x=>cache.add(x)))).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;event.respondWith(fetch(event.request,{cache:'no-store'}).then(response=>{const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy));return response}).catch(()=>caches.match(event.request).then(x=>x||caches.match('./index.html'))))});
+self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;if(event.request.mode==='navigate'){event.respondWith(fetch(event.request,{cache:'no-store'}).catch(()=>caches.match('./index.html')));return}event.respondWith(fetch(event.request,{cache:'no-store'}).then(response=>{if(response&&response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{})}return response}).catch(()=>caches.match(event.request)))});
