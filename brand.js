@@ -5,8 +5,7 @@
     document.title=BRAND;
     const top=document.querySelector('.topbar h1');if(top)top.textContent=BRAND;
     const eyebrow=document.querySelector('.topbar .eyebrow');if(eyebrow)eyebrow.textContent='YOUR TRANSFORMATION';
-    const hero=document.querySelector('.hero h2');if(hero)hero.textContent=TAGLINE;
-    const heroP=document.querySelector('.hero p');if(heroP)heroP.textContent='Personalised nutrition, workouts, activity and progress tracking built around your goal.';
+    const hero=document.querySelector('.hero');if(hero)hero.style.display='none';
     document.querySelectorAll('.auth-brand b').forEach(x=>x.textContent=BRAND);
     document.querySelectorAll('.auth-brand p').forEach(x=>x.textContent=TAGLINE);
   }
