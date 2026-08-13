@@ -1,5 +1,6 @@
-/* Phone Steps bridge. In a native WKWebView wrapper this talks to CMPedometer/Core Motion. In the PWA it keeps manual entry available and never leaves the app. */
+/* Load multi-user account/onboarding layer, then initialise Phone Steps bridge. */
 (function(){
+ if(!document.querySelector('script[data-auth-onboarding]')){const a=document.createElement('script');a.src='auth-onboarding.js?v=1';a.dataset.authOnboarding='1';document.head.appendChild(a)}
  const KEY='decemberTracker.v1', today=()=>new Date().toLocaleDateString('en-CA');
  const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}};
  const save=s=>localStorage.setItem(KEY,JSON.stringify(s));
