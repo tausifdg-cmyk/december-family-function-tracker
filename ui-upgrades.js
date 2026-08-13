@@ -13,10 +13,27 @@
     `;document.head.appendChild(style);
   }
 
+  function ensureEveningSnacks(){
+    try{
+      const host=document.getElementById('mealSections');if(!host||document.getElementById('eveningSnacksCard')||typeof state==='undefined'||typeof today!=='function')return;
+      const k=today();state.nutrition[k]??={};state.nutrition[k].meals??={breakfast:[],lunch:[],dinner:[]};state.nutrition[k].meals.eveningSnacks??=[];
+      const items=state.nutrition[k].meals.eveningSnacks;
+      const total=items.reduce((a,x)=>a+(Number(x.calories)||0),0);
+      const card=document.createElement('section');card.id='eveningSnacksCard';card.className='card meal-card';card.dataset.meal='eveningSnacks';
+      card.innerHTML=`<div class="meal-head"><div><span>🌆</span><div><h3>Evening Snacks</h3><small id="eveningSnacksTotal">${Math.round(total)} kcal</small></div></div><button class="secondary add-food" data-meal="eveningSnacks">+ Add food</button></div><div class="meal-items">${items.map((x,i)=>typeof foodRow==='function'?foodRow('eveningSnacks',x,i):'').join('')||'<p class="empty">Nothing logged yet.</p>'}</div>`;
+      host.appendChild(card);
+      card.querySelector('.add-food')?.addEventListener('click',()=>{if(typeof addFoodRow==='function')addFoodRow('eveningSnacks')});
+      card.querySelectorAll('.remove-food').forEach(b=>b.addEventListener('click',()=>{if(typeof removeFood==='function')removeFood('eveningSnacks',Number(b.dataset.i))}));
+      card.querySelectorAll('.food-name,.food-grams').forEach(x=>x.addEventListener('change',()=>{if(typeof syncFoodRow==='function')syncFoodRow(x)}));
+      localStorage.setItem(KEY,JSON.stringify(state));
+    }catch(e){console.warn('Evening snacks render failed',e)}
+  }
+
   function ensureStatuses(){
+    ensureEveningSnacks();
     const workout=document.getElementById('saveWorkout');
     if(workout&&!document.getElementById('workoutLogStatus')){const s=document.createElement('div');s.id='workoutLogStatus';s.className='log-status';s.textContent='Changes are saved as you type. Tap Save workout to confirm the session.';workout.insertAdjacentElement('afterend',s)}
-    document.querySelectorAll('#mealSections .meal-card').forEach(card=>{if(card.querySelector('.meal-save'))return;const meal=card.dataset.meal;const b=document.createElement('button');b.type='button';b.className='secondary meal-save';b.dataset.meal=meal;b.textContent='Save '+(meal?meal[0].toUpperCase()+meal.slice(1):'meal');card.appendChild(b)});
+    document.querySelectorAll('#mealSections .meal-card').forEach(card=>{if(card.querySelector('.meal-save'))return;const meal=card.dataset.meal;const b=document.createElement('button');b.type='button';b.className='secondary meal-save';b.dataset.meal=meal;b.textContent=meal==='eveningSnacks'?'Save Evening Snacks':'Save '+(meal?meal[0].toUpperCase()+meal.slice(1):'meal');card.appendChild(b)});
   }
 
   function saveWorkoutDraft(){
@@ -52,11 +69,11 @@
   });
 
   document.addEventListener('click',e=>{
-    const saveMeal=e.target.closest('.meal-save');if(saveMeal){const ok=commitMeal(saveMeal.dataset.meal,true);setTimeout(()=>{const card=document.querySelector(`#mealSections .meal-card[data-meal="${saveMeal.dataset.meal}"]`),b=card?.querySelector('.meal-save');if(b){b.textContent=ok?'Saved ✓':'Check food name';setTimeout(()=>{if(b)b.textContent='Save '+saveMeal.dataset.meal[0].toUpperCase()+saveMeal.dataset.meal.slice(1)},1200)}},30)}
+    const saveMeal=e.target.closest('.meal-save');if(saveMeal){const meal=saveMeal.dataset.meal,ok=commitMeal(meal,true);setTimeout(()=>{const card=document.querySelector(`#mealSections .meal-card[data-meal="${meal}"]`),b=card?.querySelector('.meal-save');if(b){b.textContent=ok?'Saved ✓':'Check food name';setTimeout(()=>{if(b)b.textContent=meal==='eveningSnacks'?'Save Evening Snacks':'Save '+meal[0].toUpperCase()+meal.slice(1)},1200)}},30)}
     if(e.target.closest('#saveWorkout'))setTimeout(()=>{const s=document.getElementById('workoutLogStatus');if(s){s.textContent='Workout saved ✓';s.classList.add('ok')}},40);
   });
 
   const observer=new MutationObserver(()=>ensureStatuses());
-  function init(){injectStyles();ensureStatuses();document.querySelectorAll('.exercise-visual-strip').forEach(x=>x.remove());const w=document.getElementById('workout'),f=document.getElementById('food');if(w)observer.observe(w,{childList:true,subtree:true});if(f)observer.observe(f,{childList:true,subtree:true})}
+  function init(){injectStyles();ensureStatuses();document.querySelectorAll('.exercise-visual-strip').forEach(x=>x.remove());const w=document.getElementById('workout'),f=document.getElementById('food');if(w)observer.observe(w,{childList:true,subtree:true});if(f)observer.observe(f,{childList:true,subtree:true});document.querySelector('[data-tab="food"]')?.addEventListener('click',()=>setTimeout(ensureStatuses,30))}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
