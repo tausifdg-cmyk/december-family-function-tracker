@@ -1,25 +1,17 @@
-/* MYBODY 2.0 branding */
+/* MYBODY 2.0 branding + safe UI 2.0 loader */
 (function(){
-  const BRAND='MYBODY 2.0';
-  function setIfDifferent(el,text){if(el&&el.textContent!==text)el.textContent=text;}
+  'use strict';
+  var BRAND='MYBODY 2.0';
   function apply(){
-    if(document.title!==BRAND)document.title=BRAND;
-    setIfDifferent(document.querySelector('.topbar h1'),BRAND);
-    setIfDifferent(document.querySelector('.topbar .eyebrow'),'YOUR TRANSFORMATION');
-    const hero=document.querySelector('.hero');if(hero&&hero.style.display!=='none')hero.style.display='none';
-    document.querySelectorAll('.auth-brand b').forEach(function(el){setIfDifferent(el,BRAND);});
-    document.querySelectorAll('.auth-brand p').forEach(function(el){setIfDifferent(el,'Build the next version of you.');});
+    document.title=BRAND;
+    var h=document.querySelector('.topbar h1');if(h)h.textContent=BRAND;
+    var e=document.querySelector('.topbar .eyebrow');if(e)e.textContent='YOUR TRANSFORMATION';
+    var hero=document.querySelector('.hero');if(hero)hero.style.display='none';
   }
-  function init(){
-    apply();
-    if(!document.body)return;
-    let scheduled=false;
-    const obs=new MutationObserver(function(){
-      if(scheduled)return;
-      scheduled=true;
-      setTimeout(function(){scheduled=false;apply();},0);
-    });
-    obs.observe(document.body,{childList:true,subtree:true});
+  function loadUi(){
+    if(document.querySelector('link[data-ui2]'))return;
+    var l=document.createElement('link');l.rel='stylesheet';l.href='ui2.css?v=111';l.setAttribute('data-ui2','1');document.head.appendChild(l);
   }
-  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
+  function init(){loadUi();apply()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
