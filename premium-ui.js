@@ -1,1 +1,1 @@
-/* Premium UI observer disabled during stability recovery. Base mobile UI now lives in style.css. */
+document.addEventListener('DOMContentLoaded',function(){var old=document.getElementById('waistInput');if(!old)return;var label=old.closest('label');if(!label)return;label.innerHTML='Belly / abdomen (in)<input id="abdomenInput" type="number" step="0.1" inputmode="decimal">';var x=document.createElement('label');x.innerHTML='Waist / pant line (in)<input id="pantWaistInput" type="number" step="0.1" inputmode="decimal">';label.insertAdjacentElement('afterend',x);});
