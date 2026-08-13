@@ -1,40 +1,31 @@
-/* MYBODY 2.0 startup-safe bootstrap. */
-(function(){
-  var KEY='decemberTracker.v1';
-  window.FOOD_DB=window.FOOD_DB||[];
-  try{
-    var raw=localStorage.getItem(KEY);
-    if(raw){
-      var s=JSON.parse(raw)||{};
-      s.weights=Array.isArray(s.weights)?s.weights:[];
-      s.waist=Array.isArray(s.waist)?s.waist:[];
-      s.nutrition=s.nutrition&&typeof s.nutrition==='object'?s.nutrition:{};
-      s.activity=s.activity&&typeof s.activity==='object'?s.activity:{};
-      s.workoutLog=s.workoutLog&&typeof s.workoutLog==='object'?s.workoutLog:{};
-      s.customFoods=Array.isArray(s.customFoods)?s.customFoods:[];
-      if(Array.isArray(s.workouts)&&s.workouts.length){
-        var base=s.workouts.slice();
-        while(s.workouts.length<5){
-          var src=base[s.workouts.length%base.length]||base[0];
-          s.workouts.push({name:(src.name||'Workout')+' Alt',focus:src.focus||'Training',exercises:Array.isArray(src.exercises)?src.exercises:[]});
-        }
-      }
-      localStorage.setItem(KEY,JSON.stringify(s));
-    }
-  }catch(e){}
-  function wire(){
-    var tabs=[].slice.call(document.querySelectorAll('.tab[data-tab]'));
-    tabs.forEach(function(btn){
-      if(btn.dataset.safeNav)return;
-      btn.dataset.safeNav='1';
-      btn.addEventListener('click',function(){
-        var id=btn.getAttribute('data-tab');
-        tabs.forEach(function(x){x.classList.toggle('active',x===btn)});
-        [].slice.call(document.querySelectorAll('.panel')).forEach(function(p){p.classList.toggle('active',p.id===id)});
-        window.scrollTo(0,0);
-      });
-    });
-  }
-  document.addEventListener('DOMContentLoaded',wire);
-  window.addEventListener('load',wire);
-})();
+/* Offline food database. Approximate values per 100 g edible portion. */
+window.FOOD_DB=[
+{name:'Egg, whole',aliases:['egg','eggs','boiled egg','fried egg'],calories:143,protein:12.6,carbs:0.7,fat:9.5,defaultGrams:50},
+{name:'Egg white',aliases:['egg whites','white egg'],calories:52,protein:10.9,carbs:0.7,fat:0.2,defaultGrams:33},
+{name:'Chicken breast, cooked',aliases:['chicken breast','grilled chicken','chicken'],calories:165,protein:31,carbs:0,fat:3.6,defaultGrams:150},
+{name:'Chicken curry',aliases:['chicken gravy','chicken masala'],calories:190,protein:18,carbs:6,fat:10,defaultGrams:150},
+{name:'Mutton curry',aliases:['mutton gravy','mutton masala'],calories:250,protein:25,carbs:5,fat:15,defaultGrams:150},
+{name:'Fish, cooked',aliases:['fish','grilled fish'],calories:180,protein:26,carbs:0,fat:8,defaultGrams:150},
+{name:'Dal, cooked',aliases:['dal','daal','lentils'],calories:116,protein:9,carbs:20,fat:0.4,defaultGrams:150},
+{name:'Chapati / roti',aliases:['chapati','roti','roti wheat'],calories:297,protein:10,carbs:55,fat:6,defaultGrams:40},
+{name:'White rice, cooked',aliases:['rice','white rice','cooked rice'],calories:130,protein:2.7,carbs:28,fat:0.3,defaultGrams:150},
+{name:'Biryani',aliases:['chicken biryani','mutton biryani'],calories:200,protein:8,carbs:28,fat:7,defaultGrams:200},
+{name:'Paneer',aliases:['cottage cheese','paneer cheese'],calories:265,protein:18.3,carbs:1.2,fat:20.8,defaultGrams:100},
+{name:'Curd / yogurt',aliases:['curd','yogurt','dahi'],calories:61,protein:3.5,carbs:4.7,fat:3.3,defaultGrams:150},
+{name:'Greek yogurt, low fat',aliases:['greek yogurt'],calories:73,protein:9.9,carbs:3.9,fat:1.9,defaultGrams:150},
+{name:'Milk, whole',aliases:['milk','full cream milk'],calories:61,protein:3.2,carbs:4.8,fat:3.3,defaultGrams:250},
+{name:'Whey protein',aliases:['whey','protein powder'],calories:400,protein:80,carbs:8,fat:6,defaultGrams:30},
+{name:'Oats, dry',aliases:['oats','rolled oats'],calories:389,protein:16.9,carbs:66.3,fat:6.9,defaultGrams:50},
+{name:'Banana',aliases:['banana'],calories:89,protein:1.1,carbs:22.8,fat:0.3,defaultGrams:100},
+{name:'Apple',aliases:['apple'],calories:52,protein:0.3,carbs:13.8,fat:0.2,defaultGrams:150},
+{name:'Avocado',aliases:['avocado'],calories:160,protein:2,carbs:8.5,fat:14.7,defaultGrams:100},
+{name:'Almonds',aliases:['almond','badam','badaam'],calories:579,protein:21.2,carbs:21.6,fat:49.9,defaultGrams:20},
+{name:'Cashews',aliases:['cashew','kaju'],calories:553,protein:18.2,carbs:30.2,fat:43.9,defaultGrams:20},
+{name:'Potato, cooked',aliases:['potato','aloo'],calories:87,protein:1.9,carbs:20.1,fat:0.1,defaultGrams:150},
+{name:'Bhindi / okra',aliases:['bhindi','okra'],calories:33,protein:1.9,carbs:7.5,fat:0.2,defaultGrams:150},
+{name:'Baingan / eggplant',aliases:['baingan','eggplant','brinjal'],calories:35,protein:1,carbs:8.7,fat:0.2,defaultGrams:150},
+{name:'Karela / bitter gourd',aliases:['karela','bitter gourd'],calories:34,protein:3.6,carbs:6.8,fat:0.2,defaultGrams:150},
+{name:'Mixed vegetables, cooked',aliases:['mixed veg','vegetables'],calories:65,protein:3,carbs:12,fat:1,defaultGrams:150},
+{name:'Ghee',aliases:['ghee','cow ghee'],calories:900,protein:0,carbs:0,fat:100,defaultGrams:5},
+{name:'Tea with milk + sugar',aliases:['tea','chai'],calories:45,protein:1,carbs:7,fat:1.5,defaultGrams:100}
+];
