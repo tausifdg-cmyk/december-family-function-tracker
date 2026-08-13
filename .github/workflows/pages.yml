@@ -23,21 +23,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Restore known-good app shell
-        run: |
-          git show 18a3f6e3a0337f282561d42494daf09f391fe8f1:index.html > index.html
-          git show 18a3f6e3a0337f282561d42494daf09f391fe8f1:food-data.js > food-data.js
-          git show 18a3f6e3a0337f282561d42494daf09f391fe8f1:service-worker.js > service-worker.js
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text()
-          s=s.replace('<body>','<body><span id="daysLeft" hidden></span>',1)
-          p.write_text(s)
-          PY
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
