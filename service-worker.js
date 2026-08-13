@@ -1,4 +1,4 @@
-const CACHE='december-tracker-v18';
+const CACHE='december-tracker-v19';
 const ASSETS=['./','./index.html','./style.css','./app.js','./food-data.js','./health-sync.js','./workout-videos.js','./ui-upgrades.js','./entry-recovery.js','./measurement-upgrade.js','./phone-steps.js','./report-downloads.js','./auth-onboarding.js','./brand.js','./manifest.json','./icons/icon-192.svg','./icons/icon-512.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
