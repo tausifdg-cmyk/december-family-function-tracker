@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded',function(){
 'use strict';
 var q=function(s){return document.querySelector(s)};
+var touch=q('link[rel="apple-touch-icon"]');if(touch)touch.href='apple-touch-icon.png?v=133';else{touch=document.createElement('link');touch.rel='apple-touch-icon';touch.href='apple-touch-icon.png?v=133';document.head.appendChild(touch)}
 var today=q('#today');
 if(today&&!q('#quickActions')){
  var balance=today.querySelector('.balance-card');
