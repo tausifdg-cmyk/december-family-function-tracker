@@ -1,4 +1,4 @@
-.tabs{isolation:isolate!important;z-index:2147483647!important;pointer-events:auto!important;touch-action:manipulation!important}
+.tabs{isolation:auto!important;z-index:100!important;background:#080b12!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:auto!important;touch-action:manipulation!important;contain:layout paint!important}
 .tabs .tab{display:block!important;text-align:center!important;text-decoration:none!important;pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
 @media(max-width:420px){
   .tabs{padding-left:4px!important;padding-right:4px!important;gap:1px!important}
