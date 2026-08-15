@@ -1,6 +1,5 @@
 .tabs{isolation:isolate!important;pointer-events:auto!important;touch-action:manipulation!important}
 .tabs .tab{pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
-.panel[hidden]{display:none!important}
 @media(max-width:420px){
   .tabs{padding-left:4px!important;padding-right:4px!important;gap:1px!important}
   .tabs .tab{font-size:10px!important;padding-left:1px!important;padding-right:1px!important}

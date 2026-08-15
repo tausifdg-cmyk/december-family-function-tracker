@@ -9,7 +9,7 @@
     });
     document.querySelectorAll('.panel').forEach(function(panel){
       panel.classList.toggle('active',panel.id===id);
-      panel.hidden=panel.id!==id;
+      panel.removeAttribute('hidden');
     });
     try{sessionStorage.setItem('mybody.activeTab',id)}catch(e){}
     window.scrollTo(0,0);
@@ -23,12 +23,13 @@
       tab.setAttribute('role','tab');
       tab.setAttribute('aria-controls',tab.getAttribute('data-tab'));
     });
-    nav.addEventListener('click',function(event){
+    document.addEventListener('click',function(event){
       var tab=event.target.closest('.tab[data-tab]');
       if(!tab||!nav.contains(tab))return;
       event.preventDefault();
+      event.stopImmediatePropagation();
       openTab(tab.getAttribute('data-tab'),tab);
-    });
+    },true);
     var saved='today';
     try{saved=sessionStorage.getItem('mybody.activeTab')||saved}catch(e){}
     var initial=nav.querySelector('[data-tab="'+saved+'"]')||nav.querySelector('.tab[data-tab]');
