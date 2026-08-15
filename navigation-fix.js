@@ -19,18 +19,22 @@
     if(!nav)return;
     nav.setAttribute('role','tablist');
     document.querySelectorAll('.tab[data-tab]').forEach(function(tab){
-      tab.setAttribute('type','button');
+      if(tab.tagName==='BUTTON')tab.setAttribute('type','button');
       tab.setAttribute('role','tab');
       tab.setAttribute('aria-controls',tab.getAttribute('data-tab'));
       tab.onclick=function(event){
-        if(event)event.preventDefault();
         openTab(tab.getAttribute('data-tab'),tab);
       };
     });
     var saved='today';
     try{saved=sessionStorage.getItem('mybody.activeTab')||saved}catch(e){}
+    if(location.hash&&document.getElementById(location.hash.slice(1)))saved=location.hash.slice(1);
     var initial=nav.querySelector('[data-tab="'+saved+'"]')||nav.querySelector('.tab[data-tab]');
     if(initial)openTab(initial.getAttribute('data-tab'),initial);
+    window.addEventListener('hashchange',function(){
+      var id=location.hash.slice(1),tab=nav.querySelector('[data-tab="'+id+'"]');
+      if(tab)openTab(id,tab);
+    });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
   else init();
