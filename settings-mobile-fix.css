@@ -1,0 +1,12 @@
+/* MyBody2.0 iPhone settings layout hard fix */
+#settings .form-card{overflow:hidden!important}
+#settings .form-grid.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:14px 12px!important}
+#settings .form-grid.two label{min-width:0!important;width:100%!important}
+#settings .form-grid.two input,#settings .form-grid.two select{display:block!important;box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;height:46px!important;margin:0!important}
+#settings #setGoalDate{-webkit-appearance:none!important;appearance:none!important;inline-size:100%!important;min-inline-size:0!important;max-inline-size:100%!important;overflow:hidden!important;text-align:center!important}
+@media(max-width:600px){
+  #settings .form-grid.two{grid-template-columns:minmax(0,1fr)!important;gap:14px!important}
+  #settings .form-grid.two label{grid-column:1!important}
+  #settings .form-card{padding:16px!important}
+  #settings #setGoalDate{width:100%!important;max-width:100%!important;min-width:0!important}
+}
