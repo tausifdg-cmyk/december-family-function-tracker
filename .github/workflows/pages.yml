@@ -32,6 +32,8 @@ jobs:
           sed -i -E 's/\?v=[0-9]+/?v=${{ github.run_number }}/g' index.html
           sed -i 's#</head>#<link rel="stylesheet" href="settings-mobile-fix.css?v=${{ github.run_number }}"><link rel="stylesheet" href="navigation-fix.css?v=${{ github.run_number }}"></head>#' index.html
           sed -i 's#</body>#<script src="build-live.js?v=${{ github.run_number }}"></script><script src="navigation-fix.js?v=${{ github.run_number }}"></script></body>#' index.html
+          cp index.html latest.html
+          sed -i 's#"start_url":"./"#"start_url":"./latest.html"#' manifest.json
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
