@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy MyBody2.0 to GitHub Pages
 
 on:
   push:
@@ -23,6 +23,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Write live build number
+        run: printf '{"build":"%s"}\n' "${{ github.run_number }}" > build.json
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
