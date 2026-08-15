@@ -1,4 +1,4 @@
-.tabs{isolation:auto!important;z-index:100!important;background:#080b12!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:auto!important;touch-action:manipulation!important;contain:layout paint!important}
+.tabs{position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;isolation:auto!important;z-index:1!important;margin:12px 0 18px!important;padding:8px 4px!important;border:1px solid var(--line)!important;border-radius:18px!important;background:#111722!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:auto!important;touch-action:manipulation!important;contain:none!important}
 .tabs .tab{display:block!important;text-align:center!important;text-decoration:none!important;pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
 @media(max-width:420px){
   .tabs{padding-left:4px!important;padding-right:4px!important;gap:1px!important}
