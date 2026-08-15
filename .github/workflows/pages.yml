@@ -41,6 +41,7 @@ jobs:
           test -s production.css
           test -s app-production.js
           test -s core-storage.js
+          test -s assets/workout-hero.webp
           ! grep -R "__BUILD__" index.html service-worker.js manifest.json
           node --check core-storage.js
           node --check app-production.js

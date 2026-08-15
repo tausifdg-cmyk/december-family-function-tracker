@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#080b12">
+  <meta name="theme-color" content="#050705">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="MYBODY 2.0">
   <meta name="description" content="MYBODY 2.0 mobile-first food, workout, activity and progress tracker.">
   <meta name="app-build" content="__BUILD__">
@@ -20,33 +20,45 @@
   </script>
   <link rel="manifest" href="manifest.json?v=__BUILD__">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=__BUILD__">
+  <link rel="preload" href="assets/workout-hero.webp?v=__BUILD__" as="image" type="image/webp">
   <link rel="stylesheet" href="production.css?v=__BUILD__">
 </head>
 <body>
   <header class="topbar">
-    <div>
-      <p class="eyebrow">YOUR TRANSFORMATION</p>
-      <h1>MYBODY 2.0</h1>
+    <div class="brand-lockup">
+      <h1>MYBODY <em>2.0</em></h1>
+      <span id="buildBadge">Build #__BUILD__</span>
     </div>
     <div class="header-actions">
-      <span id="buildBadge">Build #__BUILD__</span>
-      <button id="themeBtn" class="icon-btn" type="button" aria-label="Switch theme">◐</button>
+      <button id="themeBtn" class="icon-btn" type="button" aria-label="Switch theme">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>
+      </button>
     </div>
   </header>
 
   <main class="app-shell">
-    <section class="energy-strip" aria-label="Today's summary">
-      <article class="metric-card"><span>Food intake</span><strong id="dashIntake">0</strong><small>kcal today</small></article>
-      <article class="metric-card"><span>Estimated burn</span><strong id="dashBurn">0</strong><small>kcal today</small></article>
-      <article class="metric-card"><span>Energy balance</span><strong id="dashBalance">0</strong><small id="dashBalanceLabel">kcal</small></article>
-      <article class="metric-card"><span>Protein</span><strong id="dashProtein">0g</strong><small id="dashProteinTarget">of target</small></article>
-    </section>
-
     <section id="today" class="panel active" aria-labelledby="today-tab">
       <div class="section-head"><div><p class="eyebrow">TODAY</p><h3 id="todayLabel">Daily dashboard</h3></div><span class="pill" id="todayStatus">Start logging</span></div>
+      <section class="energy-strip" aria-label="Today's summary">
+        <article class="metric-card metric-intake"><span>Calorie intake</span><strong id="dashIntake">0</strong><small>kcal today</small></article>
+        <article class="metric-card metric-burn"><span>Estimated burn</span><strong id="dashBurn">0</strong><small>kcal today</small></article>
+        <article class="metric-card metric-balance"><span>Energy balance</span><strong id="dashBalance">0</strong><small id="dashBalanceLabel">kcal</small></article>
+        <article class="metric-card metric-protein"><span>Protein</span><strong id="dashProtein">0g</strong><small id="dashProteinTarget">of target</small></article>
+        <article class="metric-card metric-water"><span>Water</span><strong id="dashWater">0L</strong><small id="dashWaterTarget">of target</small></article>
+      </section>
       <section class="card balance-card">
         <div class="balance-head"><div><span>Daily energy budget</span><strong id="budgetHeadline">—</strong></div><div class="balance-ring" id="balanceRing"><b id="balanceRingText">0%</b></div></div>
         <div class="energy-flow"><div><span>Base burn</span><b id="baseBurn">0 kcal</b></div><span>+</span><div><span>Steps</span><b id="stepBurn">0 kcal</b></div><span>+</span><div><span>Exercise</span><b id="exerciseBurn">0 kcal</b></div><span>=</span><div><span>Total burn</span><b id="totalBurn">0 kcal</b></div></div>
+      </section>
+      <section class="card today-workout-card">
+        <div class="today-workout-content"><span>Today's workout</span><strong id="todayWorkoutName">Workout</strong><small id="todayWorkoutFocus">Your current training plan</small><button type="button" class="primary" data-nav="workout">Start workout</button></div>
+      </section>
+      <div class="section-head compact"><div><h3>Quick actions</h3></div></div>
+      <section class="quick-actions" aria-label="Quick actions">
+        <button type="button" data-nav="food"><span class="quick-icon">＋</span>Log Food</button>
+        <button type="button" data-nav="workout"><span class="quick-icon">✓</span>Workout</button>
+        <button type="button" data-focus="weightInput"><span class="quick-icon">◇</span>Weight</button>
+        <button type="button" data-focus="waterInput"><span class="quick-icon">○</span>Water</button>
       </section>
       <div class="section-head"><div><p class="eyebrow">QUICK UPDATE</p><h3>Body + activity</h3></div></div>
       <section class="card form-card">
@@ -141,11 +153,11 @@
   </main>
 
   <nav class="tabs" aria-label="Primary">
-    <a id="today-tab" class="tab active" data-tab="today" href="#today">Today</a>
-    <a id="workout-tab" class="tab" data-tab="workout" href="#workout">Workout</a>
-    <a id="food-tab" class="tab" data-tab="food" href="#food">Food</a>
-    <a id="progress-tab" class="tab" data-tab="progress" href="#progress">Progress</a>
-    <a id="settings-tab" class="tab" data-tab="settings" href="#settings">Settings</a>
+    <a id="today-tab" class="tab active" data-tab="today" href="#today"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg><span>Today</span></a>
+    <a id="workout-tab" class="tab" data-tab="workout" href="#workout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8v8M3 10v4m15-6v8m3-6v4M6 12h12"/></svg><span>Workout</span></a>
+    <a id="food-tab" class="tab" data-tab="food" href="#food"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c4-3 7-7 7-12-4-1-6 1-7 4-1-3-3-5-7-4 0 5 3 9 7 12Z"/><path d="M12 8c0-3 1-5 4-6"/></svg><span>Food</span></a>
+    <a id="progress-tab" class="tab" data-tab="progress" href="#progress"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-6m7 6V8m7 12V3"/></svg><span>Progress</span></a>
+    <a id="settings-tab" class="tab" data-tab="settings" href="#settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.14.4.36.74.66 1 .3.26.69.4 1.1.4H21v4h-.09a1.7 1.7 0 0 0-1.51.6Z"/></svg><span>Settings</span></a>
   </nav>
   <footer>MYBODY 2.0 • Energy estimates are approximate and are not medical advice</footer>
   <div id="appToast" class="app-toast" role="status" aria-live="polite"></div>

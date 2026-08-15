@@ -110,6 +110,11 @@
     text('#dashBalanceLabel', balance >= 0 ? 'kcal estimated deficit' : 'kcal estimated surplus');
     text('#dashProtein', `${round(totals.protein, 1)}g`);
     text('#dashProteinTarget', `of ${config.protein}g target`);
+    text('#dashWater', `${round(day.water, 1)}L`);
+    text('#dashWaterTarget', `of ${config.water}L target`);
+    const todayWorkout = state.workouts[selectedDay] || state.workouts[0];
+    text('#todayWorkoutName', todayWorkout?.name || 'Workout');
+    text('#todayWorkoutFocus', todayWorkout?.focus || 'Your current training plan');
     text('#baseBurn', `${Math.round(burn.base)} kcal`);
     text('#stepBurn', `${Math.round(burn.steps)} kcal`);
     text('#exerciseBurn', `${Math.round(burn.exercise)} kcal`);
@@ -415,6 +420,19 @@
     const button = event.target.closest('button,[data-action]');
     if (!button) return;
     const action = button.dataset.action || button.id;
+    if (button.dataset.nav) {
+      window.dispatchEvent(new CustomEvent('mybody:navigate', { detail: { id: button.dataset.nav } }));
+      return;
+    }
+    if (button.dataset.focus) {
+      window.dispatchEvent(new CustomEvent('mybody:navigate', { detail: { id: 'today' } }));
+      window.setTimeout(() => {
+        const field = document.getElementById(button.dataset.focus);
+        field?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        field?.focus({ preventScroll: true });
+      }, 80);
+      return;
+    }
     if (action === 'themeBtn') { state.theme = state.theme === 'light' ? 'dark' : 'light'; persist('Theme updated'); }
     if (action === 'saveDaily') saveDaily();
     if (action === 'select-day') { selectedDay = num(button.dataset.day, 0, 0, state.workouts.length - 1); renderWorkout(); }
