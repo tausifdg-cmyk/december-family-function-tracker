@@ -5,8 +5,9 @@
 #settings .form-grid.two input,#settings .form-grid.two select{display:block!important;box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;height:46px!important;margin:0!important}
 #settings #setGoalDate{-webkit-appearance:none!important;appearance:none!important;inline-size:100%!important;min-inline-size:0!important;max-inline-size:100%!important;overflow:hidden!important;text-align:center!important}
 @media(max-width:600px){
-  #settings .form-grid.two{grid-template-columns:minmax(0,1fr)!important;gap:14px!important}
-  #settings .form-grid.two label{grid-column:1!important}
-  #settings .form-card{padding:16px!important}
-  #settings #setGoalDate{width:100%!important;max-width:100%!important;min-width:0!important}
+  #settings .form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px 10px!important}
+  #settings .form-grid.two label{grid-column:auto!important;font-size:10px!important;letter-spacing:.01em}
+  #settings .form-card{padding:14px!important}
+  #settings .form-grid.two input,#settings .form-grid.two select{height:44px!important;padding:9px 8px!important;font-size:14px!important}
+  #settings #setGoalDate{width:100%!important;max-width:100%!important;min-width:0!important;font-size:12px!important;padding-inline:4px!important}
 }
