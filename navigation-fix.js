@@ -1,41 +1,61 @@
-/* Resilient mobile navigation for MyBody2.0. */
-(function(){
-  function openTab(id,button){
-    if(!id||!document.getElementById(id))return;
-    document.querySelectorAll('.tab[data-tab]').forEach(function(tab){
-      var active=tab===button||tab.getAttribute('data-tab')===id;
-      tab.classList.toggle('active',active);
-      tab.setAttribute('aria-selected',active?'true':'false');
+(function () {
+  'use strict';
+  const VALID_TABS = new Set(['today', 'workout', 'food', 'progress', 'settings']);
+  let activeTab = 'today';
+  function selectTab(requested, options = {}) {
+    const id = VALID_TABS.has(requested) && document.getElementById(requested) ? requested : 'today';
+    activeTab = id;
+    document.querySelectorAll('.tab[data-tab]').forEach((tab) => {
+      const active = tab.dataset.tab === id;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
     });
-    document.querySelectorAll('.panel').forEach(function(panel){
-      panel.classList.toggle('active',panel.id===id);
-      panel.removeAttribute('hidden');
+    document.querySelectorAll('.panel').forEach((panel) => {
+      const active = panel.id === id;
+      panel.classList.toggle('active', active);
+      panel.hidden = !active;
+      panel.setAttribute('aria-hidden', String(!active));
     });
-    try{sessionStorage.setItem('mybody.activeTab',id)}catch(e){}
-    window.scrollTo(0,0);
+    try { sessionStorage.setItem('mybody.activeTab', id); } catch (_) {}
+    if (options.updateHash !== false && location.hash !== `#${id}`) history.replaceState(null, '', `#${id}`);
+    if (options.scroll !== false) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    window.dispatchEvent(new CustomEvent('mybody:tabchange', { detail: { id } }));
   }
-  function init(){
-    var nav=document.querySelector('.tabs');
-    if(!nav)return;
-    nav.setAttribute('role','tablist');
-    document.querySelectorAll('.tab[data-tab]').forEach(function(tab){
-      if(tab.tagName==='BUTTON')tab.setAttribute('type','button');
-      tab.setAttribute('role','tab');
-      tab.setAttribute('aria-controls',tab.getAttribute('data-tab'));
-      tab.onclick=function(event){
-        openTab(tab.getAttribute('data-tab'),tab);
-      };
-    });
-    var saved='today';
-    try{saved=sessionStorage.getItem('mybody.activeTab')||saved}catch(e){}
-    if(location.hash&&document.getElementById(location.hash.slice(1)))saved=location.hash.slice(1);
-    var initial=nav.querySelector('[data-tab="'+saved+'"]')||nav.querySelector('.tab[data-tab]');
-    if(initial)openTab(initial.getAttribute('data-tab'),initial);
-    window.addEventListener('hashchange',function(){
-      var id=location.hash.slice(1),tab=nav.querySelector('[data-tab="'+id+'"]');
-      if(tab)openTab(id,tab);
-    });
+  function handleNavClick(event) {
+    const tab = event.target.closest('.tab[data-tab]');
+    if (!tab) return;
+    event.preventDefault();
+    selectTab(tab.dataset.tab);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
-  else init();
+  function handleKeydown(event) {
+    const tab = event.target.closest('.tab[data-tab]');
+    if (!tab || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const tabs = Array.from(document.querySelectorAll('.tab[data-tab]'));
+    const current = tabs.indexOf(tab);
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    tabs[next].focus();
+    selectTab(tabs[next].dataset.tab);
+  }
+  function init() {
+    const nav = document.querySelector('.tabs');
+    if (!nav || nav.dataset.navigationReady === '1') return;
+    nav.dataset.navigationReady = '1';
+    nav.setAttribute('role', 'tablist');
+    nav.setAttribute('aria-label', 'Primary');
+    nav.addEventListener('click', handleNavClick);
+    nav.addEventListener('keydown', handleKeydown);
+    document.querySelectorAll('.tab[data-tab]').forEach((tab) => {
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-controls', tab.dataset.tab);
+    });
+    let initial = location.hash.slice(1);
+    try { if (!VALID_TABS.has(initial)) initial = sessionStorage.getItem('mybody.activeTab') || 'today'; } catch (_) { initial = 'today'; }
+    selectTab(initial, { updateHash: false, scroll: false });
+    window.addEventListener('hashchange', () => selectTab(location.hash.slice(1), { updateHash: false }));
+    window.addEventListener('mybody:navigate', (event) => selectTab(event.detail?.id));
+  }
+  window.MyBodyNavigation = Object.freeze({ select: selectTab, current: () => activeTab });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 })();

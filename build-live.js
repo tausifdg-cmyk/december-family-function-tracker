@@ -1,10 +1,20 @@
-(function(){
-'use strict';
-var liveBuild='';
-function badge(){return document.getElementById('buildBadge')}
-function apply(){var b=badge();if(b&&liveBuild)b.textContent='Build #'+liveBuild}
-function read(){fetch('build.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('build');return r.json()}).then(function(j){if(j&&/^\d+$/.test(String(j.build||''))){liveBuild=String(j.build);apply();setTimeout(apply,250);setTimeout(apply,1000)}}).catch(function(){var p=new URLSearchParams(location.search),v=p.get('build');if(v&&/^\d+$/.test(v)){liveBuild=v;apply()}})}
-var obs=new MutationObserver(function(){apply()});
-function init(){obs.observe(document.documentElement,{subtree:true,childList:true,characterData:true});read();setInterval(apply,1000);setTimeout(function(){try{obs.disconnect()}catch(e){}},10000)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+(function () {
+  'use strict';
+  const fallback = document.querySelector('meta[name="app-build"]')?.content || '__BUILD__';
+  function setBuild(value) {
+    const build = /^\d+$/.test(String(value)) ? String(value) : fallback;
+    const badge = document.getElementById('buildBadge');
+    if (badge) badge.textContent = `Build #${build}`;
+    document.documentElement.dataset.build = build;
+  }
+  async function init() {
+    setBuild(fallback);
+    try {
+      const response = await fetch(`./build.json?ts=${Date.now()}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Build request failed: ${response.status}`);
+      const payload = await response.json();
+      if (/^\d+$/.test(String(payload.build || ''))) setBuild(payload.build);
+    } catch (_) { setBuild(fallback); }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 })();

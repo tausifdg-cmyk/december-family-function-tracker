@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080b12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MYBODY 2.0">
+  <meta name="description" content="MYBODY 2.0 mobile-first food, workout, activity and progress tracker.">
+  <meta name="app-build" content="__BUILD__">
+  <title>MYBODY 2.0</title>
+  <script>
+    (function () {
+      try {
+        var state = JSON.parse(localStorage.getItem('decemberTracker.v1') || '{}');
+        document.documentElement.dataset.theme = state.theme === 'light' ? 'light' : 'dark';
+      } catch (_) {}
+    }());
+  </script>
+  <link rel="manifest" href="manifest.json?v=__BUILD__">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=__BUILD__">
+  <link rel="stylesheet" href="production.css?v=__BUILD__">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">YOUR TRANSFORMATION</p>
+      <h1>MYBODY 2.0</h1>
+    </div>
+    <div class="header-actions">
+      <span id="buildBadge">Build #__BUILD__</span>
+      <button id="themeBtn" class="icon-btn" type="button" aria-label="Switch theme">◐</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="energy-strip" aria-label="Today's summary">
+      <article class="metric-card"><span>Food intake</span><strong id="dashIntake">0</strong><small>kcal today</small></article>
+      <article class="metric-card"><span>Estimated burn</span><strong id="dashBurn">0</strong><small>kcal today</small></article>
+      <article class="metric-card"><span>Energy balance</span><strong id="dashBalance">0</strong><small id="dashBalanceLabel">kcal</small></article>
+      <article class="metric-card"><span>Protein</span><strong id="dashProtein">0g</strong><small id="dashProteinTarget">of target</small></article>
+    </section>
+
+    <section id="today" class="panel active" aria-labelledby="today-tab">
+      <div class="section-head"><div><p class="eyebrow">TODAY</p><h3 id="todayLabel">Daily dashboard</h3></div><span class="pill" id="todayStatus">Start logging</span></div>
+      <section class="card balance-card">
+        <div class="balance-head"><div><span>Daily energy budget</span><strong id="budgetHeadline">—</strong></div><div class="balance-ring" id="balanceRing"><b id="balanceRingText">0%</b></div></div>
+        <div class="energy-flow"><div><span>Base burn</span><b id="baseBurn">0 kcal</b></div><span>+</span><div><span>Steps</span><b id="stepBurn">0 kcal</b></div><span>+</span><div><span>Exercise</span><b id="exerciseBurn">0 kcal</b></div><span>=</span><div><span>Total burn</span><b id="totalBurn">0 kcal</b></div></div>
+      </section>
+      <div class="section-head"><div><p class="eyebrow">QUICK UPDATE</p><h3>Body + activity</h3></div></div>
+      <section class="card form-card">
+        <div class="form-grid four">
+          <label>Weight (kg)<input id="weightInput" type="number" inputmode="decimal" min="25" max="400" step="0.1"></label>
+          <label>Waist (cm)<input id="waistInput" type="number" inputmode="decimal" min="20" max="400" step="0.1"></label>
+          <label>Steps<input id="stepsInput" type="number" inputmode="numeric" min="0" max="200000" step="100"></label>
+          <label>Water (L)<input id="waterInput" type="number" inputmode="decimal" min="0" max="20" step="0.1"></label>
+        </div>
+        <button id="saveDaily" class="primary full" type="button">Save today's numbers</button>
+      </section>
+      <section class="score-grid">
+        <article class="card score-item"><div><span>Calories</span><b id="scoreCalories"></b></div><div class="mini-progress"><span id="scoreCaloriesBar"></span></div></article>
+        <article class="card score-item"><div><span>Protein</span><b id="scoreProtein"></b></div><div class="mini-progress"><span id="scoreProteinBar"></span></div></article>
+        <article class="card score-item"><div><span>Steps</span><b id="scoreSteps"></b></div><div class="mini-progress"><span id="scoreStepsBar"></span></div></article>
+        <article class="card score-item"><div><span>Water</span><b id="scoreWater"></b></div><div class="mini-progress"><span id="scoreWaterBar"></span></div></article>
+      </section>
+      <section class="insight-grid">
+        <article class="card insight"><span>Avg intake</span><strong id="weekIntake">0</strong><small>kcal/day</small></article>
+        <article class="card insight"><span>Avg balance</span><strong id="weekBalance">0</strong><small>kcal/day</small></article>
+        <article class="card insight"><span>Workouts</span><strong id="weekWorkouts">0</strong><small>last 7 days</small></article>
+      </section>
+    </section>
+
+    <section id="workout" class="panel" hidden aria-labelledby="workout-tab">
+      <div class="section-head"><div><p class="eyebrow">TRAINING</p><h3>Workout logger</h3></div><button id="editWorkoutBtn" class="secondary" type="button">Edit plan</button></div>
+      <div class="day-picker" id="dayPicker"></div>
+      <section class="card workout-summary"><div><span>Session</span><strong id="sessionName">—</strong><small id="sessionFocus">—</small></div><div><span>Duration</span><strong><span id="sessionMinutes">0</span> min</strong></div><div><span>Est. burn</span><strong id="sessionBurn">0 kcal</strong></div></section>
+      <section class="card workout-controls"><div class="form-grid two"><label>Duration (min)<input id="workoutMinutes" type="number" inputmode="numeric" min="1" max="300" value="60"></label><label>Intensity<select id="workoutIntensity"><option value="4">Light</option><option value="5.5" selected>Moderate</option><option value="7">Hard</option><option value="8">Very hard</option></select></label></div></section>
+      <div id="exerciseList" class="exercise-list"></div>
+      <button id="saveWorkout" class="primary full" type="button">Save workout</button>
+      <section id="workoutEditor" class="card editor hidden">
+        <div class="section-head compact"><div><p class="eyebrow">PLAN EDITOR</p><h3>Edit selected day</h3></div><button id="closeWorkoutEditor" class="text-btn" type="button">Close</button></div>
+        <div class="form-grid two"><label>Session name<input id="editSessionName"></label><label>Focus<input id="editSessionFocus"></label></div>
+        <div id="editExerciseList" class="editor-list"></div>
+        <button id="addExercise" class="secondary full" type="button">+ Add exercise</button>
+        <button id="saveWorkoutPlan" class="primary full" type="button">Save plan changes</button>
+      </section>
+      <section class="history-block"><h3>Workout history</h3><div id="workoutHistory" class="card list"></div></section>
+    </section>
+
+    <section id="food" class="panel" hidden aria-labelledby="food-tab">
+      <div class="section-head"><div><p class="eyebrow">NUTRITION</p><h3>Meal logger</h3></div><button id="manageFoodsBtn" class="secondary" type="button">Food database</button></div>
+      <section class="nutrition-grid">
+        <article class="metric-card"><span>Calories</span><strong id="foodCalories">0</strong><small id="foodCalTarget"></small></article>
+        <article class="metric-card"><span>Protein</span><strong id="foodProtein">0g</strong><small id="foodProteinTarget"></small></article>
+        <article class="metric-card"><span>Carbs</span><strong id="foodCarbs">0g</strong></article>
+        <article class="metric-card"><span>Fat</span><strong id="foodFat">0g</strong></article>
+      </section>
+      <datalist id="foodSuggestions"></datalist>
+      <div id="mealSections"></div>
+      <section id="foodManager" class="card editor hidden">
+        <div class="section-head compact"><div><p class="eyebrow">FOOD DATABASE</p><h3>Add or edit food</h3></div><button id="closeFoodManager" class="text-btn" type="button">Close</button></div>
+        <p class="muted-copy">Nutrition values are per 100 g.</p>
+        <div class="form-grid two">
+          <label>Food name<input id="customFoodName"></label><label>Default serving (g)<input id="customFoodServing" type="number" min="1" value="100"></label>
+          <label>Calories / 100g<input id="customFoodCalories" type="number" min="0"></label><label>Protein / 100g<input id="customFoodProtein" type="number" min="0"></label>
+          <label>Carbs / 100g<input id="customFoodCarbs" type="number" min="0"></label><label>Fat / 100g<input id="customFoodFat" type="number" min="0"></label>
+        </div>
+        <button id="saveCustomFood" class="primary full" type="button">Save food</button>
+        <div id="customFoodList" class="list"></div>
+      </section>
+      <section class="history-block"><h3>Food history</h3><div id="foodHistory" class="card list"></div></section>
+    </section>
+
+    <section id="progress" class="panel" hidden aria-labelledby="progress-tab">
+      <div class="section-head"><div><p class="eyebrow">PROGRESS</p><h3>Transformation trend</h3></div></div>
+      <section class="stats-grid">
+        <article class="metric-card"><span>Current weight</span><strong id="currentWeight">—</strong><small id="weightChange"></small></article>
+        <article class="metric-card"><span>Goal weight</span><strong id="goalWeight">—</strong><small id="weightRemaining"></small></article>
+        <article class="metric-card"><span>Latest waist</span><strong id="latestWaist">—</strong><small id="waistChange"></small></article>
+        <article class="metric-card"><span>Progress</span><strong id="progressPct">0%</strong></article>
+      </section>
+      <section class="card chart-card"><canvas id="weightChart" height="220" aria-label="Weight trend chart"></canvas></section>
+      <div id="progressList" class="card list"></div>
+    </section>
+
+    <section id="settings" class="panel" hidden aria-labelledby="settings-tab">
+      <div class="section-head"><div><p class="eyebrow">SETTINGS</p><h3>All targets are editable</h3></div></div>
+      <section class="card form-card">
+        <div class="form-grid two settings-grid">
+          <label>Age<input id="setAge" type="number" min="13" max="120"></label><label>Height (cm)<input id="setHeight" type="number" min="100" max="250"></label>
+          <label>Starting weight<input id="setStartWeight" type="number" min="25" max="400" step="0.1"></label><label>Goal weight<input id="setGoalWeight" type="number" min="25" max="400" step="0.1"></label>
+          <label>Goal date<input id="setGoalDate" type="date"></label><label>Daily calories<input id="setCalories" type="number" min="800" max="10000"></label>
+          <label>Protein target<input id="setProtein" type="number" min="0" max="1000"></label><label>Step target<input id="setSteps" type="number" min="0" max="200000"></label>
+          <label>Water target<input id="setWater" type="number" min="0" max="20" step="0.1"></label><label>Sex<select id="setSex"><option value="male">Male</option><option value="female">Female</option></select></label>
+        </div>
+        <div class="settings-note"><b>How burn is calculated</b><p id="bmrExplanation">—</p></div>
+        <button id="saveSettings" class="primary full" type="button">Save settings</button>
+      </section>
+    </section>
+  </main>
+
+  <nav class="tabs" aria-label="Primary">
+    <a id="today-tab" class="tab active" data-tab="today" href="#today">Today</a>
+    <a id="workout-tab" class="tab" data-tab="workout" href="#workout">Workout</a>
+    <a id="food-tab" class="tab" data-tab="food" href="#food">Food</a>
+    <a id="progress-tab" class="tab" data-tab="progress" href="#progress">Progress</a>
+    <a id="settings-tab" class="tab" data-tab="settings" href="#settings">Settings</a>
+  </nav>
+  <footer>MYBODY 2.0 • Energy estimates are approximate and are not medical advice</footer>
+  <div id="appToast" class="app-toast" role="status" aria-live="polite"></div>
+
+  <script src="food-data.js?v=__BUILD__" defer></script>
+  <script src="auth-onboarding.js?v=__BUILD__" defer></script>
+  <script src="core-storage.js?v=__BUILD__" defer></script>
+  <script src="app-production.js?v=__BUILD__" defer></script>
+  <script src="navigation-fix.js?v=__BUILD__" defer></script>
+  <script src="build-live.js?v=__BUILD__" defer></script>
+</body>
+</html>
