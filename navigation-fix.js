@@ -22,14 +22,11 @@
       tab.setAttribute('type','button');
       tab.setAttribute('role','tab');
       tab.setAttribute('aria-controls',tab.getAttribute('data-tab'));
+      tab.onclick=function(event){
+        if(event)event.preventDefault();
+        openTab(tab.getAttribute('data-tab'),tab);
+      };
     });
-    document.addEventListener('click',function(event){
-      var tab=event.target.closest('.tab[data-tab]');
-      if(!tab||!nav.contains(tab))return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      openTab(tab.getAttribute('data-tab'),tab);
-    },true);
     var saved='today';
     try{saved=sessionStorage.getItem('mybody.activeTab')||saved}catch(e){}
     var initial=nav.querySelector('[data-tab="'+saved+'"]')||nav.querySelector('.tab[data-tab]');

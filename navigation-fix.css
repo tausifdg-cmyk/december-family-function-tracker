@@ -1,4 +1,4 @@
-.tabs{isolation:isolate!important;pointer-events:auto!important;touch-action:manipulation!important}
+.tabs{isolation:isolate!important;z-index:2147483647!important;pointer-events:auto!important;touch-action:manipulation!important}
 .tabs .tab{pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
 @media(max-width:420px){
   .tabs{padding-left:4px!important;padding-right:4px!important;gap:1px!important}

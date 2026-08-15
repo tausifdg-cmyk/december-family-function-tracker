@@ -30,6 +30,7 @@ jobs:
       - name: Add current mobile fixes
         run: |
           sed -i -E 's/\?v=[0-9]+/?v=${{ github.run_number }}/g' index.html
+          sed -i -E "s/DEFAULT_BUILD='[0-9]+'/DEFAULT_BUILD='${{ github.run_number }}'/" workout-prefill-fix.js
           sed -i 's#</head>#<link rel="stylesheet" href="settings-mobile-fix.css?v=${{ github.run_number }}"><link rel="stylesheet" href="navigation-fix.css?v=${{ github.run_number }}"></head>#' index.html
           sed -i 's#</body>#<script src="build-live.js?v=${{ github.run_number }}"></script><script src="navigation-fix.js?v=${{ github.run_number }}"></script></body>#' index.html
           cp index.html latest.html
