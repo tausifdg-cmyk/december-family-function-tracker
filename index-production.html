@@ -55,7 +55,7 @@
     </section>
 
     <section id="workout" class="panel" hidden aria-labelledby="workout-tab">
-      <div class="section-head"><div><p class="eyebrow">TRAINING</p><h3>Workout logger</h3></div><button id="editWorkoutBtn" class="secondary" type="button">Edit plan</button></div>
+      <div class="section-head"><div><p class="eyebrow">TRAINING</p><h3>Workout logger</h3></div><div class="section-actions"><button id="exerciseLibraryBtn" class="secondary" type="button">Exercise library</button><button id="editWorkoutBtn" class="secondary" type="button">Edit plan</button></div></div>
       <div class="day-picker" id="dayPicker"></div>
       <section class="card workout-summary"><div><span>Session</span><strong id="sessionName">—</strong><small id="sessionFocus">—</small></div><div><span>Duration</span><strong><span id="sessionMinutes">0</span> min</strong></div><div><span>Est. burn</span><strong id="sessionBurn">0 kcal</strong></div></section>
       <section class="card workout-controls"><div class="form-grid two"><label>Duration (min)<input id="workoutMinutes" type="number" inputmode="numeric" min="1" max="300" value="60"></label><label>Intensity<select id="workoutIntensity"><option value="4">Light</option><option value="5.5" selected>Moderate</option><option value="7">Hard</option><option value="8">Very hard</option></select></label></div></section>
@@ -162,9 +162,17 @@
   <div id="foodHistorySheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="foodHistoryTitle"><section class="sheet-panel" tabindex="-1"><header class="sheet-head"><div><h2 id="foodHistoryTitle">Food history</h2><p>Previous nutrition totals</p></div><button type="button" class="sheet-close" data-sheet-close aria-label="Close food history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header><div id="foodHistory" class="card list"></div></section></div>
   <div id="progressHistorySheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="progressHistoryTitle"><section class="sheet-panel" tabindex="-1"><header class="sheet-head"><div><h2 id="progressHistoryTitle">Measurement history</h2><p>Saved weight entries</p></div><button type="button" class="sheet-close" data-sheet-close aria-label="Close measurement history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header><div id="progressList" class="card list"></div></section></div>
 
+  <div id="exerciseLibrarySheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="exerciseLibraryTitle"><section class="sheet-panel exercise-library-panel" tabindex="-1">
+    <header class="sheet-head"><div><h2 id="exerciseLibraryTitle">Exercise library</h2><p>Original demonstrations that work offline</p></div><button type="button" class="sheet-close" data-sheet-close aria-label="Close exercise library"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+    <div class="exercise-library-tools"><label class="library-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg><input id="exerciseLibrarySearch" type="search" inputmode="search" placeholder="Search exercises" autocomplete="off"></label><button id="keepExercisesOffline" class="secondary offline-status" type="button"><span id="exerciseOfflineDot" aria-hidden="true"></span><span id="exerciseOfflineStatus">Offline ready</span></button></div>
+    <div id="exerciseCategoryFilters" class="category-filters" role="group" aria-label="Exercise category"></div>
+    <p id="exerciseLibraryCount" class="library-count" aria-live="polite"></p>
+    <div id="exerciseCatalogList" class="exercise-catalog"></div>
+  </section></div>
+
   <div id="exerciseLightbox" class="media-lightbox hidden" role="dialog" aria-modal="true" aria-labelledby="exerciseLightboxTitle">
     <header class="lightbox-head"><div><h2 id="exerciseLightboxTitle">Exercise demo</h2><p id="exerciseLightboxMeta"></p></div><button type="button" class="sheet-close" data-action="close-exercise-media" aria-label="Close exercise demo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
-    <div class="lightbox-stage"><img id="exerciseGif" alt="" decoding="async"><div id="lightboxMuscleMap" class="lightbox-muscle" aria-label="Active muscle groups"></div></div>
+    <div class="lightbox-stage"><div id="exerciseMotion" class="exercise-motion-stage"></div><div class="lightbox-guide"><p id="exerciseCues"></p><small>Movement guide only. Use a qualified trainer for individual form advice.</small></div><div id="lightboxMuscleMap" class="lightbox-muscle" aria-label="Active muscle groups"></div></div>
   </div>
 
   <nav class="tabs" aria-label="Primary">
@@ -180,6 +188,7 @@
   <script src="food-data.js?v=__BUILD__" defer></script>
   <script src="auth-onboarding.js?v=__BUILD__" defer></script>
   <script src="core-storage.js?v=__BUILD__" defer></script>
+  <script src="exercise-library.js?v=__BUILD__" defer></script>
   <script src="app-production.js?v=__BUILD__" defer></script>
   <script src="navigation-fix.js?v=__BUILD__" defer></script>
   <script src="build-live.js?v=__BUILD__" defer></script>
