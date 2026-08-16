@@ -12,7 +12,6 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.PermissionController
@@ -85,11 +84,11 @@ class MainActivity : ComponentActivity() {
             uri.path.orEmpty().startsWith("/december-family-function-tracker/")
 
     private fun healthConnectAvailable(): Boolean {
-        val status = HealthConnectClient.getSdkStatus(this, HealthConnectClient.DEFAULT_PROVIDER_PACKAGE_NAME)
+        val status = HealthConnectClient.getSdkStatus(this, HEALTH_CONNECT_PROVIDER_PACKAGE)
         if (status == HealthConnectClient.SDK_AVAILABLE) return true
         if (status == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
             val market = Uri.parse(
-                "market://details?id=${HealthConnectClient.DEFAULT_PROVIDER_PACKAGE_NAME}" +
+                "market://details?id=$HEALTH_CONNECT_PROVIDER_PACKAGE" +
                     "&url=healthconnect%3A%2F%2Fonboarding"
             )
             runCatching { startActivity(Intent(Intent.ACTION_VIEW, market)) }
@@ -195,5 +194,6 @@ class MainActivity : ComponentActivity() {
     companion object {
         private const val APP_URL =
             "https://tausifdg-cmyk.github.io/december-family-function-tracker/"
+        private const val HEALTH_CONNECT_PROVIDER_PACKAGE = "com.google.android.apps.healthdata"
     }
 }
