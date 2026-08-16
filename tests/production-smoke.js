@@ -78,6 +78,14 @@ function verifyNavigation() {
   }
 }
 
+function verifyExerciseAliases() {
+  const context = { window: {} };
+  vm.runInNewContext(read('exercise-library.js'), context, { filename: 'exercise-library.js' });
+  const library = context.window.MyBodyExerciseLibrary;
+  assert.equal(library.exercises.length, 42, 'Offline catalog size should remain stable');
+  assert.equal(library.find('Lever Pec Deck Fly').id, 'dumbbell-chest-fly', 'ExerciseDB sample name should resolve offline');
+}
+
 async function runBuildHarness(remoteBuild) {
   const buildBadge = { textContent: '' };
   const label = { textContent: '' };
@@ -125,6 +133,7 @@ async function runBuildHarness(remoteBuild) {
 async function main() {
   verifyMarkup();
   verifyNavigation();
+  verifyExerciseAliases();
   const current = await runBuildHarness(172);
   assert.match(current.label, /Up to date/);
   assert.equal(current.replacedWith, '');
