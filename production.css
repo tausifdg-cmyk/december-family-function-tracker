@@ -301,8 +301,8 @@ input[type="date"]::-webkit-date-and-time-value { min-width: 100%; height: 22px;
 .exercise p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
 .exercise-chevron { width: 26px; height: 26px; margin-left: auto; fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .exercise-media { position: relative; display: block; min-height: 164px; overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: #060806; color: var(--text); padding: 0; }
-.exercise-media picture, .exercise-media img { display: block; width: 100%; height: 100%; }
-.exercise-media img { position: absolute; inset: 0; object-fit: cover; }
+.exercise-motion-thumb { position: absolute; inset: 0; display: block; }
+.exercise-motion-thumb .exercise-motion { width: 100%; height: 100%; }
 .exercise-muscle { position: absolute; right: 8px; bottom: 8px; display: grid; place-items: center; width: 55px; height: 76px; border-radius: 12px; background: rgba(5,7,5,.86); border: 1px solid rgba(255,255,255,.14); }
 .muscle-map { width: 44px; height: 68px; }
 .body-shape { fill: #4e554e; stroke: #707970; stroke-width: .8; }
@@ -310,6 +310,45 @@ input[type="date"]::-webkit-date-and-time-value { min-width: 100%; height: 22px;
 .muscle-zone.active { fill: url(#muscleGradient); filter: drop-shadow(0 0 4px rgba(168,240,0,.5)); }
 .media-play { position: absolute; left: 10px; bottom: 10px; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--accent); border-radius: 50%; background: rgba(4,7,4,.86); color: var(--accent); }
 .media-play svg { width: 22px; height: 22px; fill: currentColor; stroke: none; }
+.section-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.exercise-motion { display: block; width: 100%; height: 100%; overflow: visible; }
+.motion-bg { fill: #090d09; }
+.motion-floor { fill: none; stroke: #303830; stroke-width: 3; stroke-linecap: round; }
+.motion-head { fill: #171e17; stroke: #d8ff54; stroke-width: 4; }
+.motion-torso,.motion-arm,.motion-leg { fill: none; stroke: #f4f7f1; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+.motion-weight { fill: #d8ff54; stroke: #071007; stroke-width: 3; }
+.motion-label { fill: #f4f7f1; font: 800 15px system-ui,sans-serif; letter-spacing: .2px; }
+.motion-caption { fill: #8f9b8f; font: 600 10px system-ui,sans-serif; }
+.motion-arrow,.motion-arrow-head { fill: none; stroke: #d8ff54; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+.motion-body,.motion-arms,.motion-arm,.motion-legs,.motion-leg { transform-box: fill-box; transform-origin: center; }
+.exercise-motion.is-animated .motion-arrow,.exercise-motion.is-animated .motion-arrow-head { animation: motionPulse 1.35s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-press .motion-arms,.exercise-motion.is-animated.motion-thruster .motion-arms { animation: motionPress 1.55s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-fly .motion-arm-left { animation: motionFlyLeft 1.55s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-fly .motion-arm-right { animation: motionFlyRight 1.55s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-curl .motion-arm-left,.exercise-motion.is-animated.motion-curl .motion-arm-right,.exercise-motion.is-animated.motion-pushdown .motion-arms,.exercise-motion.is-animated.motion-extension .motion-arms { animation: motionCurl 1.45s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-row .motion-arms,.exercise-motion.is-animated.motion-pull .motion-arms,.exercise-motion.is-animated.motion-pullover .motion-arms,.exercise-motion.is-animated.motion-upright-row .motion-arms { animation: motionRow 1.55s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-raise .motion-arms,.exercise-motion.is-animated.motion-shrug .motion-arms { animation: motionRaise 1.55s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-squat .motion-body,.exercise-motion.is-animated.motion-legpress .motion-body,.exercise-motion.is-animated.motion-thruster .motion-body { animation: motionSquat 1.65s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-hinge .motion-torso { animation: motionHinge 1.65s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-lunge .motion-leg-left,.exercise-motion.is-animated.motion-adduction .motion-leg-left,.exercise-motion.is-animated.motion-birddog .motion-leg-left { animation: motionLeg 1.55s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-calf .motion-body { animation: motionCalf 1.35s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-bridge .motion-body,.exercise-motion.is-animated.motion-crunch .motion-body,.exercise-motion.is-animated.motion-tuck .motion-body { animation: motionCore 1.55s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-twist .motion-arms,.exercise-motion.is-animated.motion-rotation .motion-arms { animation: motionTwist 1.55s ease-in-out infinite; }
+.exercise-motion.is-animated.motion-flutter .motion-legs,.exercise-motion.is-animated.motion-climber .motion-legs,.exercise-motion.is-animated.motion-curlleg .motion-legs,.exercise-motion.is-animated.motion-extensionleg .motion-legs { animation: motionFlutter .9s ease-in-out infinite; }
+@keyframes motionPulse { 50% { opacity: .35; transform: translateY(-3px); } }
+@keyframes motionPress { 50% { transform: translateY(-28px) scaleY(1.08); } }
+@keyframes motionFlyLeft { 50% { transform: rotate(32deg) translateX(9px); } }
+@keyframes motionFlyRight { 50% { transform: rotate(-32deg) translateX(-9px); } }
+@keyframes motionCurl { 50% { transform: translateY(-14px) scaleY(.72); } }
+@keyframes motionRow { 50% { transform: translateY(-7px) scaleX(.72); } }
+@keyframes motionRaise { 50% { transform: translateY(-19px) scaleX(1.15); } }
+@keyframes motionSquat { 50% { transform: translateY(24px) scaleY(.84); } }
+@keyframes motionHinge { 50% { transform: rotate(30deg) translate(12px,8px); transform-origin: 50% 100%; } }
+@keyframes motionLeg { 50% { transform: rotate(28deg) translateX(-8px); transform-origin: 50% 0; } }
+@keyframes motionCalf { 50% { transform: translateY(-9px); } }
+@keyframes motionCore { 50% { transform: rotate(-14deg) translateY(8px); } }
+@keyframes motionTwist { 50% { transform: scaleX(.58); } }
+@keyframes motionFlutter { 50% { transform: rotate(8deg) translateY(-7px); } }
 .exercise-inputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
 .editor { margin-top: 16px; }
 .editor-row { display: grid; grid-template-columns: minmax(130px, 2fr) 70px 70px 44px; gap: 8px; align-items: end; margin-bottom: 9px; }
@@ -355,11 +394,38 @@ body.modal-open { overflow: hidden; }
 .sheet-close svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .sheet-panel .energy-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
 .sheet-panel .form-card h3 { margin: 0 0 var(--space-3); font-size: 24px; }
+.exercise-library-panel { width: min(100%,900px); }
+.exercise-library-tools { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: center; }
+.library-search { position: relative; display: block; }
+.library-search svg { position: absolute; z-index: 1; left: 14px; top: 50%; width: 22px; height: 22px; transform: translateY(-50%); fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; }
+.library-search input { min-height: 50px; margin: 0; padding-left: 46px; }
+.offline-status { min-height: 50px; white-space: nowrap; }
+.offline-status > span:first-child { display: inline-block; width: 9px; height: 9px; margin-right: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
+.category-filters { display: flex; gap: 8px; margin: 14px -2px 0; padding: 2px 2px 8px; overflow-x: auto; scrollbar-width: none; }
+.category-filters::-webkit-scrollbar { display: none; }
+.category-chip { min-height: 44px; flex: 0 0 auto; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--muted); font-weight: 750; }
+.category-chip.active { border-color: var(--accent); background: var(--accent); color: #0b1006; }
+.library-count { margin: 6px 0 12px; color: var(--muted); font-size: 14px; font-weight: 700; }
+.exercise-catalog { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.exercise-catalog-card { display: grid; grid-template-columns: 128px minmax(0,1fr) 24px; gap: 12px; align-items: center; min-height: 112px; padding: 10px; border: 1px solid var(--line); border-radius: 17px; background: var(--card); color: var(--text); text-align: left; }
+.exercise-catalog-card:active { border-color: var(--accent); transform: scale(.99); }
+.catalog-visual { display: block; height: 94px; overflow: hidden; border-radius: 12px; background: #090d09; }
+.catalog-copy { min-width: 0; }
+.catalog-copy b,.catalog-copy small,.catalog-copy em { display: block; }
+.catalog-copy b { font-size: 17px; line-height: 1.2; }
+.catalog-copy small { margin-top: 5px; color: var(--accent); font-size: 12px; }
+.catalog-copy em { margin-top: 7px; overflow: hidden; color: var(--muted); font-size: 11px; font-style: normal; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.catalog-chevron { width: 23px; height: 23px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 .media-lightbox { position: fixed; z-index: 50000; inset: 0; display: grid; grid-template-rows: auto minmax(0,1fr); gap: var(--space-3); padding: calc(16px + var(--safe-top)) max(16px,var(--safe-right)) calc(18px + var(--safe-bottom)) max(16px,var(--safe-left)); background: #020302; color: #f7f9f5; }
 .lightbox-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: min(100%,960px); margin: 0 auto; }
 .lightbox-stage { position: relative; display: grid; place-items: center; width: min(100%,960px); height: 100%; min-height: 0; margin: 0 auto; overflow: hidden; border: 1px solid #252b25; border-radius: 20px; background: #000; }
-.lightbox-stage > img { width: 100%; height: 100%; object-fit: contain; }
+.exercise-motion-stage { width: 100%; height: 100%; min-height: 0; }
+.exercise-motion-stage .exercise-motion { width: 100%; height: 100%; }
+.lightbox-guide { position: absolute; left: 18px; bottom: 18px; width: min(62%,520px); padding: 14px 16px; border: 1px solid #465046; border-radius: 16px; background: rgba(5,8,5,.92); }
+.lightbox-guide p { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 7px; }
+.lightbox-guide p span { padding: 5px 8px; border-radius: 999px; background: rgba(216,255,84,.1); color: #d8ff54; font-size: 12px; font-weight: 750; }
+.lightbox-guide small { color: #aab3aa; font-size: 11px; line-height: 1.35; }
 .lightbox-muscle { position: absolute; right: 18px; bottom: 18px; display: grid; place-items: center; width: 82px; height: 118px; border: 1px solid #465046; border-radius: 16px; background: rgba(5,8,5,.9); }
 .lightbox-muscle .muscle-map { width: 64px; height: 100px; }
 
@@ -375,6 +441,7 @@ body.modal-open { overflow: hidden; }
   .exercise { grid-template-columns: 1fr; padding: 12px; }
   .exercise-media { min-height: 210px; }
   .exercise-main { padding: 4px; }
+  .exercise-catalog { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 520px) {
@@ -405,6 +472,16 @@ body.modal-open { overflow: hidden; }
   .exercise-media { min-height: 190px; }
   .sheet-panel { padding-inline: 14px; }
   .lightbox-stage { border-radius: 14px; }
+  #workout > .section-head:first-child { align-items: stretch; flex-direction: column; }
+  #workout > .section-head:first-child .section-actions { width: 100%; }
+  #workout > .section-head:first-child .section-actions .secondary { flex: 1; }
+  .exercise-library-tools { grid-template-columns: 1fr; }
+  .offline-status { width: 100%; }
+  .exercise-catalog-card { grid-template-columns: 104px minmax(0,1fr) 22px; }
+  .catalog-visual { height: 82px; }
+  .lightbox-guide { right: 14px; bottom: 14px; left: 14px; width: auto; padding: 10px 12px; }
+  .lightbox-muscle { top: 12px; right: 12px; bottom: auto; width: 62px; height: 88px; }
+  .lightbox-muscle .muscle-map { width: 48px; height: 76px; }
 }
 
 @media (max-width: 370px) {
