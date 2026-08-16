@@ -3,6 +3,8 @@
 
   const Store = window.MyBodyStore;
   if (!Store) throw new Error('MyBodyStore must load before app-production.js');
+  const ExerciseLibrary = window.MyBodyExerciseLibrary;
+  if (!ExerciseLibrary) throw new Error('MyBodyExerciseLibrary must load before app-production.js');
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -16,6 +18,7 @@
   let resizeObserver;
   let chartFrame;
   let modalReturnFocus;
+  let exerciseCategory = 'All';
 
   function muscleGroup(name) {
     const value = String(name || '').toLowerCase();
@@ -29,9 +32,8 @@
   }
 
   function exerciseMedia(name) {
-    const group = muscleGroup(name);
-    const slug = group === 'legs' ? 'barbell-squat' : group === 'back' ? 'lat-pulldown' : group === 'biceps' ? 'dumbbell-curl' : 'dumbbell-bench-press';
-    return { group, gif: `assets/exercises/${slug}.gif`, small: `assets/exercises/${slug}-480.webp`, large: `assets/exercises/${slug}-720.webp` };
+    const exercise = ExerciseLibrary.find(name);
+    return { ...exercise, group: exercise.muscle || muscleGroup(name) };
   }
 
   function muscleMapSvg(active) {
@@ -58,15 +60,16 @@
 
   function openExerciseMedia(button) {
     const lightbox = $('#exerciseLightbox');
-    const image = $('#exerciseGif');
-    if (!lightbox || !image) return;
+    const stage = $('#exerciseMotion');
+    if (!lightbox || !stage) return;
     modalReturnFocus = button;
     const name = button.dataset.name || 'Exercise demo';
     const media = exerciseMedia(name);
-    text('#exerciseLightboxTitle', name);
-    text('#exerciseLightboxMeta', `${button.dataset.sets || ''} • ${media.group} focus`);
-    image.alt = `${name} exercise demonstration`;
-    image.src = media.gif;
+    text('#exerciseLightboxTitle', media.name);
+    text('#exerciseLightboxMeta', [button.dataset.sets, media.category, media.equipment].filter(Boolean).join(' • '));
+    stage.innerHTML = ExerciseLibrary.renderSvg(media, true);
+    const cues = $('#exerciseCues');
+    if (cues) cues.innerHTML = media.cues.map((cue) => `<span>${escapeHtml(cue)}</span>`).join('');
     const map = $('#lightboxMuscleMap');
     if (map) map.innerHTML = muscleMapSvg(media.group);
     lightbox.classList.remove('hidden');
@@ -76,11 +79,11 @@
 
   function closeExerciseMedia() {
     const lightbox = $('#exerciseLightbox');
-    const image = $('#exerciseGif');
     if (!lightbox || lightbox.classList.contains('hidden')) return;
     lightbox.classList.add('hidden');
-    if (image) image.removeAttribute('src');
-    document.body.classList.remove('modal-open');
+    const stage = $('#exerciseMotion');
+    if (stage) stage.replaceChildren();
+    if (!document.querySelector('.sheet-backdrop:not(.hidden)')) document.body.classList.remove('modal-open');
     modalReturnFocus?.focus?.({ preventScroll: true });
   }
 
@@ -256,7 +259,7 @@
     if (list) list.innerHTML = plan.exercises.map((exercise, index) => {
       const result = log.exercises?.[index] || {};
       const media = exerciseMedia(exercise[0]);
-      return `<article class="card exercise"><button type="button" class="exercise-media" data-action="open-exercise-media" data-name="${escapeHtml(exercise[0])}" data-sets="${exercise[1]} sets × ${exercise[2]} reps" aria-label="Open ${escapeHtml(exercise[0])} demonstration"><picture><source type="image/webp" srcset="${media.small} 480w, ${media.large} 720w" sizes="(max-width:720px) calc(100vw - 48px), 320px"><img src="${media.small}" alt="" loading="lazy" decoding="async"></picture><span class="exercise-muscle">${muscleMapSvg(media.group)}</span><span class="media-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 9 6-9 6Z"/></svg></span></button><div class="exercise-main"><div class="exercise-top"><span class="exercise-num">${index + 1}</span><div><h4>${escapeHtml(exercise[0])}</h4><p>${exercise[1]} sets × ${exercise[2]} reps</p></div><svg class="exercise-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></div><div class="exercise-inputs"><label>Sets<input class="ex-set" data-index="${index}" inputmode="numeric" type="number" min="0" max="20" value="${num(result.sets, exercise[1], 0, 20)}"></label><label>Reps<input class="ex-reps" data-index="${index}" inputmode="numeric" type="number" min="0" max="100" value="${num(result.reps, exercise[2], 0, 100)}"></label><label>Weight kg<input class="ex-weight" data-index="${index}" inputmode="decimal" type="number" min="0" max="1000" step="0.5" value="${result.weight || ''}"></label></div></div></article>`;
+      return `<article class="card exercise"><button type="button" class="exercise-media" data-action="open-exercise-media" data-name="${escapeHtml(exercise[0])}" data-sets="${exercise[1]} sets × ${exercise[2]} reps" aria-label="Open ${escapeHtml(exercise[0])} demonstration"><span class="exercise-motion-thumb">${ExerciseLibrary.renderSvg(media)}</span><span class="exercise-muscle">${muscleMapSvg(media.group)}</span><span class="media-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 9 6-9 6Z"/></svg></span></button><div class="exercise-main"><div class="exercise-top"><span class="exercise-num">${index + 1}</span><div><h4>${escapeHtml(exercise[0])}</h4><p>${exercise[1]} sets × ${exercise[2]} reps</p></div><svg class="exercise-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></div><div class="exercise-inputs"><label>Sets<input class="ex-set" data-index="${index}" inputmode="numeric" type="number" min="0" max="20" value="${num(result.sets, exercise[1], 0, 20)}"></label><label>Reps<input class="ex-reps" data-index="${index}" inputmode="numeric" type="number" min="0" max="100" value="${num(result.reps, exercise[2], 0, 100)}"></label><label>Weight kg<input class="ex-weight" data-index="${index}" inputmode="decimal" type="number" min="0" max="1000" step="0.5" value="${result.weight || ''}"></label></div></div></article>`;
     }).join('');
     renderWorkoutEditor();
     renderWorkoutHistory();
@@ -268,6 +271,36 @@
     value('#editSessionFocus', plan?.focus || '');
     const list = $('#editExerciseList');
     if (list) list.innerHTML = (plan?.exercises || []).map((exercise, index) => `<div class="editor-row" data-index="${index}"><input class="edit-ex-name" aria-label="Exercise name" value="${escapeHtml(exercise[0])}"><input class="edit-ex-sets" aria-label="Sets" type="number" min="1" max="20" value="${exercise[1]}"><input class="edit-ex-reps" aria-label="Reps" type="number" min="1" max="100" value="${exercise[2]}"><button type="button" class="danger-icon" data-action="remove-exercise" data-index="${index}" aria-label="Remove exercise">${removeIcon}</button></div>`).join('');
+  }
+
+  function renderExerciseLibrary() {
+    const filters = $('#exerciseCategoryFilters');
+    if (filters) filters.innerHTML = ExerciseLibrary.categories.map((category) => `<button type="button" class="category-chip ${category === exerciseCategory ? 'active' : ''}" data-action="filter-exercises" data-category="${escapeHtml(category)}" aria-pressed="${category === exerciseCategory}">${escapeHtml(category)}</button>`).join('');
+    const query = ExerciseLibrary.normalise($('#exerciseLibrarySearch')?.value);
+    const matches = ExerciseLibrary.exercises.filter((exercise) => {
+      const inCategory = exerciseCategory === 'All' || exercise.category === exerciseCategory;
+      const searchable = ExerciseLibrary.normalise([exercise.name, exercise.category, exercise.equipment, ...exercise.aliases].join(' '));
+      return inCategory && (!query || searchable.includes(query));
+    });
+    text('#exerciseLibraryCount', `${matches.length} original demonstrations`);
+    const list = $('#exerciseCatalogList');
+    if (list) list.innerHTML = matches.map((exercise) => `<button type="button" class="exercise-catalog-card" data-action="open-library-exercise" data-name="${escapeHtml(exercise.name)}"><span class="catalog-visual">${ExerciseLibrary.renderSvg(exercise)}</span><span class="catalog-copy"><b>${escapeHtml(exercise.name)}</b><small>${escapeHtml(exercise.category)} • ${escapeHtml(exercise.equipment)}</small><em>${exercise.cues.map(escapeHtml).join(' • ')}</em></span><svg class="catalog-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>`).join('') || '<p class="empty">No exercises match this search.</p>';
+  }
+
+  async function keepExercisesOffline() {
+    const status = $('#exerciseOfflineStatus');
+    if (status) status.textContent = 'Checking storage…';
+    try {
+      if ('serviceWorker' in navigator) await navigator.serviceWorker.ready;
+      let persistent = false;
+      if (navigator.storage?.persisted) persistent = await navigator.storage.persisted();
+      if (!persistent && navigator.storage?.persist) persistent = await navigator.storage.persist();
+      if (status) status.textContent = persistent ? 'Stored persistently' : 'Offline ready';
+      toast(persistent ? 'Exercise library will be kept offline.' : 'Exercise library is cached offline. iPhone may clear it if storage is low.');
+    } catch (_) {
+      if (status) status.textContent = 'Offline ready';
+      toast('Exercise library is bundled with the app for offline use.');
+    }
   }
 
   function allFoods() {
@@ -506,6 +539,10 @@
       openExerciseMedia(button);
       return;
     }
+    if (action === 'open-library-exercise') {
+      openExerciseMedia(button);
+      return;
+    }
     if (action === 'close-exercise-media') {
       closeExerciseMedia();
       return;
@@ -527,6 +564,9 @@
     if (action === 'saveDaily') saveDaily();
     if (action === 'select-day') { selectedDay = num(button.dataset.day, 0, 0, state.workouts.length - 1); renderWorkout(); }
     if (action === 'saveWorkout') saveWorkout();
+    if (action === 'exerciseLibraryBtn') { renderExerciseLibrary(); openSheet('exerciseLibrarySheet', button); }
+    if (action === 'filter-exercises') { exerciseCategory = button.dataset.category || 'All'; renderExerciseLibrary(); }
+    if (action === 'keepExercisesOffline') keepExercisesOffline();
     if (action === 'editWorkoutBtn') openSheet('workoutEditor', button);
     if (action === 'closeWorkoutEditor') closeSheet('workoutEditor');
     if (action === 'addExercise') addExerciseEditorRow();
@@ -555,6 +595,10 @@
     }
   }
 
+  function handleInput(event) {
+    if (event.target.matches('#exerciseLibrarySearch')) renderExerciseLibrary();
+  }
+
   async function registerServiceWorker() {
     if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
     try {
@@ -570,6 +614,7 @@
     document.documentElement.dataset.appReady = '1';
     document.addEventListener('click', handleClick);
     document.addEventListener('change', handleChange);
+    document.addEventListener('input', handleInput);
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
       const lightbox = $('#exerciseLightbox:not(.hidden)');
