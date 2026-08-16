@@ -177,14 +177,9 @@
     const burn = energyBurn();
     const balance = burn.total - totals.calories;
     text('#todayLabel', new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }));
-    text('#dashIntake', Math.round(totals.calories));
     text('#dashBurn', Math.round(burn.total));
     text('#dashBalance', `${balance >= 0 ? '-' : '+'}${Math.abs(Math.round(balance))}`);
     text('#dashBalanceLabel', balance >= 0 ? 'kcal estimated deficit' : 'kcal estimated surplus');
-    text('#dashProtein', `${round(totals.protein, 1)}g`);
-    text('#dashProteinTarget', `of ${config.protein}g target`);
-    text('#dashWater', `${round(day.water, 1)}L`);
-    text('#dashWaterTarget', `of ${config.water}L target`);
     const todayWorkout = state.workouts[selectedDay] || state.workouts[0];
     text('#todayWorkoutName', todayWorkout?.name || 'Workout');
     text('#todayWorkoutFocus', todayWorkout?.focus || 'Your current training plan');
@@ -208,10 +203,6 @@
       const bar = $(selector);
       if (bar) bar.style.width = `${width}%`;
     });
-    const ringPercent = Math.round(percent(totals.calories, config.calories));
-    text('#balanceRingText', `${ringPercent}%`);
-    const ring = $('#balanceRing');
-    if (ring) ring.style.setProperty('--progress', `${ringPercent * 3.6}deg`);
     renderWeeklySummary();
   }
 

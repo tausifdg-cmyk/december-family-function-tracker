@@ -45,11 +45,11 @@
     <section id="today" class="panel active" aria-labelledby="today-tab">
       <div class="section-head"><div><p class="eyebrow">TODAY</p><h3 id="todayLabel">Daily dashboard</h3></div><span class="pill" id="todayStatus">Start logging</span></div>
       <section class="card daily-summary" aria-label="Daily summary">
-        <div class="balance-ring" id="balanceRing"><b id="balanceRingText">0%</b><small>goal</small></div>
         <div class="summary-metrics">
-          <div class="summary-calories"><span>Calories</span><strong id="dashIntake">0</strong><small>kcal consumed</small></div>
-          <div class="summary-protein"><span>Protein</span><strong id="dashProtein">0g</strong><small id="dashProteinTarget">of target</small></div>
-          <div class="summary-water"><span>Water</span><strong id="dashWater">0L</strong><small id="dashWaterTarget">of target</small></div>
+          <article class="summary-goal summary-calories"><div><span>Calories</span><strong id="scoreCalories">0 / 0</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreCaloriesBar"></span></div></article>
+          <article class="summary-goal summary-protein"><div><span>Protein</span><strong id="scoreProtein">0 / 0g</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreProteinBar"></span></div></article>
+          <article class="summary-goal summary-steps"><div><span>Steps</span><strong id="scoreSteps">0 / 0</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreStepsBar"></span></div></article>
+          <article class="summary-goal summary-water"><div><span>Water</span><strong id="scoreWater">0 / 0L</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreWaterBar"></span></div></article>
         </div>
       </section>
       <section class="card today-workout-card">
@@ -74,12 +74,6 @@
             <label>Water (L)<input id="waterInput" type="number" inputmode="decimal" min="0" max="20" step="0.1"></label>
           </div>
           <button id="saveDaily" class="primary full" type="button">Save today's numbers</button>
-        </section>
-        <section class="score-grid">
-          <article class="card score-item"><div><span>Calories</span><b id="scoreCalories"></b></div><div class="mini-progress"><span id="scoreCaloriesBar"></span></div></article>
-          <article class="card score-item"><div><span>Protein</span><b id="scoreProtein"></b></div><div class="mini-progress"><span id="scoreProteinBar"></span></div></article>
-          <article class="card score-item"><div><span>Steps</span><b id="scoreSteps"></b></div><div class="mini-progress"><span id="scoreStepsBar"></span></div></article>
-          <article class="card score-item"><div><span>Water</span><b id="scoreWater"></b></div><div class="mini-progress"><span id="scoreWaterBar"></span></div></article>
         </section>
         <section class="insight-grid">
           <article class="card insight"><span>Avg intake</span><strong id="weekIntake">0</strong><small>kcal/day</small></article>

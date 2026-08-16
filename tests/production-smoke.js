@@ -28,6 +28,9 @@ function verifyMarkup() {
   }
   assert.doesNotMatch(html, /(?:todayDetails|workoutHistorySheet|foodHistorySheet|progressHistorySheet)" class="sheet-backdrop/);
   assert.match(html, /42 real-human and 3D-avatar video demonstrations that work offline/);
+  const summary = html.match(/<section class="card daily-summary"[\s\S]*?<\/section>/)?.[0] || '';
+  for (const id of ['scoreCalories', 'scoreProtein', 'scoreSteps', 'scoreWater']) assert.match(summary, new RegExp(`id="${id}"`), `Top summary must include #${id}`);
+  assert.doesNotMatch(html, /class="score-grid"/, 'Daily goal tiles should not be duplicated lower on the page');
 }
 
 function verifyNavigation() {
