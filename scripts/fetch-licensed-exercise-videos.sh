@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/assets/exercises/real"
+ONLY="${1:-}"
 mkdir -p "$OUT"
 
 # Exercise id | YMove free-library asset id | source exercise title
@@ -27,6 +28,7 @@ EOF
 )
 
 while IFS='|' read -r exercise asset title; do
+  if [[ -n "$ONLY" && "$exercise" != "$ONLY" ]]; then continue; fi
   source_file="$OUT/$exercise.source.mp4"
   target_file="$OUT/$exercise.mp4"
   poster_file="$OUT/$exercise.webp"
@@ -40,4 +42,4 @@ while IFS='|' read -r exercise asset title; do
   rm -f "$source_file"
 done <<< "$VIDEOS"
 
-printf 'Prepared %s licensed real-human clips in %s\n' "$(printf '%s\n' "$VIDEOS" | wc -l)" "$OUT"
+printf 'Prepared licensed real-human clip%s in %s\n' "${ONLY:+ for $ONLY}" "$OUT"
