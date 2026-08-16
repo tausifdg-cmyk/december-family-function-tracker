@@ -19,6 +19,7 @@
   let chartFrame;
   let modalReturnFocus;
   let exerciseCategory = 'All';
+  let selectedExerciseIndex = 0;
 
   function muscleGroup(name) {
     const value = String(name || '').toLowerCase();
@@ -231,6 +232,72 @@
     return state.workoutLog[today()]?.[selectedDay] || {};
   }
 
+  function ensureWorkoutLog() {
+    const date = today();
+    state.workoutLog[date] = state.workoutLog[date] || {};
+    state.workoutLog[date][selectedDay] = state.workoutLog[date][selectedDay] || { minutes: 0, met: 5.5, exercises: [] };
+    const log = state.workoutLog[date][selectedDay];
+    log.exercises = Array.isArray(log.exercises) ? log.exercises : [];
+    return log;
+  }
+
+  function previousExerciseResult(index) {
+    const dates = Object.keys(state.workoutLog).filter((date) => date < today()).sort().reverse();
+    for (const date of dates) {
+      const result = state.workoutLog[date]?.[selectedDay]?.exercises?.[index];
+      if (result) return result;
+    }
+    return null;
+  }
+
+  function nextTargetWeight(previous, plannedReps) {
+    const weight = num(previous?.weight, 0, 0, 1000);
+    if (!weight) return 0;
+    const completed = Array.isArray(previous?.setsDetail)
+      ? previous.setsDetail.every((set) => set.done && num(set.actualReps) >= num(set.targetReps, plannedReps))
+      : num(previous?.reps) >= plannedReps;
+    if (!completed) return weight;
+    const increase = weight < 10 ? 0.5 : weight < 20 ? 1 : 2.5;
+    return round(weight + increase, 1);
+  }
+
+  function detailSetsFor(index) {
+    const exercise = state.workouts[selectedDay]?.exercises?.[index];
+    if (!exercise) return [];
+    const result = currentWorkoutLog().exercises?.[index] || {};
+    const previous = previousExerciseResult(index);
+    const previousSets = previous?.setsDetail || previous?.advancedSets || [];
+    const currentSets = result.setsDetail || result.advancedSets || [];
+    const setCount = num(result.sets, exercise[1], 1, 20);
+    const suggestedWeight = nextTargetWeight(previous, exercise[2]);
+    return Array.from({ length: setCount }, (_, setIndex) => {
+      const saved = currentSets[setIndex] || {};
+      const prior = previousSets[setIndex] || {};
+      return {
+        targetWeight: num(saved.targetWeight, num(prior.actualWeight, suggestedWeight, 0, 1000), 0, 1000),
+        targetReps: num(saved.targetReps, num(prior.actualReps, exercise[2], 0, 100), 0, 100),
+        actualWeight: num(saved.actualWeight, num(result.weight, 0, 0, 1000), 0, 1000),
+        actualReps: num(saved.actualReps, num(result.reps, exercise[2], 0, 100), 0, 100),
+        done: Boolean(saved.done)
+      };
+    });
+  }
+
+  function renderExerciseDetail() {
+    const exercise = state.workouts[selectedDay]?.exercises?.[selectedExerciseIndex];
+    if (!exercise) return;
+    text('#exerciseDetailTitle', exercise[0]);
+    text('#exerciseDetailMeta', `${exercise[1]} sets × ${exercise[2]} reps • target from your last workout`);
+    const rows = $('#exerciseSetRows');
+    if (rows) rows.innerHTML = detailSetsFor(selectedExerciseIndex).map((set, index) => `<div class="exercise-set-row" data-set-index="${index}"><b>${index + 1}</b><span>${set.targetWeight || '—'}</span><span>${set.targetReps}</span><input class="detail-actual-kg" type="number" inputmode="decimal" min="0" max="1000" step="0.5" aria-label="Set ${index + 1} actual weight in kilograms" value="${set.actualWeight || ''}"><input class="detail-actual-reps" type="number" inputmode="numeric" min="0" max="100" aria-label="Set ${index + 1} actual reps" value="${set.actualReps || ''}"><button type="button" class="set-done ${set.done ? 'saved' : ''}" data-action="toggle-set-done" aria-pressed="${set.done}" aria-label="Mark set ${index + 1} complete">${set.done ? '✓' : '○'}</button></div>`).join('');
+  }
+
+  function openExerciseDetail(button) {
+    selectedExerciseIndex = num(button.dataset.index, 0, 0, state.workouts[selectedDay].exercises.length - 1);
+    renderExerciseDetail();
+    openSheet('exerciseDetailSheet', button);
+  }
+
   function renderWorkout() {
     selectedDay = Math.min(Math.max(0, selectedDay), state.workouts.length - 1);
     const plan = state.workouts[selectedDay];
@@ -250,7 +317,7 @@
     if (list) list.innerHTML = plan.exercises.map((exercise, index) => {
       const result = log.exercises?.[index] || {};
       const media = exerciseMedia(exercise[0]);
-      return `<article class="card exercise"><button type="button" class="exercise-media" data-action="open-exercise-media" data-name="${escapeHtml(exercise[0])}" data-sets="${exercise[1]} sets × ${exercise[2]} reps" aria-label="Open ${escapeHtml(exercise[0])} demonstration"><span class="exercise-motion-thumb">${ExerciseLibrary.renderMedia(media, { decorative: true })}</span><span class="exercise-muscle">${muscleMapSvg(media.group)}</span><span class="media-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 9 6-9 6Z"/></svg></span></button><div class="exercise-main"><div class="exercise-top"><span class="exercise-num">${index + 1}</span><div><h4>${escapeHtml(exercise[0])}</h4><p>${exercise[1]} sets × ${exercise[2]} reps</p></div><svg class="exercise-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></div><div class="exercise-inputs"><label>Sets<input class="ex-set" data-index="${index}" inputmode="numeric" type="number" min="0" max="20" value="${num(result.sets, exercise[1], 0, 20)}"></label><label>Reps<input class="ex-reps" data-index="${index}" inputmode="numeric" type="number" min="0" max="100" value="${num(result.reps, exercise[2], 0, 100)}"></label><label>Weight kg<input class="ex-weight" data-index="${index}" inputmode="decimal" type="number" min="0" max="1000" step="0.5" value="${result.weight || ''}"></label></div></div></article>`;
+      return `<article class="card exercise ${result.savedAt ? 'is-saved' : ''}" data-exercise-index="${index}"><button type="button" class="exercise-media" data-action="open-exercise-media" data-name="${escapeHtml(exercise[0])}" data-sets="${exercise[1]} sets × ${exercise[2]} reps" aria-label="Open ${escapeHtml(exercise[0])} demonstration"><span class="exercise-motion-thumb">${ExerciseLibrary.renderMedia(media, { decorative: true })}</span><span class="exercise-muscle">${muscleMapSvg(media.group)}</span><span class="media-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 9 6-9 6Z"/></svg></span></button><div class="exercise-main"><button type="button" class="exercise-top" data-action="open-exercise-detail" data-index="${index}" aria-label="Open Target and Actual details for ${escapeHtml(exercise[0])}"><span class="exercise-num">${index + 1}</span><span class="exercise-title"><h4>${escapeHtml(exercise[0])}</h4><p>${exercise[1]} sets × ${exercise[2]} reps • Target & Actual</p></span><svg class="exercise-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><div class="exercise-inputs"><label>Sets<input class="ex-set" data-index="${index}" inputmode="numeric" type="number" min="0" max="20" value="${num(result.sets, exercise[1], 0, 20)}"></label><label>Reps<input class="ex-reps" data-index="${index}" inputmode="numeric" type="number" min="0" max="100" value="${num(result.reps, exercise[2], 0, 100)}"></label><label>Weight kg<input class="ex-weight" data-index="${index}" inputmode="decimal" type="number" min="0" max="1000" step="0.5" value="${result.weight || ''}"></label></div><div class="entry-confirm"><span class="save-status">${result.savedAt ? '✓ Saved' : 'Not saved'}</span><button type="button" class="entry-save ${result.savedAt ? 'saved' : ''}" data-action="save-exercise" data-index="${index}">${result.savedAt ? '✓ Saved' : 'Save exercise'}</button></div></div></article>`;
     }).join('');
     renderWorkoutEditor();
     renderWorkoutHistory();
@@ -304,6 +371,23 @@
     return allFoods().find((food) => String(food.name || '').toLowerCase() === needle || (food.aliases || []).some((alias) => String(alias).toLowerCase() === needle)) || allFoods().find((food) => String(food.name || '').toLowerCase().includes(needle));
   }
 
+  function preferredFoodUnit(food) {
+    const name = String(food?.name || '').toLowerCase();
+    if (/milk|buttermilk|lassi|tea|coffee|water|juice|rasam|soup|shake/.test(name)) return 'ml';
+    if (/egg|banana|apple|orange|mango|guava|chapati|roti|phulka|paratha|puri|naan|idli|dosa|vada|samosa|kachori|pav|laddu|gulab jamun|rasgulla/.test(name)) return 'each';
+    return 'g';
+  }
+
+  function unitGrams(food, unit) {
+    return unit === 'each' ? num(food?.defaultGrams, 100, 1, 10000) : 1;
+  }
+
+  function foodDisplayAmount(entry, food, unit) {
+    if (entry.amount !== undefined && entry.amount !== '') return entry.amount;
+    const grams = num(entry.grams, num(food?.defaultGrams, 100, 0, 10000), 0, 10000);
+    return unit === 'each' ? round(grams / unitGrams(food, unit), 2) : grams;
+  }
+
   function renderFood() {
     const totals = nutritionTotals();
     const config = state.config;
@@ -318,7 +402,7 @@
     const labels = { breakfast: ['Breakfast', 'Morning'], lunch: ['Lunch', 'Midday'], eveningSnacks: ['Evening snacks', 'Snack'], dinner: ['Dinner', 'Evening'] };
     const dayMeals = meals();
     const container = $('#mealSections');
-    if (container) container.innerHTML = Object.entries(labels).map(([key, label]) => `<section class="card meal-card"><div class="meal-head"><div><small>${label[1]}</small><h3>${label[0]}</h3></div><button type="button" class="secondary" data-action="add-food" data-meal="${key}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add food</button></div><div class="meal-items">${dayMeals[key].length ? dayMeals[key].map((food, index) => `<div class="food-row" data-meal="${key}" data-index="${index}"><input class="food-name" list="foodSuggestions" aria-label="Food" value="${escapeHtml(food.name || '')}" placeholder="Search food"><input class="food-grams" type="number" inputmode="decimal" min="0" max="10000" aria-label="Grams" value="${food.grams || ''}" placeholder="g"><span class="food-macro">${Math.round(num(food.calories))} kcal<small>${round(num(food.protein), 1)}g P</small></span><button type="button" class="danger-icon" data-action="remove-food" aria-label="Remove food">${removeIcon}</button></div>`).join('') : '<p class="empty">Nothing logged yet.</p>'}</div></section>`).join('');
+    if (container) container.innerHTML = Object.entries(labels).map(([key, label]) => `<section class="card meal-card"><div class="meal-head"><div><small>${label[1]}</small><h3>${label[0]}</h3></div><button type="button" class="secondary" data-action="add-food" data-meal="${key}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add food</button></div><div class="meal-items">${dayMeals[key].length ? dayMeals[key].map((food, index) => { const selected = findFood(food.name); const unit = ['g', 'ml', 'each'].includes(food.unit) ? food.unit : preferredFoodUnit(selected || food); const amount = foodDisplayAmount(food, selected, unit); return `<div class="food-row ${food.savedAt ? 'is-saved' : ''}" data-meal="${key}" data-index="${index}"><input class="food-name" list="foodSuggestions" aria-label="Food" value="${escapeHtml(food.name || '')}" placeholder="Search food"><div class="food-amount-control"><input class="food-amount" type="number" inputmode="decimal" min="0" max="10000" step="0.1" aria-label="Food amount" value="${amount || ''}" placeholder="Amount"><select class="food-unit" aria-label="Food unit"><option value="g" ${unit === 'g' ? 'selected' : ''}>g</option><option value="each" ${unit === 'each' ? 'selected' : ''}>each</option><option value="ml" ${unit === 'ml' ? 'selected' : ''}>ml</option></select></div><span class="food-macro">${Math.round(num(food.calories))} kcal<small>${round(num(food.protein), 1)}g P</small></span><button type="button" class="entry-save food-save ${food.savedAt ? 'saved' : ''}" data-action="save-food" aria-label="Save ${escapeHtml(food.name || 'food')}">${food.savedAt ? '✓ Saved' : 'Save'}</button><button type="button" class="danger-icon food-cancel" data-action="remove-food" aria-label="Cancel or remove food">${removeIcon}</button></div>`; }).join('') : '<p class="empty">Nothing logged yet.</p>'}</div></section>`).join('');
     renderFoodManager();
     renderFoodHistory();
   }
@@ -344,8 +428,24 @@
     text('#latestWaist', latestWaist ? `${round(num(latestWaist.value, num(latestWaist.inches) * 2.54), 1)} cm` : '—');
     text('#waistChange', latestWaist ? `Recorded ${latestWaist.date}` : 'No waist entry');
     text('#progressPct', `${Math.round(progress)}%`);
+    const cutoffDate = new Date();
+    cutoffDate.setHours(0, 0, 0, 0);
+    cutoffDate.setDate(cutoffDate.getDate() - 6);
+    const cutoff = today(cutoffDate);
+    const recentWeights = state.weights.filter((entry) => entry.date >= cutoff && entry.date <= today());
+    const recentWaist = state.abdomen.filter((entry) => entry.date >= cutoff && entry.date <= today());
+    const average = (entries, key) => entries.length ? round(entries.reduce((sum, entry) => sum + num(entry[key]), 0) / entries.length, 1) : null;
+    const avgWeight = average(recentWeights, 'weight');
+    const avgWaist = recentWaist.length ? round(recentWaist.reduce((sum, entry) => sum + num(entry.value, num(entry.inches) * 2.54), 0) / recentWaist.length, 1) : null;
+    text('#avg7Weight', avgWeight === null ? '—' : `${avgWeight} kg`);
+    text('#avg7WeightCount', `${recentWeights.length} ${recentWeights.length === 1 ? 'entry' : 'entries'}`);
+    text('#avg7Waist', avgWaist === null ? '—' : `${avgWaist} cm`);
+    text('#avg7WaistCount', `${recentWaist.length} ${recentWaist.length === 1 ? 'entry' : 'entries'}`);
     const list = $('#progressList');
-    if (list) list.innerHTML = state.weights.slice(0, 30).map((entry) => `<div class="list-row"><span>${escapeHtml(entry.date)}</span><b>${round(entry.weight, 1)} kg</b></div>`).join('') || '<p class="empty">Save a weight on Today to begin the trend.</p>';
+    if (list) {
+      const dates = [...new Set([...state.weights.map((entry) => entry.date), ...state.abdomen.map((entry) => entry.date)])].sort().reverse().slice(0, 30);
+      list.innerHTML = dates.map((date) => { const weight = state.weights.find((entry) => entry.date === date); const waist = state.abdomen.find((entry) => entry.date === date); return `<div class="list-row"><span>${escapeHtml(date)}</span><b>${weight ? `${round(weight.weight, 1)} kg` : ''}${weight && waist ? ' • ' : ''}${waist ? `${round(num(waist.value, num(waist.inches) * 2.54), 1)} cm waist` : ''}</b></div>`; }).join('') || '<p class="empty">Save a measurement on Today to begin the trend.</p>';
+    }
     scheduleChart();
   }
 
@@ -447,12 +547,57 @@
     const minutes = num($('#workoutMinutes')?.value, 60, 1, 300);
     const met = num($('#workoutIntensity')?.value, 5.5, 1, 20);
     state.workoutLog[date] = state.workoutLog[date] || {};
+    const existing = state.workoutLog[date][selectedDay] || {};
     state.workoutLog[date][selectedDay] = {
+      ...existing,
       minutes, met,
-      exercises: plan.exercises.map((exercise, index) => ({ sets: num($(`.ex-set[data-index="${index}"]`)?.value, exercise[1], 0, 20), reps: num($(`.ex-reps[data-index="${index}"]`)?.value, exercise[2], 0, 100), weight: num($(`.ex-weight[data-index="${index}"]`)?.value, 0, 0, 1000) }))
+      exercises: plan.exercises.map((exercise, index) => ({ ...(existing.exercises?.[index] || {}), sets: num($(`.ex-set[data-index="${index}"]`)?.value, exercise[1], 0, 20), reps: num($(`.ex-reps[data-index="${index}"]`)?.value, exercise[2], 0, 100), weight: num($(`.ex-weight[data-index="${index}"]`)?.value, 0, 0, 1000) }))
     };
     state.activity[date] = { ...activity(date), minutes, met, workoutDay: selectedDay };
     persist('Workout saved');
+  }
+
+  function saveExerciseCard(index) {
+    const exercise = state.workouts[selectedDay]?.exercises?.[index];
+    if (!exercise) return;
+    const log = ensureWorkoutLog();
+    const previous = log.exercises[index] || {};
+    log.exercises[index] = {
+      ...previous,
+      sets: num($(`.ex-set[data-index="${index}"]`)?.value, exercise[1], 0, 20),
+      reps: num($(`.ex-reps[data-index="${index}"]`)?.value, exercise[2], 0, 100),
+      weight: num($(`.ex-weight[data-index="${index}"]`)?.value, 0, 0, 1000),
+      savedAt: new Date().toISOString()
+    };
+    persist(`${exercise[0]} saved`);
+  }
+
+  function saveExerciseDetail() {
+    const exercise = state.workouts[selectedDay]?.exercises?.[selectedExerciseIndex];
+    if (!exercise) return;
+    const baseline = detailSetsFor(selectedExerciseIndex);
+    const setsDetail = $$('.exercise-set-row', $('#exerciseSetRows')).map((row, index) => ({
+      targetWeight: baseline[index]?.targetWeight || 0,
+      targetReps: baseline[index]?.targetReps || exercise[2],
+      actualWeight: num($('.detail-actual-kg', row)?.value, 0, 0, 1000),
+      actualReps: num($('.detail-actual-reps', row)?.value, 0, 0, 100),
+      done: $('.set-done', row)?.getAttribute('aria-pressed') === 'true'
+    }));
+    const log = ensureWorkoutLog();
+    const previous = log.exercises[selectedExerciseIndex] || {};
+    const completed = setsDetail.filter((set) => set.done);
+    const summary = completed.length ? completed[completed.length - 1] : setsDetail[setsDetail.length - 1];
+    log.exercises[selectedExerciseIndex] = {
+      ...previous,
+      sets: setsDetail.length,
+      reps: summary?.actualReps || exercise[2],
+      weight: summary?.actualWeight || 0,
+      setsDetail,
+      advancedSets: setsDetail,
+      savedAt: new Date().toISOString()
+    };
+    closeSheet('exerciseDetailSheet');
+    persist(`${exercise[0]} details saved`);
   }
 
   function saveWorkoutPlan() {
@@ -476,10 +621,12 @@
     const index = num(row.dataset.index);
     const selected = findFood($('.food-name', row)?.value);
     if (!selected) return toast('Choose a food from the database or add it as a custom food.', 'error');
-    const grams = num($('.food-grams', row)?.value, num(selected.defaultGrams, 100), 0, 10000);
+    const unit = $('.food-unit', row)?.value || preferredFoodUnit(selected);
+    const amount = num($('.food-amount', row)?.value, unit === 'each' ? 1 : num(selected.defaultGrams, 100), 0, 10000);
+    const grams = round(amount * unitGrams(selected, unit), 1);
     const calculate = (key) => round(num(selected[key]) * grams / 100, 1);
-    ensureMeals()[mealKey][index] = { name: selected.name, grams, calories: calculate('calories'), protein: calculate('protein'), carbs: calculate('carbs'), fat: calculate('fat') };
-    persist('Food updated');
+    ensureMeals()[mealKey][index] = { name: selected.name, amount, unit, grams, calories: calculate('calories'), protein: calculate('protein'), carbs: calculate('carbs'), fat: calculate('fat'), savedAt: new Date().toISOString() };
+    persist(`${selected.name} saved`);
   }
 
   function saveCustomFood() {
@@ -538,6 +685,17 @@
       closeExerciseMedia();
       return;
     }
+    if (action === 'close-exercise-detail') { closeSheet('exerciseDetailSheet'); return; }
+    if (action === 'open-exercise-detail') { openExerciseDetail(button); return; }
+    if (action === 'toggle-set-done') {
+      const done = button.getAttribute('aria-pressed') !== 'true';
+      button.setAttribute('aria-pressed', String(done));
+      button.classList.toggle('saved', done);
+      button.textContent = done ? '✓' : '○';
+      return;
+    }
+    if (action === 'save-exercise-detail') { saveExerciseDetail(); return; }
+    if (action === 'save-exercise') { saveExerciseCard(num(button.dataset.index)); return; }
     if (button.dataset.nav) {
       window.dispatchEvent(new CustomEvent('mybody:navigate', { detail: { id: button.dataset.nav } }));
       return;
@@ -568,7 +726,8 @@
     if (action === 'saveWorkoutPlan') saveWorkoutPlan();
     if (action === 'manageFoodsBtn') openSheet('foodManager', button);
     if (action === 'closeFoodManager') closeSheet('foodManager');
-    if (action === 'add-food') { ensureMeals()[button.dataset.meal].push({ name: '', grams: '', calories: 0, protein: 0, carbs: 0, fat: 0 }); persist('Food row added'); }
+    if (action === 'add-food') { ensureMeals()[button.dataset.meal].push({ name: '', amount: '', unit: 'g', grams: '', calories: 0, protein: 0, carbs: 0, fat: 0, savedAt: '' }); persist('Food row added'); }
+    if (action === 'save-food') syncFoodRow(button.closest('.food-row'));
     if (action === 'remove-food') { const row = button.closest('.food-row'); ensureMeals()[row.dataset.meal].splice(num(row.dataset.index), 1); persist('Food removed'); }
     if (action === 'saveCustomFood') saveCustomFood();
     if (action === 'delete-custom-food') { state.customFoods.splice(num(button.dataset.index), 1); persist('Custom food deleted'); }
@@ -577,7 +736,23 @@
 
   function handleChange(event) {
     const row = event.target.closest('.food-row');
-    if (row && (event.target.matches('.food-name') || event.target.matches('.food-grams'))) syncFoodRow(row);
+    if (row && event.target.matches('.food-name')) {
+      const selected = findFood(event.target.value);
+      if (selected) {
+        const unit = preferredFoodUnit(selected);
+        $('.food-unit', row).value = unit;
+        $('.food-amount', row).value = unit === 'each' ? 1 : num(selected.defaultGrams, 100);
+      }
+      row.classList.add('is-dirty');
+      $('.food-save', row)?.classList.remove('saved');
+      if ($('.food-save', row)) $('.food-save', row).textContent = 'Save';
+    }
+    if (row && event.target.matches('.food-unit')) {
+      row.classList.add('is-dirty');
+      const save = $('.food-save', row);
+      save?.classList.remove('saved');
+      if (save) save.textContent = 'Save';
+    }
     if (event.target.matches('#workoutMinutes,#workoutIntensity')) {
       const minutes = num($('#workoutMinutes')?.value, 60, 1, 300);
       const met = num($('#workoutIntensity')?.value, 5.5, 1, 20);
@@ -588,6 +763,22 @@
 
   function handleInput(event) {
     if (event.target.matches('#exerciseLibrarySearch')) renderExerciseLibrary();
+    const exercise = event.target.closest('.exercise');
+    if (exercise && event.target.matches('.ex-set,.ex-reps,.ex-weight')) {
+      exercise.classList.add('is-dirty');
+      const save = $('.entry-save', exercise);
+      const status = $('.save-status', exercise);
+      save?.classList.remove('saved');
+      if (save) save.textContent = 'Save exercise';
+      if (status) status.textContent = 'Unsaved changes';
+    }
+    const food = event.target.closest('.food-row');
+    if (food && event.target.matches('.food-name,.food-amount,.food-unit')) {
+      food.classList.add('is-dirty');
+      const save = $('.food-save', food);
+      save?.classList.remove('saved');
+      if (save) save.textContent = 'Save';
+    }
   }
 
   async function registerServiceWorker() {

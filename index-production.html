@@ -44,6 +44,11 @@
     </div>
   </header>
 
+  <section id="webInstallPrompt" class="web-install-prompt hidden" aria-label="Install MYBODY 2.0">
+    <div><b>Get the MYBODY app</b><span>Android app or iPhone Home Screen app</span></div>
+    <button id="openAppInstallBtn" class="secondary" type="button">Install app</button>
+  </section>
+
   <main class="app-shell">
     <section id="today" class="panel active" aria-labelledby="today-tab">
       <div class="section-head"><div><p class="eyebrow">TODAY</p><h3 id="todayLabel">Daily dashboard</h3></div><span class="pill" id="todayStatus">Start logging</span></div>
@@ -51,7 +56,7 @@
         <div class="summary-metrics">
           <article class="summary-goal summary-calories"><div><span>Calories</span><strong id="scoreCalories">0 / 0</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreCaloriesBar"></span></div></article>
           <article class="summary-goal summary-protein"><div><span>Protein</span><strong id="scoreProtein">0 / 0g</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreProteinBar"></span></div></article>
-          <article class="summary-goal summary-steps"><div class="summary-goal-head"><div><span>Steps</span><strong id="scoreSteps">0 / 0</strong></div><button id="quickStepSyncBtn" class="summary-sync-btn" type="button" aria-label="Sync phone steps now" title="Sync steps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 8m16 8-2.2 1.8A7 7 0 0 1 5.5 15"/></svg></button></div><div class="mini-progress" aria-hidden="true"><span id="scoreStepsBar"></span></div><small id="quickStepSyncStatus" class="summary-sync-status">Manual</small></article>
+          <article class="summary-goal summary-steps"><div><span>Steps</span><strong id="scoreSteps">0 / 0</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreStepsBar"></span></div></article>
           <article class="summary-goal summary-water"><div><span>Water</span><strong id="scoreWater">0 / 0L</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreWaterBar"></span></div></article>
         </div>
       </section>
@@ -147,7 +152,7 @@
         <article class="metric-card"><span>Progress</span><strong id="progressPct">0%</strong></article>
       </section>
       <section class="card chart-card"><canvas id="weightChart" height="220" aria-label="Weight trend chart"></canvas></section>
-      <section class="inline-details history-block" aria-labelledby="progressHistoryTitle"><div class="section-head compact"><div><p class="eyebrow">HISTORY</p><h3 id="progressHistoryTitle">Measurement history</h3></div></div><div id="progressList" class="card list"></div></section>
+      <section class="inline-details history-block" aria-labelledby="progressHistoryTitle"><div class="section-head compact"><div><p class="eyebrow">HISTORY</p><h3 id="progressHistoryTitle">Measurement history</h3></div></div><div id="measurementAverages" class="measurement-averages" aria-label="Last seven days measurement averages"><article class="metric-card"><span>7-day average weight</span><strong id="avg7Weight">—</strong><small id="avg7WeightCount">No entries</small></article><article class="metric-card"><span>7-day average waist</span><strong id="avg7Waist">—</strong><small id="avg7WaistCount">No entries</small></article></div><div id="progressList" class="card list"></div></section>
     </section>
 
     <section id="settings" class="panel" hidden aria-labelledby="settings-tab">
@@ -169,7 +174,7 @@
         <div class="sync-actions"><button id="manualStepSyncBtn" class="secondary" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 8m16 8-2.2 1.8A7 7 0 0 1 5.5 15"/></svg>Sync now</button><button id="setupIosShortcutBtn" class="primary" type="button">Set up phone sync</button></div>
         <p id="stepSyncPrivacy" class="sync-privacy">Only today’s date and step total are synced. Health permissions stay under your control on the phone.</p>
       </section>
-      <section class="card app-share-card" aria-labelledby="shareAppTitle"><div><span class="eyebrow">APP ACCESS</span><h3 id="shareAppTitle">Share MYBODY 2.0</h3><p class="muted-copy">Send the app link using the phone’s share sheet, or copy it on desktop.</p></div><button id="shareAppSettingsBtn" class="secondary" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.1m-6.6 6.7 6.6 4.1"/></svg>Share app</button></section>
+      <section class="card app-share-card" aria-labelledby="shareAppTitle"><div><span class="eyebrow">APP ACCESS</span><h3 id="shareAppTitle">Share or install MYBODY 2.0</h3><p class="muted-copy">Share the iPhone/PWA link and Android APK together, or open the install choices directly.</p></div><div class="app-share-actions"><button id="shareAppSettingsBtn" class="secondary" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.1m-6.6 6.7 6.6 4.1"/></svg>Share both</button><button id="appInstallOptionsBtn" class="primary" type="button">Get the app</button></div></section>
     </section>
   </main>
 
@@ -179,7 +184,8 @@
     <ol class="shortcut-steps">
       <li><b>Install the Shortcut</b><span>Tap the install button below, then choose <strong>Get Shortcut</strong>.</span></li>
       <li><b>Complete setup</b><span>When asked, confirm the endpoint and paste the private token MYBODY copied.</span></li>
-      <li><b>Allow Apple Health</b><span>Run <strong>Sync Tausif Steps</strong> once and approve access to Steps.</span></li>
+      <li><b>Confirm the name</b><span>Keep the Shortcut name exactly as <strong>MYBODY step Sync</strong>.</span></li>
+      <li><b>Allow Apple Health</b><span>Run <strong>MYBODY step Sync</strong> once and approve access to Steps.</span></li>
       <li><b>Test Sync now</b><span>Return to MYBODY and tap <strong>Sync now</strong>. It opens the Shortcut, uploads fresh steps with <strong>Get Contents of URL</strong>, and reads the new value when you return. Do not add Open URLs.</span></li>
       <li><b>Add hourly automations</b><span>In Shortcuts → Automation, add a Time of Day trigger for each hour you want, select this Shortcut, and choose Run Immediately.</span></li>
     </ol>
@@ -201,6 +207,22 @@
     <div class="shortcut-sheet-actions"><a id="downloadAndroidAppBtn" class="primary full button-link" href="https://github.com/tausifdg-cmyk/december-family-function-tracker/releases/download/android-latest/mybody-android.apk">Download Android app</a><button id="androidSetupDoneBtn" type="button" class="secondary full">I’ll install it later</button></div>
     <p class="shortcut-limit">Health Connect is built into Android 14 and later. Android 9–13 may require the Health Connect app, and background reads depend on device support and permission.</p>
   </section></div>
+
+  <section id="exerciseDetailSheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="exerciseDetailTitle"><div class="sheet-panel exercise-detail-panel" tabindex="-1">
+    <header class="sheet-head"><div><h2 id="exerciseDetailTitle">Exercise details</h2><p id="exerciseDetailMeta">Target and actual sets</p></div><button type="button" class="sheet-close" data-action="close-exercise-detail" aria-label="Close exercise details"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+    <div class="target-actual-note"><b>Target vs actual</b><p>MYBODY fills the target from your plan and previous performance. Enter what you completed, then check each set.</p></div>
+    <div class="exercise-set-table"><div class="set-detail-head" aria-hidden="true"><span>Set</span><span>Target<br>kg</span><span>Target<br>reps</span><span>Actual<br>kg</span><span>Actual<br>reps</span><span>Done</span></div><div id="exerciseSetRows" class="set-detail-list"></div></div>
+    <button id="saveExerciseDetailBtn" class="primary full" type="button" data-action="save-exercise-detail">Save exercise</button>
+  </div></section>
+
+  <section id="appInstallSheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="appInstallTitle"><div class="sheet-panel install-panel" tabindex="-1">
+    <header class="sheet-head"><div><h2 id="appInstallTitle">Get MYBODY 2.0</h2><p>Choose the version for this phone</p></div><button type="button" class="sheet-close" data-action="close-app-install" aria-label="Close app install options"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+    <div class="install-choice-grid">
+      <article class="install-choice"><span class="install-platform">ANDROID</span><h3>Android app</h3><p>Install the APK for native Health Connect step access and background sync.</p><a id="installAndroidApkLink" class="primary button-link" href="https://github.com/tausifdg-cmyk/december-family-function-tracker/releases/download/android-latest/mybody-android.apk">Download Android APK</a></article>
+      <article class="install-choice"><span class="install-platform">IPHONE / IPAD</span><h3>Home Screen app</h3><p>Open this page in Safari, tap Share, then choose <strong>Add to Home Screen</strong>.</p><button id="copyIosAppLinkBtn" class="primary" type="button">Copy iPhone app link</button></article>
+    </div>
+    <button id="shareInstallLinksBtn" class="secondary full" type="button">Share Android + iPhone links</button>
+  </div></section>
 
   <div id="exerciseLibrarySheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="exerciseLibraryTitle"><section class="sheet-panel exercise-library-panel" tabindex="-1">
     <header class="sheet-head"><div><h2 id="exerciseLibraryTitle">Exercise library</h2><p>42 real-human and 3D-avatar video demonstrations that work offline</p></div><button type="button" class="sheet-close" data-sheet-close aria-label="Close exercise library"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>

@@ -23,7 +23,7 @@ function verifyMarkup() {
   const html = read('index-production.html');
   const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, 'HTML must not contain duplicate IDs');
-  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'quickStepSyncBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'detectedDeviceLabel', 'iosShortcutSheet', 'androidHealthSheet', 'downloadAndroidAppBtn', 'shortcutSyncEndpoint', 'shortcutSyncToken', 'copyShortcutEndpointBtn', 'copyShortcutTokenBtn', 'createIosShortcutBtn']) {
+  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'detectedDeviceLabel', 'iosShortcutSheet', 'androidHealthSheet', 'downloadAndroidAppBtn', 'shortcutSyncEndpoint', 'shortcutSyncToken', 'copyShortcutEndpointBtn', 'copyShortcutTokenBtn', 'createIosShortcutBtn', 'webInstallPrompt', 'openAppInstallBtn', 'appInstallSheet', 'installAndroidApkLink', 'copyIosAppLinkBtn', 'exerciseDetailSheet', 'exerciseSetRows', 'avg7Weight', 'avg7Waist']) {
     assert.ok(ids.includes(id), `Missing required element #${id}`);
   }
   assert.doesNotMatch(html, /(?:todayDetails|workoutHistorySheet|foodHistorySheet|progressHistorySheet)" class="sheet-backdrop/);
@@ -31,6 +31,11 @@ function verifyMarkup() {
   const summary = html.match(/<section class="card daily-summary"[\s\S]*?<\/section>/)?.[0] || '';
   for (const id of ['scoreCalories', 'scoreProtein', 'scoreSteps', 'scoreWater']) assert.match(summary, new RegExp(`id="${id}"`), `Top summary must include #${id}`);
   assert.doesNotMatch(html, /class="score-grid"/, 'Daily goal tiles should not be duplicated lower on the page');
+  assert.doesNotMatch(summary, /quickStepSyncBtn/, 'Today summary must not contain a manual step sync button');
+  assert.match(html, /MYBODY step Sync/, 'Shortcut instructions must use the new shortcut name');
+  assert.match(html, /Download Android APK/, 'Web install options must expose the Android APK');
+  assert.match(html, /Add to Home Screen/, 'Web install options must explain iPhone PWA installation');
+  assert.match(html, /Target<br>kg.*Actual<br>kg/s, 'Exercise detail must restore Target and Actual columns');
   const energy = html.match(/<section class="card energy-overview"[\s\S]*?<\/section>/)?.[0] || '';
   assert.ok(energy, 'Detailed energy values must be combined into one energy overview card');
   for (const id of ['budgetHeadline', 'dashBalance', 'dashBalanceLabel', 'baseBurn', 'stepBurn', 'exerciseBurn', 'dashBurn']) assert.match(energy, new RegExp(`id="${id}"`), `Energy overview must include #${id}`);
@@ -46,6 +51,8 @@ function verifyMarkup() {
   const auth = read('auth-onboarding.js');
   assert.doesNotMatch(auth, /id="profileBtn"/, 'Header profile button must be removed');
   assert.match(auth, /id="logoutBtn"/, 'Header logout button must remain available');
+  assert.match(auth, /id="authIosInstall"/, 'Web login must expose iPhone installation help');
+  assert.match(auth, /Download Android APK/, 'Web login must expose the Android APK');
 }
 
 function verifyHealthSync() {
@@ -93,7 +100,7 @@ function verifyHealthSync() {
   assert.equal(background.endpoint, 'https://vucmcxkgpghnahnocirk.supabase.co/functions/v1/ios-step-sync');
   assert.match(background.token, /^[a-f0-9]{64}$/, 'Background sync token must be a 256-bit hex capability');
   assert.equal(sync.shortcutInstallUrl(), 'https://www.icloud.com/shortcuts/597e590247364aacb1540443b3489b0a');
-  assert.equal(sync.shortcutRunUrl(), 'shortcuts://run-shortcut?name=Sync%20Tausif%20Steps');
+  assert.equal(sync.shortcutRunUrl(), 'shortcuts://run-shortcut?name=MYBODY%20step%20Sync');
   sync.manualSync();
   assert.equal(context.location.href, sync.shortcutRunUrl(), 'iPhone Sync now must launch the installed Shortcut');
   assert.ok(storage.get('mybody.ios-sync.pending.v1.test-user'), 'Shortcut launch must queue a forced refresh for app return');

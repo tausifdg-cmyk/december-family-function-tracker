@@ -15,8 +15,9 @@
   const PENDING_SHORTCUT_SYNC_PREFIX = 'mybody.ios-sync.pending.v1.';
   const BACKGROUND_SYNC_ENDPOINT = 'https://vucmcxkgpghnahnocirk.supabase.co/functions/v1/ios-step-sync';
   const SHORTCUT_INSTALL_URL = 'https://www.icloud.com/shortcuts/597e590247364aacb1540443b3489b0a';
-  const SHORTCUT_NAME = 'Sync Tausif Steps';
+  const SHORTCUT_NAME = 'MYBODY step Sync';
   const SHORTCUT_RUN_URL = `shortcuts://run-shortcut?name=${encodeURIComponent(SHORTCUT_NAME)}`;
+  const ANDROID_APK_URL = 'https://github.com/tausifdg-cmyk/december-family-function-tracker/releases/download/android-latest/mybody-android.apk';
   const HOUR = 60 * 60 * 1000;
   const MIN_CLOUD_CHECK_AGE = 5 * 60 * 1000;
   const SHORTCUT_RETURN_DELAY = 700;
@@ -240,6 +241,19 @@
     if (!document.querySelector('.sheet-backdrop:not(.hidden),.media-lightbox:not(.hidden)')) document.body.classList.remove('modal-open');
   }
 
+  function openAppInstall() {
+    const sheet = $('#appInstallSheet');
+    if (!sheet) return;
+    sheet.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    sheet.querySelector('.sheet-panel')?.focus({ preventScroll: true });
+  }
+
+  function closeAppInstall() {
+    $('#appInstallSheet')?.classList.add('hidden');
+    if (!document.querySelector('.sheet-backdrop:not(.hidden),.media-lightbox:not(.hidden)')) document.body.classList.remove('modal-open');
+  }
+
   async function copyText(value) {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(value);
@@ -265,6 +279,11 @@
   async function copyToken() {
     await copyText(syncToken());
     toast('Private sync token copied');
+  }
+
+  async function copyIosAppLink() {
+    await copyText(cleanAppUrl());
+    toast('iPhone app link copied');
   }
 
   async function installShortcut() {
@@ -426,7 +445,12 @@
   }
 
   async function shareApp() {
-    const data = { title: 'MYBODY 2.0', text: 'Track workouts, food, steps and progress with MYBODY 2.0.', url: cleanAppUrl() };
+    const iosUrl = cleanAppUrl();
+    const data = {
+      title: 'MYBODY 2.0',
+      text: `MYBODY 2.0\niPhone / iPad app: ${iosUrl}\nAndroid APK: ${ANDROID_APK_URL}`,
+      url: iosUrl
+    };
     try {
       if (navigator.share) {
         await navigator.share(data);
@@ -452,6 +476,14 @@
     $('#markShortcutReadyBtn')?.addEventListener('click', markShortcutReady);
     $('#shareAppBtn')?.addEventListener('click', shareApp);
     $('#shareAppSettingsBtn')?.addEventListener('click', shareApp);
+    $('#shareInstallLinksBtn')?.addEventListener('click', shareApp);
+    $('#appInstallOptionsBtn')?.addEventListener('click', openAppInstall);
+    $('#openAppInstallBtn')?.addEventListener('click', openAppInstall);
+    $('#copyIosAppLinkBtn')?.addEventListener('click', copyIosAppLink);
+    $('#appInstallSheet [data-action="close-app-install"]')?.addEventListener('click', closeAppInstall);
+    $('#appInstallSheet')?.addEventListener('click', (event) => {
+      if (event.target.id === 'appInstallSheet') closeAppInstall();
+    });
     window.addEventListener('hashchange', consumeShortcutHash);
     window.addEventListener('focus', () => {
       if (!resumeShortcutSync()) pullCloudSteps();
@@ -464,6 +496,8 @@
     });
     consumeShortcutHash();
     updateStatus();
+    const standalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true || isNative();
+    $('#webInstallPrompt')?.classList.toggle('hidden', standalone);
     window.setInterval(updateStatus, 60 * 1000);
     if (isAndroidNative()) {
       configureAndroidBridge();
@@ -484,6 +518,7 @@
     receiveNativeSteps,
     receiveAndroidSteps,
     shareApp,
+    openAppInstall,
     shortcutTemplate,
     backgroundSyncConfig,
     shortcutInstallUrl: () => SHORTCUT_INSTALL_URL,
