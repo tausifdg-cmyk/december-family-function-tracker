@@ -43,10 +43,8 @@ jobs:
           test -s exercise-library.js
           test -s core-storage.js
           test -s assets/workout-hero.webp
-          test -s assets/exercises/dumbbell-bench-press.gif
-          test -s assets/exercises/lat-pulldown.gif
-          test -s assets/exercises/barbell-squat.gif
-          test -s assets/exercises/dumbbell-curl.gif
+          test "$(find assets/exercises/guides -type f -name '*.gif' | wc -l)" -eq 42
+          find assets/exercises/guides -type f -name '*.gif' -exec test -s {} \;
           ! grep -R "__BUILD__" index.html service-worker.js manifest.json
           grep -q 'id="pullRefresh"' index.html
           grep -q 'id="workoutHistory"' index.html

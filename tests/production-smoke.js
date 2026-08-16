@@ -27,7 +27,7 @@ function verifyMarkup() {
     assert.ok(ids.includes(id), `Missing required element #${id}`);
   }
   assert.doesNotMatch(html, /(?:todayDetails|workoutHistorySheet|foodHistorySheet|progressHistorySheet)" class="sheet-backdrop/);
-  assert.match(html, /42 original demonstrations that work offline/);
+  assert.match(html, /42 animated GIF demonstrations that work offline/);
 }
 
 function verifyNavigation() {
@@ -84,6 +84,48 @@ function verifyExerciseAliases() {
   const library = context.window.MyBodyExerciseLibrary;
   assert.equal(library.exercises.length, 42, 'Offline catalog size should remain stable');
   assert.equal(library.find('Lever Pec Deck Fly').id, 'dumbbell-chest-fly', 'ExerciseDB sample name should resolve offline');
+  assert.equal(new Set(library.exercises.map((exercise) => exercise.gif)).size, 42, 'Every exercise needs a unique GIF');
+  library.exercises.forEach((exercise) => {
+    assert.match(exercise.gif, /^assets\/exercises\/guides\/[a-z0-9-]+\.gif$/, `${exercise.name} needs a local GIF path`);
+    assert.match(library.renderMedia(exercise), /<img[^>]+\.gif/, `${exercise.name} should render as GIF media`);
+  });
+}
+
+async function verifyServiceWorkerMediaCache() {
+  const listeners = new Map();
+  let installedAssets = [];
+  let installPromise;
+  const context = {
+    console,
+    URL,
+    Response,
+    fetch: async () => ({ ok: true, clone() { return this; } }),
+    caches: {
+      async open() {
+        return {
+          async addAll(assets) { installedAssets = assets; },
+          async add() {},
+          async match() { return null; },
+          async put() {}
+        };
+      },
+      async keys() { return []; },
+      async match() { return null; },
+      async delete() { return true; }
+    }
+  };
+  context.self = context;
+  context.self.location = { origin: 'https://example.test' };
+  context.self.clients = { async claim() {} };
+  context.self.skipWaiting = async () => {};
+  context.self.addEventListener = (type, handler) => listeners.set(type, handler);
+  context.importScripts = (file) => vm.runInNewContext(read(file.replace(/^\.\//, '')), context, { filename: file });
+  vm.runInNewContext(read('service-worker.js').replaceAll('__BUILD__', 'test'), context, { filename: 'service-worker.js' });
+  listeners.get('install')({ waitUntil(promise) { installPromise = promise; } });
+  await installPromise;
+  const gifs = installedAssets.filter((asset) => /assets\/exercises\/guides\/.+\.gif$/.test(asset));
+  assert.equal(gifs.length, 42, 'Service worker must pre-cache every exercise GIF');
+  assert.equal(new Set(gifs).size, 42, 'Service worker GIF cache entries must be unique');
 }
 
 async function runBuildHarness(remoteBuild) {
@@ -134,6 +176,7 @@ async function main() {
   verifyMarkup();
   verifyNavigation();
   verifyExerciseAliases();
+  await verifyServiceWorkerMediaCache();
   const current = await runBuildHarness(172);
   assert.match(current.label, /Up to date/);
   assert.equal(current.replacedWith, '');

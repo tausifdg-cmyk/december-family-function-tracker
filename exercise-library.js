@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const root = typeof window !== 'undefined' ? window : self;
 
   const exercises = [
     ['dumbbell-bench-press', 'Dumbbell Bench Press', ['bench press', 'machine chest press', 'barbell bench press', 'chest press'], 'Chest', 'Dumbbells • bench', 'chest', 'press', ['Keep shoulder blades set', 'Lower with control', 'Press without bouncing']],
@@ -44,7 +45,7 @@
     ['reverse-lunge', 'Reverse Lunge', ['lunge', 'lower body workout'], 'Full Body', 'Bodyweight or dumbbells', 'legs', 'lunge', ['Step back softly', 'Keep front foot planted', 'Push through the front leg']],
     ['bird-dog', 'Bird Dog', ['lower back mobility', 'mobility'], 'Mobility', 'Bodyweight', 'core', 'birddog', ['Keep hips square', 'Reach long, not high', 'Move slowly']],
     ['lower-back-rotation', 'Lower-back Rotation', ['lower back rotation'], 'Mobility', 'Bodyweight', 'core', 'rotation', ['Keep shoulders relaxed', 'Use a gentle range', 'Breathe into the stretch']]
-  ].map(([id, name, aliases, category, equipment, muscle, pattern, cues]) => Object.freeze({ id, name, aliases, category, equipment, muscle, pattern, cues }));
+  ].map(([id, name, aliases, category, equipment, muscle, pattern, cues]) => Object.freeze({ id, name, aliases, category, equipment, muscle, pattern, cues, gif: `assets/exercises/guides/${id}.gif` }));
 
   const normalise = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const exact = new Map();
@@ -71,6 +72,16 @@
     return `<svg class="exercise-motion motion-${exercise.pattern}${motion}" viewBox="0 0 320 190" role="img" aria-label="${label} movement diagram"><defs><linearGradient id="motionAccent-${exercise.id}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8ff54"/><stop offset="1" stop-color="#79c900"/></linearGradient></defs><rect width="320" height="190" rx="22" class="motion-bg"/><path class="motion-floor" d="M38 157h244"/><g class="motion-person"><g class="motion-body"><circle class="motion-head" cx="160" cy="43" r="14"/><path class="motion-torso" d="M160 60v55"/><g class="motion-arms"><path class="motion-arm motion-arm-left" d="M160 70 126 94 104 76"/><path class="motion-arm motion-arm-right" d="M160 70 194 94 216 76"/><circle class="motion-weight" cx="101" cy="74" r="7"/><circle class="motion-weight" cx="219" cy="74" r="7"/></g><g class="motion-legs"><path class="motion-leg motion-leg-left" d="M160 114 137 151"/><path class="motion-leg motion-leg-right" d="M160 114 183 151"/></g></g></g><path class="motion-arrow" d="M254 122c17-22 17-48 0-69"/><path class="motion-arrow-head" d="m247 59 7-9 8 9"/><text x="18" y="28" class="motion-label">${label}</text><text x="18" y="177" class="motion-caption">Original offline movement guide</text></svg>`;
   }
 
+  function renderMedia(name, options = {}) {
+    const exercise = typeof name === 'object' ? name : find(name);
+    if (!exercise.gif || exercise.id.startsWith('custom-')) return renderSvg(exercise, Boolean(options.animated));
+    const label = String(exercise.name).replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+    const alt = options.decorative ? '' : `${label} animated exercise demonstration`;
+    const loading = options.priority ? 'eager' : 'lazy';
+    const priority = options.priority ? ' fetchpriority="high"' : '';
+    return `<img class="exercise-gif${options.full ? ' is-full' : ''}" src="${exercise.gif}" width="320" height="190" loading="${loading}" decoding="async"${priority} alt="${alt}">`;
+  }
+
   const categories = Object.freeze(['All', ...new Set(exercises.map((exercise) => exercise.category))]);
-  window.MyBodyExerciseLibrary = Object.freeze({ exercises, categories, find, renderSvg, normalise });
+  root.MyBodyExerciseLibrary = Object.freeze({ exercises, categories, find, renderSvg, renderMedia, normalise });
 }());

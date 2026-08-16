@@ -67,7 +67,7 @@
     const media = exerciseMedia(name);
     text('#exerciseLightboxTitle', media.name);
     text('#exerciseLightboxMeta', [button.dataset.sets, media.category, media.equipment].filter(Boolean).join(' • '));
-    stage.innerHTML = ExerciseLibrary.renderSvg(media, true);
+    stage.innerHTML = ExerciseLibrary.renderMedia(media, { animated: true, full: true, priority: true });
     const cues = $('#exerciseCues');
     if (cues) cues.innerHTML = media.cues.map((cue) => `<span>${escapeHtml(cue)}</span>`).join('');
     const map = $('#lightboxMuscleMap');
@@ -259,7 +259,7 @@
     if (list) list.innerHTML = plan.exercises.map((exercise, index) => {
       const result = log.exercises?.[index] || {};
       const media = exerciseMedia(exercise[0]);
-      return `<article class="card exercise"><button type="button" class="exercise-media" data-action="open-exercise-media" data-name="${escapeHtml(exercise[0])}" data-sets="${exercise[1]} sets × ${exercise[2]} reps" aria-label="Open ${escapeHtml(exercise[0])} demonstration"><span class="exercise-motion-thumb">${ExerciseLibrary.renderSvg(media)}</span><span class="exercise-muscle">${muscleMapSvg(media.group)}</span><span class="media-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 9 6-9 6Z"/></svg></span></button><div class="exercise-main"><div class="exercise-top"><span class="exercise-num">${index + 1}</span><div><h4>${escapeHtml(exercise[0])}</h4><p>${exercise[1]} sets × ${exercise[2]} reps</p></div><svg class="exercise-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></div><div class="exercise-inputs"><label>Sets<input class="ex-set" data-index="${index}" inputmode="numeric" type="number" min="0" max="20" value="${num(result.sets, exercise[1], 0, 20)}"></label><label>Reps<input class="ex-reps" data-index="${index}" inputmode="numeric" type="number" min="0" max="100" value="${num(result.reps, exercise[2], 0, 100)}"></label><label>Weight kg<input class="ex-weight" data-index="${index}" inputmode="decimal" type="number" min="0" max="1000" step="0.5" value="${result.weight || ''}"></label></div></div></article>`;
+      return `<article class="card exercise"><button type="button" class="exercise-media" data-action="open-exercise-media" data-name="${escapeHtml(exercise[0])}" data-sets="${exercise[1]} sets × ${exercise[2]} reps" aria-label="Open ${escapeHtml(exercise[0])} demonstration"><span class="exercise-motion-thumb">${ExerciseLibrary.renderMedia(media, { decorative: true })}</span><span class="exercise-muscle">${muscleMapSvg(media.group)}</span><span class="media-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 9 6-9 6Z"/></svg></span></button><div class="exercise-main"><div class="exercise-top"><span class="exercise-num">${index + 1}</span><div><h4>${escapeHtml(exercise[0])}</h4><p>${exercise[1]} sets × ${exercise[2]} reps</p></div><svg class="exercise-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></div><div class="exercise-inputs"><label>Sets<input class="ex-set" data-index="${index}" inputmode="numeric" type="number" min="0" max="20" value="${num(result.sets, exercise[1], 0, 20)}"></label><label>Reps<input class="ex-reps" data-index="${index}" inputmode="numeric" type="number" min="0" max="100" value="${num(result.reps, exercise[2], 0, 100)}"></label><label>Weight kg<input class="ex-weight" data-index="${index}" inputmode="decimal" type="number" min="0" max="1000" step="0.5" value="${result.weight || ''}"></label></div></div></article>`;
     }).join('');
     renderWorkoutEditor();
     renderWorkoutHistory();
@@ -282,9 +282,9 @@
       const searchable = ExerciseLibrary.normalise([exercise.name, exercise.category, exercise.equipment, ...exercise.aliases].join(' '));
       return inCategory && (!query || searchable.includes(query));
     });
-    text('#exerciseLibraryCount', `${matches.length} original demonstrations`);
+    text('#exerciseLibraryCount', `${matches.length} animated offline demonstrations`);
     const list = $('#exerciseCatalogList');
-    if (list) list.innerHTML = matches.map((exercise) => `<button type="button" class="exercise-catalog-card" data-action="open-library-exercise" data-name="${escapeHtml(exercise.name)}"><span class="catalog-visual">${ExerciseLibrary.renderSvg(exercise)}</span><span class="catalog-copy"><b>${escapeHtml(exercise.name)}</b><small>${escapeHtml(exercise.category)} • ${escapeHtml(exercise.equipment)}</small><em>${exercise.cues.map(escapeHtml).join(' • ')}</em></span><svg class="catalog-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>`).join('') || '<p class="empty">No exercises match this search.</p>';
+    if (list) list.innerHTML = matches.map((exercise) => `<button type="button" class="exercise-catalog-card" data-action="open-library-exercise" data-name="${escapeHtml(exercise.name)}"><span class="catalog-visual">${ExerciseLibrary.renderMedia(exercise, { decorative: true })}</span><span class="catalog-copy"><b>${escapeHtml(exercise.name)}</b><small>${escapeHtml(exercise.category)} • ${escapeHtml(exercise.equipment)}</small><em>${exercise.cues.map(escapeHtml).join(' • ')}</em></span><svg class="catalog-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>`).join('') || '<p class="empty">No exercises match this search.</p>';
   }
 
   async function keepExercisesOffline() {
