@@ -3,9 +3,13 @@ const BUILD = '__BUILD__';
 const CACHE_PREFIX = 'mybody20-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${BUILD}`;
 const PAGE_CACHE = `${CACHE_PREFIX}pages-${BUILD}`;
-const APP_SHELL = ['./', './index.html', './latest.html', './manifest.json', './style.css', './production.css', './assets/workout-hero.webp', './assets/exercises/dumbbell-bench-press-480.webp', './assets/exercises/dumbbell-bench-press-720.webp', './assets/exercises/dumbbell-bench-press.gif', './assets/exercises/lat-pulldown-480.webp', './assets/exercises/lat-pulldown-720.webp', './assets/exercises/lat-pulldown.gif', './assets/exercises/barbell-squat-480.webp', './assets/exercises/barbell-squat-720.webp', './assets/exercises/barbell-squat.gif', './assets/exercises/dumbbell-curl-480.webp', './assets/exercises/dumbbell-curl-720.webp', './assets/exercises/dumbbell-curl.gif', './food-data.js', './auth-onboarding.js', './core-storage.js', './app-production.js', './navigation-fix.js', './build-live.js', './icons/icon-192.png', './apple-touch-icon.png'];
+const ESSENTIAL_SHELL = ['./', './index.html', './manifest.json', './production.css', './food-data.js', './auth-onboarding.js', './core-storage.js', './exercise-library.js', './app-production.js', './navigation-fix.js', './build-live.js', './icons/icon-192.png', './apple-touch-icon.png'];
+const OPTIONAL_ASSETS = ['./latest.html', './assets/workout-hero.webp', './assets/exercises/dumbbell-bench-press-480.webp', './assets/exercises/dumbbell-bench-press-720.webp', './assets/exercises/dumbbell-bench-press.gif', './assets/exercises/lat-pulldown-480.webp', './assets/exercises/lat-pulldown-720.webp', './assets/exercises/lat-pulldown.gif', './assets/exercises/barbell-squat-480.webp', './assets/exercises/barbell-squat-720.webp', './assets/exercises/barbell-squat.gif', './assets/exercises/dumbbell-curl-480.webp', './assets/exercises/dumbbell-curl-720.webp', './assets/exercises/dumbbell-curl.gif'];
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(STATIC_CACHE).then(async (cache) => {
+    await cache.addAll(ESSENTIAL_SHELL);
+    await Promise.allSettled(OPTIONAL_ASSETS.map((asset) => cache.add(asset)));
+  }).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', (event) => {
   event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && ![STATIC_CACHE, PAGE_CACHE].includes(key)).map((key) => caches.delete(key)))).then(() => self.clients.claim()));
