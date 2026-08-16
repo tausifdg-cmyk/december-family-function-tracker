@@ -175,17 +175,17 @@
 
   <div id="iosShortcutSheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="iosShortcutTitle"><section class="sheet-panel shortcut-panel" tabindex="-1">
     <header class="sheet-head"><div><h2 id="iosShortcutTitle">Connect iPhone steps</h2><p>No paid Apple Developer account required</p></div><button id="closeIosShortcutSheet" type="button" class="sheet-close" aria-label="Close iPhone Shortcut setup"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
-    <div class="shortcut-callout"><b>Background mode</b><p>The Shortcut uploads today’s step total directly. It does not open Safari or interrupt another app. MYBODY retrieves the latest upload when opened or when you tap Sync now.</p></div>
+    <div class="shortcut-callout"><b>Install and sync</b><p>MYBODY copies your private token and opens the shared Shortcut installer. After setup, Sync now runs the Shortcut to read fresh Apple Health steps, then MYBODY retrieves the new upload when you return.</p></div>
     <ol class="shortcut-steps">
-      <li><b>Create a Shortcut</b><span>Name it <strong>MYBODY Step Sync</strong>.</span></li>
-      <li><b>Read today’s Steps</b><span>Add <strong>Find Health Samples</strong>, filter Type to Steps and Start Date to today, then calculate the Sum.</span></li>
-      <li><b>Prepare today’s date</b><span>Add <strong>Current Date</strong>, then <strong>Format Date</strong> with the custom format <strong>yyyy-MM-dd</strong>.</span></li>
-      <li><b>Upload without Safari</b><span>Add <strong>Get Contents of URL</strong>, use the endpoint below, choose POST and JSON, then add fields: <strong>action</strong> = write, <strong>token</strong> = the private token, <strong>steps</strong> = Sum, and <strong>date</strong> = Formatted Date. Do not add Open URLs.</span></li>
+      <li><b>Install the Shortcut</b><span>Tap the install button below, then choose <strong>Get Shortcut</strong>.</span></li>
+      <li><b>Complete setup</b><span>When asked, confirm the endpoint and paste the private token MYBODY copied.</span></li>
+      <li><b>Allow Apple Health</b><span>Run <strong>Sync Tausif Steps</strong> once and approve access to Steps.</span></li>
+      <li><b>Test Sync now</b><span>Return to MYBODY and tap <strong>Sync now</strong>. It opens the Shortcut, uploads fresh steps with <strong>Get Contents of URL</strong>, and reads the new value when you return. Do not add Open URLs.</span></li>
       <li><b>Add hourly automations</b><span>In Shortcuts → Automation, add a Time of Day trigger for each hour you want, select this Shortcut, and choose Run Immediately.</span></li>
     </ol>
     <div class="shortcut-template"><span>Background endpoint</span><code id="shortcutSyncEndpoint"></code><button id="copyShortcutEndpointBtn" type="button" class="text-btn">Copy endpoint</button></div>
     <div class="shortcut-template private-token"><span>Private sync token</span><code id="shortcutSyncToken"></code><button id="copyShortcutTokenBtn" type="button" class="text-btn">Copy token</button></div>
-    <div class="shortcut-sheet-actions"><button id="createIosShortcutBtn" type="button" class="primary full">Copy token &amp; open Shortcuts</button><button id="markShortcutReadyBtn" type="button" class="secondary full">I’ve finished setup</button></div>
+    <div class="shortcut-sheet-actions"><button id="createIosShortcutBtn" type="button" class="primary full">Copy token &amp; install Shortcut</button><button id="markShortcutReadyBtn" type="button" class="secondary full">I’ve finished setup</button></div>
     <p class="shortcut-limit">Keep the private token inside your Shortcut and do not share it. Apple requires separate Time of Day automations for true hourly scheduling. The PWA cannot refresh while fully closed, but it retrieves the waiting upload when opened.</p>
   </section></div>
 

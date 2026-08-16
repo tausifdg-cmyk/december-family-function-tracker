@@ -12,9 +12,15 @@
   const SHORTCUT_READY_KEY = 'mybody.shortcut.ready.v1';
   const SYNC_TOKEN_PREFIX = 'mybody.ios-sync.token.v1.';
   const LAST_CLOUD_CHECK_PREFIX = 'mybody.ios-sync.checked.v1.';
+  const PENDING_SHORTCUT_SYNC_PREFIX = 'mybody.ios-sync.pending.v1.';
   const BACKGROUND_SYNC_ENDPOINT = 'https://vucmcxkgpghnahnocirk.supabase.co/functions/v1/ios-step-sync';
+  const SHORTCUT_INSTALL_URL = 'https://www.icloud.com/shortcuts/597e590247364aacb1540443b3489b0a';
+  const SHORTCUT_NAME = 'Sync Tausif Steps';
+  const SHORTCUT_RUN_URL = `shortcuts://run-shortcut?name=${encodeURIComponent(SHORTCUT_NAME)}`;
   const HOUR = 60 * 60 * 1000;
   const MIN_CLOUD_CHECK_AGE = 5 * 60 * 1000;
+  const SHORTCUT_RETURN_DELAY = 700;
+  const SHORTCUT_PENDING_TTL = 2 * 60 * 1000;
   let cloudPullPromise = null;
 
   const $ = (selector) => document.querySelector(selector);
@@ -34,6 +40,7 @@
   const profileId = () => localStorage.getItem(Store.SESSION_KEY) || 'default';
   const syncTokenKey = () => `${SYNC_TOKEN_PREFIX}${profileId()}`;
   const lastCloudCheckKey = () => `${LAST_CLOUD_CHECK_PREFIX}${profileId()}`;
+  const pendingShortcutSyncKey = () => `${PENDING_SHORTCUT_SYNC_PREFIX}${profileId()}`;
 
   function cleanAppUrl() {
     const url = new URL('./', window.location.href);
@@ -177,7 +184,7 @@
       else if (isAndroidNative()) status.textContent = 'Health Connect is ready. Tap Sync now to read today’s Android steps.';
       else if (isIOSNative()) status.textContent = 'Apple Health is ready. Tap Sync now to request today’s steps.';
       else if (device === 'android') status.textContent = 'Install the Android companion to connect Health Connect. A browser or PWA cannot read health data directly.';
-      else if (ready) status.textContent = 'Background Shortcut connected. Tap Sync now to check for its latest upload.';
+      else if (ready) status.textContent = `Shortcut connected. Tap Sync now to run ${SHORTCUT_NAME} and upload fresh steps.`;
       else status.textContent = 'Connect an Apple Shortcut to upload steps hourly without opening Safari.';
     }
     if (quick) quick.textContent = current.syncedAt ? `${syncTime}${due ? ' • due' : ''}` : ready ? 'Cloud ready' : 'Setup';
@@ -260,15 +267,15 @@
     toast('Private sync token copied');
   }
 
-  async function createShortcut() {
+  async function installShortcut() {
     if (!isIOS()) {
-      toast('Open MYBODY 2.0 on an iPhone to create the Apple Shortcut.', 'error');
+      toast('Open MYBODY 2.0 on an iPhone to install the Apple Shortcut.', 'error');
       return;
     }
     try {
       await copyText(syncToken());
-      toast('Private token copied. Opening Shortcuts…');
-      window.setTimeout(() => { window.location.href = 'shortcuts://create-shortcut'; }, 220);
+      toast('Private token copied. Opening the Shortcut installer…');
+      window.setTimeout(() => { window.location.href = SHORTCUT_INSTALL_URL; }, 220);
     } catch (_) {
       toast('Could not copy the private sync token.', 'error');
     }
@@ -329,6 +336,33 @@
     return cloudPullPromise;
   }
 
+  function launchShortcutSync() {
+    localStorage.setItem(pendingShortcutSyncKey(), String(Date.now()));
+    $('#quickStepSyncBtn')?.classList.add('syncing');
+    $('#manualStepSyncBtn')?.classList.add('syncing');
+    toast(`Opening ${SHORTCUT_NAME}…`);
+    window.location.href = SHORTCUT_RUN_URL;
+    return true;
+  }
+
+  function resumeShortcutSync() {
+    const key = pendingShortcutSyncKey();
+    const launchedAt = Number(localStorage.getItem(key) || 0);
+    if (!launchedAt) return false;
+    localStorage.removeItem(key);
+    if (Date.now() - launchedAt > SHORTCUT_PENDING_TTL) {
+      $('#quickStepSyncBtn')?.classList.remove('syncing');
+      $('#manualStepSyncBtn')?.classList.remove('syncing');
+      return false;
+    }
+    window.setTimeout(() => {
+      pullCloudSteps({ feedback: true, force: true }).finally(() => {
+        $('#manualStepSyncBtn')?.classList.remove('syncing');
+      });
+    }, SHORTCUT_RETURN_DELAY);
+    return true;
+  }
+
   function manualSync() {
     if (isAndroidNative()) {
       $('#quickStepSyncBtn')?.classList.add('syncing');
@@ -346,6 +380,10 @@
     }
     if (!shortcutReady() || !syncToken(false)) {
       openSetup();
+      return;
+    }
+    if (isIOS()) {
+      launchShortcutSync();
       return;
     }
     pullCloudSteps({ feedback: true, force: true });
@@ -410,16 +448,18 @@
     $('#androidSetupDoneBtn')?.addEventListener('click', closeSetup);
     $('#copyShortcutEndpointBtn')?.addEventListener('click', copyEndpoint);
     $('#copyShortcutTokenBtn')?.addEventListener('click', copyToken);
-    $('#createIosShortcutBtn')?.addEventListener('click', createShortcut);
+    $('#createIosShortcutBtn')?.addEventListener('click', installShortcut);
     $('#markShortcutReadyBtn')?.addEventListener('click', markShortcutReady);
     $('#shareAppBtn')?.addEventListener('click', shareApp);
     $('#shareAppSettingsBtn')?.addEventListener('click', shareApp);
     window.addEventListener('hashchange', consumeShortcutHash);
-    window.addEventListener('focus', () => pullCloudSteps());
+    window.addEventListener('focus', () => {
+      if (!resumeShortcutSync()) pullCloudSteps();
+    });
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
         updateStatus();
-        pullCloudSteps();
+        if (!resumeShortcutSync()) pullCloudSteps();
       }
     });
     consumeShortcutHash();
@@ -429,7 +469,7 @@
       configureAndroidBridge();
       androidNativeBridge().requestSteps();
     } else if (isIOSNative()) iosNativeBridge().postMessage({ action: 'requestSteps' });
-    else pullCloudSteps();
+    else if (!resumeShortcutSync()) pullCloudSteps();
   }
 
   window.MyBodyHealthSync = Object.freeze({
@@ -438,11 +478,16 @@
     saveSteps,
     manualSync,
     pullCloudSteps,
+    installShortcut,
+    launchShortcutSync,
+    resumeShortcutSync,
     receiveNativeSteps,
     receiveAndroidSteps,
     shareApp,
     shortcutTemplate,
     backgroundSyncConfig,
+    shortcutInstallUrl: () => SHORTCUT_INSTALL_URL,
+    shortcutRunUrl: () => SHORTCUT_RUN_URL,
     updateStatus,
     detectPlatform,
     isNative,

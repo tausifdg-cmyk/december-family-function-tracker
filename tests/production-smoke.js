@@ -23,7 +23,7 @@ function verifyMarkup() {
   const html = read('index-production.html');
   const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, 'HTML must not contain duplicate IDs');
-  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'quickStepSyncBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'detectedDeviceLabel', 'iosShortcutSheet', 'androidHealthSheet', 'downloadAndroidAppBtn', 'shortcutSyncEndpoint', 'shortcutSyncToken', 'copyShortcutEndpointBtn', 'copyShortcutTokenBtn']) {
+  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'quickStepSyncBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'detectedDeviceLabel', 'iosShortcutSheet', 'androidHealthSheet', 'downloadAndroidAppBtn', 'shortcutSyncEndpoint', 'shortcutSyncToken', 'copyShortcutEndpointBtn', 'copyShortcutTokenBtn', 'createIosShortcutBtn']) {
     assert.ok(ids.includes(id), `Missing required element #${id}`);
   }
   assert.doesNotMatch(html, /(?:todayDetails|workoutHistorySheet|foodHistorySheet|progressHistorySheet)" class="sheet-backdrop/);
@@ -40,6 +40,8 @@ function verifyMarkup() {
   assert.match(html, /Time of Day trigger for each hour/, 'Hourly Shortcut setup guidance must remain visible');
   assert.match(html, /Get Contents of URL/, 'Background Shortcut guidance must use an HTTP request');
   assert.match(html, /Do not add Open URLs/, 'Background Shortcut guidance must explicitly avoid opening Safari');
+  assert.match(html, /Copy token &amp; install Shortcut/, 'iPhone setup must provide the shared Shortcut install action');
+  assert.match(html, /Sync now runs the Shortcut/, 'iPhone setup must explain that Sync now reads fresh Apple Health steps');
   assert.match(html, /Health Connect keeps health data behind native Android permissions/, 'Android setup must explain the native bridge requirement');
   const auth = read('auth-onboarding.js');
   assert.doesNotMatch(auth, /id="profileBtn"/, 'Header profile button must be removed');
@@ -60,7 +62,7 @@ function verifyHealthSync() {
     navigator: { userAgent: 'iPhone', platform: 'iPhone', maxTouchPoints: 5 },
     location: { href: 'https://example.test/app/?build=181#today', pathname: '/app/', search: '?build=181', hash: '#today' },
     history: { replaceState(_a, _b, value) { replacedWith = value; } },
-    localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, String(value)) },
+    localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, String(value)), removeItem: (key) => storage.delete(key) },
     CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options?.detail; } },
     document: { readyState: 'loading', addEventListener() {}, querySelector() { return null; } },
     setTimeout() {}, clearTimeout() {}, setInterval() {}, dispatchEvent() {},
@@ -90,6 +92,11 @@ function verifyHealthSync() {
   const background = sync.backgroundSyncConfig();
   assert.equal(background.endpoint, 'https://vucmcxkgpghnahnocirk.supabase.co/functions/v1/ios-step-sync');
   assert.match(background.token, /^[a-f0-9]{64}$/, 'Background sync token must be a 256-bit hex capability');
+  assert.equal(sync.shortcutInstallUrl(), 'https://www.icloud.com/shortcuts/597e590247364aacb1540443b3489b0a');
+  assert.equal(sync.shortcutRunUrl(), 'shortcuts://run-shortcut?name=Sync%20Tausif%20Steps');
+  sync.manualSync();
+  assert.equal(context.location.href, sync.shortcutRunUrl(), 'iPhone Sync now must launch the installed Shortcut');
+  assert.ok(storage.get('mybody.ios-sync.pending.v1.test-user'), 'Shortcut launch must queue a forced refresh for app return');
 
   let androidRequests = 0;
   context.navigator = { userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36', platform: 'Linux armv8l', maxTouchPoints: 5 };
