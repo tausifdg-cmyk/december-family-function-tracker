@@ -56,6 +56,7 @@ jobs:
           grep -q 'id="progressList"' index.html
           ! grep -q 'HistorySheet' index.html
           node --check core-storage.js
+          node --check food-data.js
           node --check exercise-library.js
           node --check app-production.js
           node --check health-sync.js

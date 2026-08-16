@@ -135,6 +135,26 @@ function verifyNavigation() {
   }
 }
 
+function verifyFoodDatabase() {
+  const context = { window: {} };
+  vm.runInNewContext(read('food-data.js'), context, { filename: 'food-data.js' });
+  const foods = context.window.FOOD_DB;
+  assert.ok(Array.isArray(foods), 'Food database must expose an array');
+  assert.ok(foods.length >= 125, 'Food database must include a broad everyday Indian selection');
+  assert.equal(new Set(foods.map((food) => food.name.toLowerCase())).size, foods.length, 'Food names must be unique');
+  foods.forEach((food) => {
+    assert.ok(food.name && Array.isArray(food.aliases), 'Every food needs a name and searchable aliases');
+    for (const key of ['calories', 'protein', 'carbs', 'fat', 'defaultGrams']) {
+      assert.ok(Number.isFinite(food[key]) && food[key] >= 0, `${food.name} needs a valid ${key} value`);
+    }
+    assert.ok(food.defaultGrams > 0, `${food.name} needs a positive default portion`);
+  });
+  const searchable = new Set(foods.flatMap((food) => [food.name, ...food.aliases]).map((value) => value.toLowerCase()));
+  for (const query of ['roti', 'dal tadka', 'rajma', 'chole', 'idli', 'masala dosa', 'poha', 'upma', 'chicken biryani', 'palak paneer', 'samosa', 'gulab jamun', 'chai']) {
+    assert.ok(searchable.has(query), `Common Indian food must be searchable as ${query}`);
+  }
+}
+
 function verifyExerciseAliases() {
   const context = { window: {} };
   vm.runInNewContext(read('exercise-library.js'), context, { filename: 'exercise-library.js' });
@@ -251,6 +271,7 @@ async function main() {
   verifyMarkup();
   verifyNavigation();
   verifyHealthSync();
+  verifyFoodDatabase();
   verifyExerciseAliases();
   await verifyServiceWorkerMediaCache();
   const current = await runBuildHarness(172);
