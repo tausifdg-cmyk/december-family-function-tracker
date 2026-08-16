@@ -186,7 +186,6 @@
     text('#baseBurn', `${Math.round(burn.base)} kcal`);
     text('#stepBurn', `${Math.round(burn.steps)} kcal`);
     text('#exerciseBurn', `${Math.round(burn.exercise)} kcal`);
-    text('#totalBurn', `${Math.round(burn.total)} kcal`);
     text('#budgetHeadline', `${Math.round(totals.calories)} / ${config.calories} kcal`);
     text('#scoreCalories', `${Math.round(totals.calories)} / ${config.calories}`);
     text('#scoreProtein', `${round(totals.protein, 1)} / ${config.protein}g`);
