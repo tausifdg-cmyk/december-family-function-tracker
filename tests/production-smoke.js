@@ -31,6 +31,11 @@ function verifyMarkup() {
   const summary = html.match(/<section class="card daily-summary"[\s\S]*?<\/section>/)?.[0] || '';
   for (const id of ['scoreCalories', 'scoreProtein', 'scoreSteps', 'scoreWater']) assert.match(summary, new RegExp(`id="${id}"`), `Top summary must include #${id}`);
   assert.doesNotMatch(html, /class="score-grid"/, 'Daily goal tiles should not be duplicated lower on the page');
+  const energy = html.match(/<section class="card energy-overview"[\s\S]*?<\/section>/)?.[0] || '';
+  assert.ok(energy, 'Detailed energy values must be combined into one energy overview card');
+  for (const id of ['budgetHeadline', 'dashBalance', 'dashBalanceLabel', 'baseBurn', 'stepBurn', 'exerciseBurn', 'dashBurn']) assert.match(energy, new RegExp(`id="${id}"`), `Energy overview must include #${id}`);
+  assert.doesNotMatch(html, /class="metric-card metric-(?:burn|balance)"/, 'Burn and balance must not remain as separate cards');
+  assert.doesNotMatch(html, /id="totalBurn"/, 'Estimated burn must not be duplicated as total burn');
   assert.match(html, /src="health-sync\.js\?v=__BUILD__"/, 'Production page must load the iPhone sync and sharing controller');
   assert.match(html, /Time of Day trigger for each hour/, 'Hourly Shortcut setup guidance must remain visible');
   assert.match(html, /Get Contents of URL/, 'Background Shortcut guidance must use an HTTP request');
