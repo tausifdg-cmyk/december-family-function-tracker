@@ -3,7 +3,7 @@ const BUILD = '__BUILD__';
 const CACHE_PREFIX = 'mybody20-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${BUILD}`;
 const PAGE_CACHE = `${CACHE_PREFIX}pages-${BUILD}`;
-const APP_SHELL = ['./', './index.html', './latest.html', './manifest.json', './style.css', './production.css', './assets/workout-hero.webp', './food-data.js', './auth-onboarding.js', './core-storage.js', './app-production.js', './navigation-fix.js', './build-live.js', './icons/icon-192.png', './apple-touch-icon.png'];
+const APP_SHELL = ['./', './index.html', './latest.html', './manifest.json', './style.css', './production.css', './assets/workout-hero.webp', './assets/exercises/dumbbell-bench-press-480.webp', './assets/exercises/dumbbell-bench-press-720.webp', './assets/exercises/dumbbell-bench-press.gif', './assets/exercises/lat-pulldown-480.webp', './assets/exercises/lat-pulldown-720.webp', './assets/exercises/lat-pulldown.gif', './assets/exercises/barbell-squat-480.webp', './assets/exercises/barbell-squat-720.webp', './assets/exercises/barbell-squat.gif', './assets/exercises/dumbbell-curl-480.webp', './assets/exercises/dumbbell-curl-720.webp', './assets/exercises/dumbbell-curl.gif', './food-data.js', './auth-onboarding.js', './core-storage.js', './app-production.js', './navigation-fix.js', './build-live.js', './icons/icon-192.png', './apple-touch-icon.png'];
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });

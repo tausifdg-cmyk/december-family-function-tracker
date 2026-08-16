@@ -9,11 +9,80 @@
   const num = Store.number;
   const round = (value, places = 0) => Math.round(value * (10 ** places)) / (10 ** places);
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  const removeIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
   const today = Store.localDate;
   let state = Store.read();
   let selectedDay = Math.min(state.workouts.length - 1, Math.max(0, (new Date().getDay() + 6) % 7));
   let resizeObserver;
   let chartFrame;
+  let modalReturnFocus;
+
+  function muscleGroup(name) {
+    const value = String(name || '').toLowerCase();
+    if (/squat|leg|lunge|deadlift|calf|glute/.test(value)) return 'legs';
+    if (/pulldown|pull-up|row|back|lat/.test(value)) return 'back';
+    if (/curl|biceps/.test(value)) return 'biceps';
+    if (/triceps|pushdown|dip|extension/.test(value)) return 'triceps';
+    if (/shoulder|lateral|delt|face pull/.test(value)) return 'shoulders';
+    if (/crunch|plank|core|knee raise|dead bug/.test(value)) return 'core';
+    return 'chest';
+  }
+
+  function exerciseMedia(name) {
+    const group = muscleGroup(name);
+    const slug = group === 'legs' ? 'barbell-squat' : group === 'back' ? 'lat-pulldown' : group === 'biceps' ? 'dumbbell-curl' : 'dumbbell-bench-press';
+    return { group, gif: `assets/exercises/${slug}.gif`, small: `assets/exercises/${slug}-480.webp`, large: `assets/exercises/${slug}-720.webp` };
+  }
+
+  function muscleMapSvg(active) {
+    const zone = (name) => name === active ? ' active' : '';
+    return `<svg class="muscle-map" viewBox="0 0 72 112" role="img" aria-label="${escapeHtml(active)} muscles highlighted"><circle class="body-shape" cx="36" cy="11" r="8"/><path class="body-shape" d="M27 22h18l6 31-7 22H28l-7-22Z"/><path class="body-shape" d="m24 27-9 9-6 29 8 2 9-26m22-14 9 9 6 29-8 2-9-26M30 74l-5 32h9l4-25m4-7 5 32h-9l-4-25"/><path class="muscle-zone${zone('chest')}" d="M27 29c3-4 7-5 9-2 2-3 6-2 9 2l-2 12H29Z"/><path class="muscle-zone${zone('shoulders')}" d="M21 29c1-5 4-8 8-8l2 8-6 9Zm30 0c-1-5-4-8-8-8l-2 8 6 9Z"/><path class="muscle-zone${zone('back')}" d="M27 30h18l-3 24-6 7-6-7Z"/><path class="muscle-zone${zone('biceps')}" d="m18 38 6 2-4 17-7-2Zm36 2 6-2 5 17-7 2Z"/><path class="muscle-zone${zone('triceps')}" d="m16 37 5-4 4 9-5 16-6-2Zm40-4 5 4 2 19-6 2-5-16Z"/><path class="muscle-zone${zone('core')}" d="M31 43h10l2 24H29Z"/><path class="muscle-zone${zone('legs')}" d="M28 74h8l-3 31h-8Zm8 0h8l4 31h-9Z"/></svg>`;
+  }
+
+  function openSheet(id, trigger) {
+    const sheet = document.getElementById(id);
+    if (!sheet) return;
+    modalReturnFocus = trigger || document.activeElement;
+    sheet.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    sheet.querySelector('.sheet-panel')?.focus({ preventScroll: true });
+  }
+
+  function closeSheet(sheet) {
+    const target = typeof sheet === 'string' ? document.getElementById(sheet) : sheet?.closest?.('.sheet-backdrop');
+    if (!target) return;
+    target.classList.add('hidden');
+    if (!document.querySelector('.sheet-backdrop:not(.hidden),.media-lightbox:not(.hidden)')) document.body.classList.remove('modal-open');
+    modalReturnFocus?.focus?.({ preventScroll: true });
+  }
+
+  function openExerciseMedia(button) {
+    const lightbox = $('#exerciseLightbox');
+    const image = $('#exerciseGif');
+    if (!lightbox || !image) return;
+    modalReturnFocus = button;
+    const name = button.dataset.name || 'Exercise demo';
+    const media = exerciseMedia(name);
+    text('#exerciseLightboxTitle', name);
+    text('#exerciseLightboxMeta', `${button.dataset.sets || ''} • ${media.group} focus`);
+    image.alt = `${name} exercise demonstration`;
+    image.src = media.gif;
+    const map = $('#lightboxMuscleMap');
+    if (map) map.innerHTML = muscleMapSvg(media.group);
+    lightbox.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    lightbox.querySelector('.sheet-close')?.focus({ preventScroll: true });
+  }
+
+  function closeExerciseMedia() {
+    const lightbox = $('#exerciseLightbox');
+    const image = $('#exerciseGif');
+    if (!lightbox || lightbox.classList.contains('hidden')) return;
+    lightbox.classList.add('hidden');
+    if (image) image.removeAttribute('src');
+    document.body.classList.remove('modal-open');
+    modalReturnFocus?.focus?.({ preventScroll: true });
+  }
 
   function text(selector, value) {
     const node = $(selector);
@@ -186,7 +255,8 @@
     const list = $('#exerciseList');
     if (list) list.innerHTML = plan.exercises.map((exercise, index) => {
       const result = log.exercises?.[index] || {};
-      return `<article class="card exercise"><div class="exercise-top"><span class="exercise-num">${index + 1}</span><div><h4>${escapeHtml(exercise[0])}</h4><p>${exercise[1]} sets × ${exercise[2]} reps</p></div></div><div class="exercise-inputs"><label>Sets<input class="ex-set" data-index="${index}" inputmode="numeric" type="number" min="0" max="20" value="${num(result.sets, exercise[1], 0, 20)}"></label><label>Reps<input class="ex-reps" data-index="${index}" inputmode="numeric" type="number" min="0" max="100" value="${num(result.reps, exercise[2], 0, 100)}"></label><label>Weight kg<input class="ex-weight" data-index="${index}" inputmode="decimal" type="number" min="0" max="1000" step="0.5" value="${result.weight || ''}"></label></div></article>`;
+      const media = exerciseMedia(exercise[0]);
+      return `<article class="card exercise"><button type="button" class="exercise-media" data-action="open-exercise-media" data-name="${escapeHtml(exercise[0])}" data-sets="${exercise[1]} sets × ${exercise[2]} reps" aria-label="Open ${escapeHtml(exercise[0])} demonstration"><picture><source type="image/webp" srcset="${media.small} 480w, ${media.large} 720w" sizes="(max-width:720px) calc(100vw - 48px), 320px"><img src="${media.small}" alt="" loading="lazy" decoding="async"></picture><span class="exercise-muscle">${muscleMapSvg(media.group)}</span><span class="media-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 9 6-9 6Z"/></svg></span></button><div class="exercise-main"><div class="exercise-top"><span class="exercise-num">${index + 1}</span><div><h4>${escapeHtml(exercise[0])}</h4><p>${exercise[1]} sets × ${exercise[2]} reps</p></div><svg class="exercise-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></div><div class="exercise-inputs"><label>Sets<input class="ex-set" data-index="${index}" inputmode="numeric" type="number" min="0" max="20" value="${num(result.sets, exercise[1], 0, 20)}"></label><label>Reps<input class="ex-reps" data-index="${index}" inputmode="numeric" type="number" min="0" max="100" value="${num(result.reps, exercise[2], 0, 100)}"></label><label>Weight kg<input class="ex-weight" data-index="${index}" inputmode="decimal" type="number" min="0" max="1000" step="0.5" value="${result.weight || ''}"></label></div></div></article>`;
     }).join('');
     renderWorkoutEditor();
     renderWorkoutHistory();
@@ -197,7 +267,7 @@
     value('#editSessionName', plan?.name || '');
     value('#editSessionFocus', plan?.focus || '');
     const list = $('#editExerciseList');
-    if (list) list.innerHTML = (plan?.exercises || []).map((exercise, index) => `<div class="editor-row" data-index="${index}"><input class="edit-ex-name" aria-label="Exercise name" value="${escapeHtml(exercise[0])}"><input class="edit-ex-sets" aria-label="Sets" type="number" min="1" max="20" value="${exercise[1]}"><input class="edit-ex-reps" aria-label="Reps" type="number" min="1" max="100" value="${exercise[2]}"><button type="button" class="danger-icon" data-action="remove-exercise" data-index="${index}" aria-label="Remove exercise">×</button></div>`).join('');
+    if (list) list.innerHTML = (plan?.exercises || []).map((exercise, index) => `<div class="editor-row" data-index="${index}"><input class="edit-ex-name" aria-label="Exercise name" value="${escapeHtml(exercise[0])}"><input class="edit-ex-sets" aria-label="Sets" type="number" min="1" max="20" value="${exercise[1]}"><input class="edit-ex-reps" aria-label="Reps" type="number" min="1" max="100" value="${exercise[2]}"><button type="button" class="danger-icon" data-action="remove-exercise" data-index="${index}" aria-label="Remove exercise">${removeIcon}</button></div>`).join('');
   }
 
   function allFoods() {
@@ -224,7 +294,7 @@
     const labels = { breakfast: ['Breakfast', 'Morning'], lunch: ['Lunch', 'Midday'], eveningSnacks: ['Evening snacks', 'Snack'], dinner: ['Dinner', 'Evening'] };
     const dayMeals = meals();
     const container = $('#mealSections');
-    if (container) container.innerHTML = Object.entries(labels).map(([key, label]) => `<section class="card meal-card"><div class="meal-head"><div><small>${label[1]}</small><h3>${label[0]}</h3></div><button type="button" class="secondary" data-action="add-food" data-meal="${key}">+ Add food</button></div><div class="meal-items">${dayMeals[key].length ? dayMeals[key].map((food, index) => `<div class="food-row" data-meal="${key}" data-index="${index}"><input class="food-name" list="foodSuggestions" aria-label="Food" value="${escapeHtml(food.name || '')}" placeholder="Search food"><input class="food-grams" type="number" inputmode="decimal" min="0" max="10000" aria-label="Grams" value="${food.grams || ''}" placeholder="g"><span class="food-macro">${Math.round(num(food.calories))} kcal<small>${round(num(food.protein), 1)}g P</small></span><button type="button" class="danger-icon" data-action="remove-food" aria-label="Remove food">×</button></div>`).join('') : '<p class="empty">Nothing logged yet.</p>'}</div></section>`).join('');
+    if (container) container.innerHTML = Object.entries(labels).map(([key, label]) => `<section class="card meal-card"><div class="meal-head"><div><small>${label[1]}</small><h3>${label[0]}</h3></div><button type="button" class="secondary" data-action="add-food" data-meal="${key}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add food</button></div><div class="meal-items">${dayMeals[key].length ? dayMeals[key].map((food, index) => `<div class="food-row" data-meal="${key}" data-index="${index}"><input class="food-name" list="foodSuggestions" aria-label="Food" value="${escapeHtml(food.name || '')}" placeholder="Search food"><input class="food-grams" type="number" inputmode="decimal" min="0" max="10000" aria-label="Grams" value="${food.grams || ''}" placeholder="g"><span class="food-macro">${Math.round(num(food.calories))} kcal<small>${round(num(food.protein), 1)}g P</small></span><button type="button" class="danger-icon" data-action="remove-food" aria-label="Remove food">${removeIcon}</button></div>`).join('') : '<p class="empty">Nothing logged yet.</p>'}</div></section>`).join('');
     renderFoodManager();
     renderFoodHistory();
   }
@@ -232,7 +302,7 @@
   function renderFoodManager() {
     const list = $('#customFoodList');
     if (!list) return;
-    list.innerHTML = state.customFoods.length ? state.customFoods.map((food, index) => `<div class="list-row"><div><b>${escapeHtml(food.name)}</b><small>${food.calories} kcal • ${food.protein}g protein / 100g</small></div><button type="button" class="danger-icon" data-action="delete-custom-food" data-index="${index}" aria-label="Delete ${escapeHtml(food.name)}">×</button></div>`).join('') : '<p class="empty">No custom foods yet.</p>';
+    list.innerHTML = state.customFoods.length ? state.customFoods.map((food, index) => `<div class="list-row"><div><b>${escapeHtml(food.name)}</b><small>${food.calories} kcal • ${food.protein}g protein / 100g</small></div><button type="button" class="danger-icon" data-action="delete-custom-food" data-index="${index}" aria-label="Delete ${escapeHtml(food.name)}">${removeIcon}</button></div>`).join('') : '<p class="empty">No custom foods yet.</p>';
   }
 
   function renderProgress() {
@@ -366,7 +436,7 @@
     const exercises = rows.map((row) => [$('.edit-ex-name', row)?.value.trim() || 'Exercise', num($('.edit-ex-sets', row)?.value, 3, 1, 20), num($('.edit-ex-reps', row)?.value, 10, 1, 100)]);
     if (!exercises.length) return toast('A workout needs at least one exercise.', 'error');
     state.workouts[selectedDay] = { name: $('#editSessionName')?.value.trim() || 'Workout', focus: $('#editSessionFocus')?.value.trim() || '', exercises };
-    $('#workoutEditor')?.classList.add('hidden');
+    closeSheet('workoutEditor');
     persist('Workout plan updated');
   }
 
@@ -374,7 +444,7 @@
     const list = $('#editExerciseList');
     if (!list) return;
     const index = list.children.length;
-    list.insertAdjacentHTML('beforeend', `<div class="editor-row" data-index="${index}"><input class="edit-ex-name" aria-label="Exercise name" value="New exercise"><input class="edit-ex-sets" aria-label="Sets" type="number" min="1" max="20" value="3"><input class="edit-ex-reps" aria-label="Reps" type="number" min="1" max="100" value="10"><button type="button" class="danger-icon" data-action="remove-exercise" aria-label="Remove exercise">×</button></div>`);
+    list.insertAdjacentHTML('beforeend', `<div class="editor-row" data-index="${index}"><input class="edit-ex-name" aria-label="Exercise name" value="New exercise"><input class="edit-ex-sets" aria-label="Sets" type="number" min="1" max="20" value="3"><input class="edit-ex-reps" aria-label="Reps" type="number" min="1" max="100" value="10"><button type="button" class="danger-icon" data-action="remove-exercise" aria-label="Remove exercise">${removeIcon}</button></div>`);
   }
 
   function syncFoodRow(row) {
@@ -417,9 +487,29 @@
   }
 
   function handleClick(event) {
+    if (event.target.matches('.sheet-backdrop')) {
+      closeSheet(event.target);
+      return;
+    }
     const button = event.target.closest('button,[data-action]');
     if (!button) return;
     const action = button.dataset.action || button.id;
+    if (button.dataset.sheetOpen) {
+      openSheet(button.dataset.sheetOpen, button);
+      return;
+    }
+    if (button.hasAttribute('data-sheet-close')) {
+      closeSheet(button);
+      return;
+    }
+    if (action === 'open-exercise-media') {
+      openExerciseMedia(button);
+      return;
+    }
+    if (action === 'close-exercise-media') {
+      closeExerciseMedia();
+      return;
+    }
     if (button.dataset.nav) {
       window.dispatchEvent(new CustomEvent('mybody:navigate', { detail: { id: button.dataset.nav } }));
       return;
@@ -437,16 +527,16 @@
     if (action === 'saveDaily') saveDaily();
     if (action === 'select-day') { selectedDay = num(button.dataset.day, 0, 0, state.workouts.length - 1); renderWorkout(); }
     if (action === 'saveWorkout') saveWorkout();
-    if (action === 'editWorkoutBtn') $('#workoutEditor')?.classList.remove('hidden');
-    if (action === 'closeWorkoutEditor') $('#workoutEditor')?.classList.add('hidden');
+    if (action === 'editWorkoutBtn') openSheet('workoutEditor', button);
+    if (action === 'closeWorkoutEditor') closeSheet('workoutEditor');
     if (action === 'addExercise') addExerciseEditorRow();
     if (action === 'remove-exercise') {
       const rows = $$('.editor-row', $('#editExerciseList'));
       if (rows.length > 1) button.closest('.editor-row')?.remove(); else toast('A workout needs at least one exercise.', 'error');
     }
     if (action === 'saveWorkoutPlan') saveWorkoutPlan();
-    if (action === 'manageFoodsBtn') $('#foodManager')?.classList.remove('hidden');
-    if (action === 'closeFoodManager') $('#foodManager')?.classList.add('hidden');
+    if (action === 'manageFoodsBtn') openSheet('foodManager', button);
+    if (action === 'closeFoodManager') closeSheet('foodManager');
     if (action === 'add-food') { ensureMeals()[button.dataset.meal].push({ name: '', grams: '', calories: 0, protein: 0, carbs: 0, fat: 0 }); persist('Food row added'); }
     if (action === 'remove-food') { const row = button.closest('.food-row'); ensureMeals()[row.dataset.meal].splice(num(row.dataset.index), 1); persist('Food removed'); }
     if (action === 'saveCustomFood') saveCustomFood();
@@ -480,9 +570,21 @@
     document.documentElement.dataset.appReady = '1';
     document.addEventListener('click', handleClick);
     document.addEventListener('change', handleChange);
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const lightbox = $('#exerciseLightbox:not(.hidden)');
+      if (lightbox) { closeExerciseMedia(); return; }
+      const sheet = $('.sheet-backdrop:not(.hidden)');
+      if (sheet) closeSheet(sheet);
+    });
     window.addEventListener('mybody:state', (event) => { state = Store.normalise(event.detail); });
     window.addEventListener('mybody:storage-error', () => toast('Storage is full. Export or remove old entries.', 'error'));
     window.addEventListener('storage', (event) => { if (event.key === Store.DATA_KEY || event.key?.startsWith(`${Store.DATA_KEY}.user.`)) { state = Store.read(); renderAll(); } });
+    window.addEventListener('mybody:tabchange', () => {
+      $$('.sheet-backdrop:not(.hidden)').forEach((sheet) => sheet.classList.add('hidden'));
+      if (!$('#exerciseLightbox')?.classList.contains('hidden')) closeExerciseMedia();
+      document.body.classList.remove('modal-open');
+    });
     resizeObserver = new ResizeObserver(scheduleChart);
     const chart = $('#weightChart');
     if (chart) resizeObserver.observe(chart);

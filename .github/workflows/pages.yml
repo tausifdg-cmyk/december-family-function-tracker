@@ -42,6 +42,10 @@ jobs:
           test -s app-production.js
           test -s core-storage.js
           test -s assets/workout-hero.webp
+          test -s assets/exercises/dumbbell-bench-press.gif
+          test -s assets/exercises/lat-pulldown.gif
+          test -s assets/exercises/barbell-squat.gif
+          test -s assets/exercises/dumbbell-curl.gif
           ! grep -R "__BUILD__" index.html service-worker.js manifest.json
           node --check core-storage.js
           node --check app-production.js
