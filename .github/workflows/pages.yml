@@ -31,6 +31,9 @@ jobs:
           BUILD="${{ github.run_number }}"
           printf '{"build":"%s"}\n' "$BUILD" > build.json
           cp index-production.html index.html
+          sed -i '/production.css?v=__BUILD__/a\  <link rel="stylesheet" href="admin-dashboard.css?v=__BUILD__">' index.html
+          sed -i '/food-data.js?v=__BUILD__/i\  <script src="supabase-cloud.js?v=__BUILD__" defer></script>' index.html
+          sed -i '/auth-onboarding.js?v=__BUILD__/a\  <script src="cloud-auth-bridge.js?v=__BUILD__" defer></script>\n  <script src="admin-ui.js?v=__BUILD__" defer></script>' index.html
           sed -i "s/__BUILD__/$BUILD/g" index.html service-worker.js manifest.json
           cp index.html latest.html
 
@@ -42,6 +45,10 @@ jobs:
           test -s app-production.js
           test -s exercise-library.js
           test -s core-storage.js
+          test -s supabase-cloud.js
+          test -s cloud-auth-bridge.js
+          test -s admin-ui.js
+          test -s admin-dashboard.css
           test -s supabase/functions/ios-step-sync/index.ts
           test -s supabase/migrations/20260816123000_create_ios_step_sync.sql
           test -s assets/workout-hero.webp
@@ -54,6 +61,8 @@ jobs:
           grep -q 'id="workoutHistory"' index.html
           grep -q 'id="foodHistory"' index.html
           grep -q 'id="progressList"' index.html
+          grep -q 'supabase-cloud.js' index.html
+          grep -q 'cloud-auth-bridge.js' index.html
           ! grep -q 'HistorySheet' index.html
           node --check core-storage.js
           node --check food-data.js
@@ -62,6 +71,9 @@ jobs:
           node --check health-sync.js
           node --check navigation-fix.js
           node --check build-live.js
+          node --check supabase-cloud.js
+          node --check cloud-auth-bridge.js
+          node --check admin-ui.js
           node --check service-worker.js
           node tests/production-smoke.js
 
