@@ -51,7 +51,7 @@
         <div class="summary-metrics">
           <article class="summary-goal summary-calories"><div><span>Calories</span><strong id="scoreCalories">0 / 0</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreCaloriesBar"></span></div></article>
           <article class="summary-goal summary-protein"><div><span>Protein</span><strong id="scoreProtein">0 / 0g</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreProteinBar"></span></div></article>
-          <article class="summary-goal summary-steps"><div class="summary-goal-head"><div><span>Steps</span><strong id="scoreSteps">0 / 0</strong></div><button id="quickStepSyncBtn" class="summary-sync-btn" type="button" aria-label="Sync iPhone steps now" title="Sync steps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 8m16 8-2.2 1.8A7 7 0 0 1 5.5 15"/></svg></button></div><div class="mini-progress" aria-hidden="true"><span id="scoreStepsBar"></span></div><small id="quickStepSyncStatus" class="summary-sync-status">Manual</small></article>
+          <article class="summary-goal summary-steps"><div class="summary-goal-head"><div><span>Steps</span><strong id="scoreSteps">0 / 0</strong></div><button id="quickStepSyncBtn" class="summary-sync-btn" type="button" aria-label="Sync phone steps now" title="Sync steps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 8m16 8-2.2 1.8A7 7 0 0 1 5.5 15"/></svg></button></div><div class="mini-progress" aria-hidden="true"><span id="scoreStepsBar"></span></div><small id="quickStepSyncStatus" class="summary-sync-status">Manual</small></article>
           <article class="summary-goal summary-water"><div><span>Water</span><strong id="scoreWater">0 / 0L</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreWaterBar"></span></div></article>
         </div>
       </section>
@@ -164,10 +164,10 @@
         <button id="saveSettings" class="primary full" type="button">Save settings</button>
       </section>
       <section class="card ios-sync-card" aria-labelledby="iosStepSyncTitle">
-        <div class="sync-card-head"><div><span class="eyebrow">IPHONE STEPS</span><h3 id="iosStepSyncTitle">Apple Health Shortcut</h3></div><span id="hourlySyncBadge" class="sync-badge">Setup needed</span></div>
-        <p id="healthSyncStatus" class="muted-copy">Connect an Apple Shortcut to upload steps hourly without opening Safari.</p>
-        <div class="sync-actions"><button id="manualStepSyncBtn" class="secondary" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 8m16 8-2.2 1.8A7 7 0 0 1 5.5 15"/></svg>Sync now</button><button id="setupIosShortcutBtn" class="primary" type="button">Set up iPhone sync</button></div>
-        <p class="sync-privacy">The Shortcut sends only the date and step total to a private sync endpoint protected by a device-specific token. Your token is never placed in the browser address bar.</p>
+        <div class="sync-card-head"><div><span id="stepSyncEyebrow" class="eyebrow">PHONE STEPS</span><h3 id="iosStepSyncTitle">Device step sync</h3><small id="detectedDeviceLabel" class="detected-device">Detecting this device…</small></div><span id="hourlySyncBadge" class="sync-badge">Setup needed</span></div>
+        <p id="healthSyncStatus" class="muted-copy">Checking the best step-sync method for this device.</p>
+        <div class="sync-actions"><button id="manualStepSyncBtn" class="secondary" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 8m16 8-2.2 1.8A7 7 0 0 1 5.5 15"/></svg>Sync now</button><button id="setupIosShortcutBtn" class="primary" type="button">Set up phone sync</button></div>
+        <p id="stepSyncPrivacy" class="sync-privacy">Only today’s date and step total are synced. Health permissions stay under your control on the phone.</p>
       </section>
       <section class="card app-share-card" aria-labelledby="shareAppTitle"><div><span class="eyebrow">APP ACCESS</span><h3 id="shareAppTitle">Share MYBODY 2.0</h3><p class="muted-copy">Send the app link using the phone’s share sheet, or copy it on desktop.</p></div><button id="shareAppSettingsBtn" class="secondary" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.1m-6.6 6.7 6.6 4.1"/></svg>Share app</button></section>
     </section>
@@ -187,6 +187,19 @@
     <div class="shortcut-template private-token"><span>Private sync token</span><code id="shortcutSyncToken"></code><button id="copyShortcutTokenBtn" type="button" class="text-btn">Copy token</button></div>
     <div class="shortcut-sheet-actions"><button id="createIosShortcutBtn" type="button" class="primary full">Copy token &amp; open Shortcuts</button><button id="markShortcutReadyBtn" type="button" class="secondary full">I’ve finished setup</button></div>
     <p class="shortcut-limit">Keep the private token inside your Shortcut and do not share it. Apple requires separate Time of Day automations for true hourly scheduling. The PWA cannot refresh while fully closed, but it retrieves the waiting upload when opened.</p>
+  </section></div>
+
+  <div id="androidHealthSheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="androidHealthTitle"><section class="sheet-panel shortcut-panel" tabindex="-1">
+    <header class="sheet-head"><div><h2 id="androidHealthTitle">Connect Android steps</h2><p>Health Connect • no Play developer account required for direct install</p></div><button id="closeAndroidHealthSheet" type="button" class="sheet-close" aria-label="Close Android Health Connect setup"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+    <div class="shortcut-callout"><b>Why the Android app is needed</b><p>Health Connect keeps health data behind native Android permissions, so Chrome and an installed PWA cannot read it directly. The MYBODY Android wrapper securely bridges Health Connect to this tracker.</p></div>
+    <ol class="shortcut-steps">
+      <li><b>Install the MYBODY Android app</b><span>Download the test APK below and allow installation from your browser when Android asks.</span></li>
+      <li><b>Allow Steps access</b><span>Open the app and approve <strong>Steps</strong> in the Health Connect permission screen.</span></li>
+      <li><b>Keep automatic sync enabled</b><span>On supported Android 14+ devices, approve background health access. MYBODY then checks today’s total about once per hour.</span></li>
+      <li><b>Use Sync now any time</b><span>The button reads the latest Health Connect total immediately without opening another browser.</span></li>
+    </ol>
+    <div class="shortcut-sheet-actions"><a id="downloadAndroidAppBtn" class="primary full button-link" href="https://github.com/tausifdg-cmyk/december-family-function-tracker/releases/download/android-latest/mybody-android.apk">Download Android app</a><button id="androidSetupDoneBtn" type="button" class="secondary full">I’ll install it later</button></div>
+    <p class="shortcut-limit">Health Connect is built into Android 14 and later. Android 9–13 may require the Health Connect app, and background reads depend on device support and permission.</p>
   </section></div>
 
   <div id="exerciseLibrarySheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="exerciseLibraryTitle"><section class="sheet-panel exercise-library-panel" tabindex="-1">

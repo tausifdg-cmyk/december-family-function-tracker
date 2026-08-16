@@ -1,9 +1,8 @@
-/* MYBODY 2.0 iPhone step sync and app sharing.
-   The preferred PWA flow uploads Apple Health steps from Shortcuts to a
-   capability-protected cloud endpoint. The PWA retrieves the latest value
-   when it is foregrounded, so hourly automations never need to open Safari.
-   The legacy URL-fragment and optional native HealthKit bridge remain
-   compatible. */
+/* MYBODY 2.0 phone step sync and app sharing.
+   iPhone keeps the established Apple Health Shortcut flow. Android devices
+   are detected automatically and use the optional native Health Connect
+   bridge, including hourly background uploads when the device permits them.
+   The legacy URL-fragment and native HealthKit bridge remain compatible. */
 (function () {
   'use strict';
 
@@ -19,9 +18,18 @@
   let cloudPullPromise = null;
 
   const $ = (selector) => document.querySelector(selector);
-  const nativeBridge = () => window.webkit?.messageHandlers?.healthkit;
-  const isNative = () => Boolean(nativeBridge());
-  const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const iosNativeBridge = () => window.webkit?.messageHandlers?.healthkit;
+  const androidNativeBridge = () => window.MyBodyAndroidHealth;
+  const isIOSNative = () => Boolean(iosNativeBridge());
+  const isAndroidNative = () => Boolean(androidNativeBridge()?.requestSteps);
+  const isNative = () => isIOSNative() || isAndroidNative();
+  function detectPlatform(userAgent = navigator.userAgent || '', platform = navigator.platform || '', maxTouchPoints = navigator.maxTouchPoints || 0) {
+    if (/Android/i.test(userAgent)) return 'android';
+    if (/iPad|iPhone|iPod/.test(userAgent) || (platform === 'MacIntel' && maxTouchPoints > 1)) return 'ios';
+    return 'other';
+  }
+  const platform = () => detectPlatform();
+  const isIOS = () => platform() === 'ios';
   const shortcutReady = () => localStorage.getItem(SHORTCUT_READY_KEY) === '1';
   const profileId = () => localStorage.getItem(Store.SESSION_KEY) || 'default';
   const syncTokenKey = () => `${SYNC_TOKEN_PREFIX}${profileId()}`;
@@ -126,6 +134,7 @@
   function updateStatus() {
     const current = todayActivity();
     const ready = isNative() || (shortcutReady() && Boolean(syncToken(false)));
+    const device = platform();
     const syncTime = formatSyncTime(current.syncedAt);
     const age = current.syncedAt ? Date.now() - new Date(current.syncedAt).getTime() : Infinity;
     const due = ready && age > HOUR;
@@ -133,10 +142,41 @@
     const status = $('#healthSyncStatus');
     const quick = $('#quickStepSyncStatus');
     const badge = $('#hourlySyncBadge');
+    const eyebrow = $('#stepSyncEyebrow');
+    const title = $('#iosStepSyncTitle');
+    const deviceLabel = $('#detectedDeviceLabel');
+    const setupButton = $('#setupIosShortcutBtn');
+    const privacy = $('#stepSyncPrivacy');
+    const quickButton = $('#quickStepSyncBtn');
+
+    if (device === 'android') {
+      if (eyebrow) eyebrow.textContent = 'ANDROID STEPS';
+      if (title) title.textContent = 'Health Connect';
+      if (deviceLabel) deviceLabel.textContent = isAndroidNative() ? 'Android app detected • native connection active' : 'Android detected • companion app required';
+      if (setupButton) setupButton.textContent = isAndroidNative() ? 'Health permissions' : 'Set up Android sync';
+      if (privacy) privacy.textContent = 'Health Connect permissions stay on this Android device. MYBODY syncs only today’s date and step total.';
+      if (quickButton) quickButton.setAttribute('aria-label', 'Sync Android steps now');
+    } else if (device === 'ios') {
+      if (eyebrow) eyebrow.textContent = 'IPHONE STEPS';
+      if (title) title.textContent = isIOSNative() ? 'Apple Health' : 'Apple Health Shortcut';
+      if (deviceLabel) deviceLabel.textContent = isIOSNative() ? 'iPhone app detected • HealthKit connection active' : 'iPhone detected • Shortcut connection';
+      if (setupButton) setupButton.textContent = isIOSNative() ? 'Health permissions' : 'Set up iPhone sync';
+      if (privacy) privacy.textContent = 'The Shortcut sends only the date and step total to a private endpoint protected by a device-specific token.';
+      if (quickButton) quickButton.setAttribute('aria-label', 'Sync iPhone steps now');
+    } else {
+      if (eyebrow) eyebrow.textContent = 'PHONE STEPS';
+      if (title) title.textContent = 'Phone step sync';
+      if (deviceLabel) deviceLabel.textContent = 'Desktop browser detected • connect from your phone';
+      if (setupButton) setupButton.textContent = 'View iPhone setup';
+      if (privacy) privacy.textContent = 'Only today’s date and step total are synced. Health permissions remain on your phone.';
+      if (quickButton) quickButton.setAttribute('aria-label', 'Sync phone steps now');
+    }
 
     if (status) {
       if (current.syncedAt) status.textContent = `${current.steps.toLocaleString()} steps from ${current.source} • Last sync ${syncTime}${due ? ' • Background upload due' : ` • Next upload by ${formatSyncTime(next.toISOString())}`}`;
-      else if (isNative()) status.textContent = 'Apple Health is ready. Tap Sync now to request today’s steps.';
+      else if (isAndroidNative()) status.textContent = 'Health Connect is ready. Tap Sync now to read today’s Android steps.';
+      else if (isIOSNative()) status.textContent = 'Apple Health is ready. Tap Sync now to request today’s steps.';
+      else if (device === 'android') status.textContent = 'Install the Android companion to connect Health Connect. A browser or PWA cannot read health data directly.';
       else if (ready) status.textContent = 'Background Shortcut connected. Tap Sync now to check for its latest upload.';
       else status.textContent = 'Connect an Apple Shortcut to upload steps hourly without opening Safari.';
     }
@@ -144,7 +184,7 @@
     if (badge) {
       badge.classList.toggle('ready', ready && !due);
       badge.classList.toggle('due', due);
-      badge.textContent = !ready ? 'Setup needed' : due ? 'Upload due' : isNative() ? 'HealthKit ready' : 'Background ready';
+      badge.textContent = !ready ? (device === 'android' ? 'App needed' : 'Setup needed') : due ? 'Upload due' : isAndroidNative() ? 'Health Connect ready' : isIOSNative() ? 'HealthKit ready' : 'Background ready';
     }
   }
 
@@ -167,6 +207,18 @@
   }
 
   function openSetup() {
+    if (platform() === 'android') {
+      if (isAndroidNative()) {
+        androidNativeBridge().requestAuthorization?.();
+        return;
+      }
+      const androidSheet = $('#androidHealthSheet');
+      if (!androidSheet) return;
+      androidSheet.classList.remove('hidden');
+      document.body.classList.add('modal-open');
+      androidSheet.querySelector('.sheet-panel')?.focus({ preventScroll: true });
+      return;
+    }
     const sheet = $('#iosShortcutSheet');
     if (!sheet) return;
     populateSetupValues();
@@ -177,6 +229,7 @@
 
   function closeSetup() {
     $('#iosShortcutSheet')?.classList.add('hidden');
+    $('#androidHealthSheet')?.classList.add('hidden');
     if (!document.querySelector('.sheet-backdrop:not(.hidden),.media-lightbox:not(.hidden)')) document.body.classList.remove('modal-open');
   }
 
@@ -258,12 +311,12 @@
         const data = await cloudRequest({ action: 'read', token });
         localStorage.setItem(lastCloudCheckKey(), String(Date.now()));
         if (!data.found || data.date !== Store.localDate()) {
-          if (feedback) toast('No iPhone step upload for today yet.', 'error');
+          if (feedback) toast('No phone step upload for today yet.', 'error');
           return false;
         }
         const saved = saveSteps(data.steps, 'Apple Health background sync', data.updatedAt || new Date().toISOString());
         if (saved === false) throw new Error('Could not save the uploaded step total.');
-        if (feedback) toast(`${Number(saved).toLocaleString()} iPhone steps retrieved`);
+        if (feedback) toast(`${Number(saved).toLocaleString()} phone steps retrieved`);
         return saved;
       } catch (error) {
         if (feedback) toast(error.message || 'Could not check background steps.', 'error');
@@ -277,9 +330,18 @@
   }
 
   function manualSync() {
-    if (isNative()) {
+    if (isAndroidNative()) {
       $('#quickStepSyncBtn')?.classList.add('syncing');
-      nativeBridge().postMessage({ action: 'syncSteps' });
+      androidNativeBridge().requestSteps();
+      return;
+    }
+    if (isIOSNative()) {
+      $('#quickStepSyncBtn')?.classList.add('syncing');
+      iosNativeBridge().postMessage({ action: 'syncSteps' });
+      return;
+    }
+    if (platform() === 'android') {
+      openSetup();
       return;
     }
     if (!shortcutReady() || !syncToken(false)) {
@@ -301,6 +363,30 @@
     return true;
   }
 
+  function receiveAndroidSteps(payload = {}) {
+    $('#quickStepSyncBtn')?.classList.remove('syncing');
+    if (payload.error) {
+      toast(`Health Connect: ${payload.error}`, 'error');
+      return false;
+    }
+    const source = payload.source || 'Android Health Connect';
+    const saved = saveSteps(payload.steps, source, payload.syncedAt || new Date().toISOString());
+    if (saved === false) return false;
+    toast(`${Number(saved).toLocaleString()} steps synced from Health Connect`);
+    return true;
+  }
+
+  function configureAndroidBridge() {
+    if (!isAndroidNative()) return false;
+    const config = backgroundSyncConfig();
+    try {
+      androidNativeBridge().configureBackgroundSync?.(JSON.stringify(config));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   async function shareApp() {
     const data = { title: 'MYBODY 2.0', text: 'Track workouts, food, steps and progress with MYBODY 2.0.', url: cleanAppUrl() };
     try {
@@ -320,6 +406,8 @@
     $('#manualStepSyncBtn')?.addEventListener('click', manualSync);
     $('#setupIosShortcutBtn')?.addEventListener('click', openSetup);
     $('#closeIosShortcutSheet')?.addEventListener('click', closeSetup);
+    $('#closeAndroidHealthSheet')?.addEventListener('click', closeSetup);
+    $('#androidSetupDoneBtn')?.addEventListener('click', closeSetup);
     $('#copyShortcutEndpointBtn')?.addEventListener('click', copyEndpoint);
     $('#copyShortcutTokenBtn')?.addEventListener('click', copyToken);
     $('#createIosShortcutBtn')?.addEventListener('click', createShortcut);
@@ -337,7 +425,10 @@
     consumeShortcutHash();
     updateStatus();
     window.setInterval(updateStatus, 60 * 1000);
-    if (isNative()) nativeBridge().postMessage({ action: 'requestSteps' });
+    if (isAndroidNative()) {
+      configureAndroidBridge();
+      androidNativeBridge().requestSteps();
+    } else if (isIOSNative()) iosNativeBridge().postMessage({ action: 'requestSteps' });
     else pullCloudSteps();
   }
 
@@ -348,12 +439,16 @@
     manualSync,
     pullCloudSteps,
     receiveNativeSteps,
+    receiveAndroidSteps,
     shareApp,
     shortcutTemplate,
     backgroundSyncConfig,
     updateStatus,
-    isNative
+    detectPlatform,
+    isNative,
+    isAndroidNative
   });
   window.appleHealthSteps = Object.freeze({ syncNow: manualSync, saveSteps, receiveNativeSteps, isNative });
+  window.androidHealthSteps = Object.freeze({ syncNow: manualSync, saveSteps, receiveAndroidSteps, isNative: isAndroidNative });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 }());

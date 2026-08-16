@@ -156,7 +156,7 @@ svg { display: block; }
 }
 .icon-btn svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .topbar .user-chip button { padding: 8px 11px; font-size: 14px; font-weight: 750; }
-.topbar .user-chip button:first-child { max-width: 160px; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar #logoutBtn { min-width: 76px; white-space: nowrap; }
 
 .app-shell { display: grid; width: min(100%, 980px); margin: 0 auto; padding: var(--space-4) clamp(14px, 4vw, 30px) 44px; }
 .panel { display: none; min-width: 0; animation: panel-in .18s ease-out; }
@@ -446,6 +446,7 @@ input[type="date"]::-webkit-date-and-time-value { min-width: 100%; height: 22px;
 .sync-card-head, .app-share-card { grid-template-columns: minmax(0,1fr) auto; align-items: center; }
 .sync-card-head { display: grid; gap: 12px; }
 .sync-card-head h3, .app-share-card h3 { margin: 4px 0 0; font-size: 22px; }
+.detected-device { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; font-weight: 700; }
 .sync-badge { padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; }
 .sync-badge.ready { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: var(--accent-soft); color: var(--accent); }
 .sync-badge.due { border-color: color-mix(in srgb, var(--orange) 45%, var(--line)); color: var(--orange); }
@@ -469,6 +470,7 @@ input[type="date"]::-webkit-date-and-time-value { min-width: 100%; height: 22px;
 .shortcut-template .text-btn { grid-column: 2; grid-row: 1 / span 2; align-self: stretch; border: 1px solid var(--line); border-radius: 11px; }
 .shortcut-template.private-token code { color: var(--orange); letter-spacing: .035em; }
 .shortcut-sheet-actions { display: grid; grid-template-columns: 1.2fr .8fr; gap: 10px; }
+.button-link { display: flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 48px; text-decoration: none; }
 .history-block { margin-top: 28px; }
 .history-block h3 { margin: 0 0 10px; font-size: 22px; }
 footer { width: min(100%, 980px); margin: 0 auto; padding: 0 20px 24px; color: var(--muted); text-align: center; font-size: 11px; }
@@ -542,8 +544,7 @@ body.modal-open { overflow: hidden; }
   :root { --nav-height: 72px; }
   .topbar { min-height: calc(66px + var(--safe-top)); padding-inline: 15px; }
   .topbar h1 { font-size: 26px; }
-  .topbar .user-chip button:first-child { width: 44px; overflow: hidden; font-size: 0; }
-  .topbar .user-chip button:first-child::before { content: "●"; color: var(--accent); font-size: 18px; }
+  .topbar #logoutBtn { min-width: 70px; padding-inline: 10px; }
   .app-shell { padding: 18px 12px 36px; }
   .metric-card, .card { border-radius: 17px; }
   .metric-card { padding: 14px; }
@@ -596,7 +597,6 @@ body.modal-open { overflow: hidden; }
   .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .form-grid.two:not(.settings-grid) { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
-  .topbar .user-chip button:last-child { display: none; }
   .energy-overview-head { grid-template-columns: 1fr; }
   .energy-balance-summary { border-top: 1px solid var(--line); border-left: 0; }
 }

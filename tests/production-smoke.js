@@ -23,7 +23,7 @@ function verifyMarkup() {
   const html = read('index-production.html');
   const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, 'HTML must not contain duplicate IDs');
-  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'quickStepSyncBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'iosShortcutSheet', 'shortcutSyncEndpoint', 'shortcutSyncToken', 'copyShortcutEndpointBtn', 'copyShortcutTokenBtn']) {
+  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'quickStepSyncBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'detectedDeviceLabel', 'iosShortcutSheet', 'androidHealthSheet', 'downloadAndroidAppBtn', 'shortcutSyncEndpoint', 'shortcutSyncToken', 'copyShortcutEndpointBtn', 'copyShortcutTokenBtn']) {
     assert.ok(ids.includes(id), `Missing required element #${id}`);
   }
   assert.doesNotMatch(html, /(?:todayDetails|workoutHistorySheet|foodHistorySheet|progressHistorySheet)" class="sheet-backdrop/);
@@ -36,10 +36,14 @@ function verifyMarkup() {
   for (const id of ['budgetHeadline', 'dashBalance', 'dashBalanceLabel', 'baseBurn', 'stepBurn', 'exerciseBurn', 'dashBurn']) assert.match(energy, new RegExp(`id="${id}"`), `Energy overview must include #${id}`);
   assert.doesNotMatch(html, /class="metric-card metric-(?:burn|balance)"/, 'Burn and balance must not remain as separate cards');
   assert.doesNotMatch(html, /id="totalBurn"/, 'Estimated burn must not be duplicated as total burn');
-  assert.match(html, /src="health-sync\.js\?v=__BUILD__"/, 'Production page must load the iPhone sync and sharing controller');
+  assert.match(html, /src="health-sync\.js\?v=__BUILD__"/, 'Production page must load the phone sync and sharing controller');
   assert.match(html, /Time of Day trigger for each hour/, 'Hourly Shortcut setup guidance must remain visible');
   assert.match(html, /Get Contents of URL/, 'Background Shortcut guidance must use an HTTP request');
   assert.match(html, /Do not add Open URLs/, 'Background Shortcut guidance must explicitly avoid opening Safari');
+  assert.match(html, /Health Connect keeps health data behind native Android permissions/, 'Android setup must explain the native bridge requirement');
+  const auth = read('auth-onboarding.js');
+  assert.doesNotMatch(auth, /id="profileBtn"/, 'Header profile button must be removed');
+  assert.match(auth, /id="logoutBtn"/, 'Header logout button must remain available');
 }
 
 function verifyHealthSync() {
@@ -72,6 +76,7 @@ function verifyHealthSync() {
   context.window = context;
   vm.runInNewContext(read('health-sync.js'), context, { filename: 'health-sync.js' });
   const sync = context.MyBodyHealthSync;
+  assert.equal(sync.detectPlatform(), 'ios', 'iPhone must be detected as iOS');
   assert.equal(sync.parseShortcutHash('#mybody-sync?steps=12%2C345').steps, 12345, 'Shortcut parser should accept a formatted step total');
   assert.match(sync.parseShortcutHash('#mybody-sync?steps=bad').error, /valid step total/, 'Shortcut parser should reject invalid values');
   context.location.hash = '#mybody-sync?steps=4321';
@@ -85,6 +90,19 @@ function verifyHealthSync() {
   const background = sync.backgroundSyncConfig();
   assert.equal(background.endpoint, 'https://vucmcxkgpghnahnocirk.supabase.co/functions/v1/ios-step-sync');
   assert.match(background.token, /^[a-f0-9]{64}$/, 'Background sync token must be a 256-bit hex capability');
+
+  let androidRequests = 0;
+  context.navigator = { userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36', platform: 'Linux armv8l', maxTouchPoints: 5 };
+  context.MyBodyAndroidHealth = { requestSteps() { androidRequests += 1; }, configureBackgroundSync() {}, requestAuthorization() {} };
+  vm.runInNewContext(read('health-sync.js'), context, { filename: 'health-sync-android.js' });
+  const androidSync = context.MyBodyHealthSync;
+  assert.equal(androidSync.detectPlatform(), 'android', 'Android user agent must be detected automatically');
+  assert.equal(androidSync.isAndroidNative(), true, 'Android Health Connect bridge must be detected');
+  androidSync.manualSync();
+  assert.equal(androidRequests, 1, 'Android Sync now must request Health Connect steps');
+  assert.equal(androidSync.receiveAndroidSteps({ steps: 5678, syncedAt: '2026-08-16T12:00:00Z' }), true);
+  assert.equal(state.activity['2026-08-16'].steps, 5678);
+  assert.equal(state.activity['2026-08-16'].stepsSource, 'Android Health Connect');
 }
 
 function verifyNavigation() {
@@ -155,6 +173,20 @@ function verifyFoodDatabase() {
   }
 }
 
+function verifyAndroidNativeProject() {
+  const manifest = read('android-native/app/src/main/AndroidManifest.xml');
+  const activity = read('android-native/app/src/main/java/com/mybody/tracker/MainActivity.kt');
+  const worker = read('android-native/app/src/main/java/com/mybody/tracker/StepSyncWorker.kt');
+  const workflow = read('.github/workflows/android-native-build.yml');
+  assert.match(manifest, /android\.permission\.health\.READ_STEPS/, 'Android app must request Health Connect steps');
+  assert.match(manifest, /READ_HEALTH_DATA_IN_BACKGROUND/, 'Android app must declare background health access');
+  assert.match(activity, /addJavascriptInterface\(AndroidHealthBridge\(\), "MyBodyAndroidHealth"\)/, 'Android wrapper must expose the Health Connect bridge');
+  assert.match(activity, /tausifdg-cmyk\.github\.io/, 'Android wrapper must restrict its trusted tracker host');
+  assert.match(worker, /PeriodicWorkRequestBuilder<StepSyncWorker>\(1, TimeUnit\.HOURS\)/, 'Android background sync must be scheduled hourly');
+  assert.match(worker, /APPROVED_ENDPOINT/, 'Android uploads must be pinned to the approved step endpoint');
+  assert.match(workflow, /assembleDebug/, 'Android test APK workflow must compile the app');
+}
+
 function verifyExerciseAliases() {
   const context = { window: {} };
   vm.runInNewContext(read('exercise-library.js'), context, { filename: 'exercise-library.js' });
@@ -220,7 +252,7 @@ async function verifyServiceWorkerMediaCache() {
   assert.equal(videos.length, 58, 'Service worker must pre-cache 42 avatar and 16 real-human videos');
   assert.equal(posters.length, 42, 'Service worker must pre-cache one poster per exercise');
   assert.equal(new Set(videos).size, videos.length, 'Service worker video cache entries must be unique');
-  assert.ok(installedAssets.includes('./health-sync.js'), 'iPhone sync controller must be available offline');
+  assert.ok(installedAssets.includes('./health-sync.js'), 'Phone sync controller must be available offline');
 }
 
 async function runBuildHarness(remoteBuild) {
@@ -272,6 +304,7 @@ async function main() {
   verifyNavigation();
   verifyHealthSync();
   verifyFoodDatabase();
+  verifyAndroidNativeProject();
   verifyExerciseAliases();
   await verifyServiceWorkerMediaCache();
   const current = await runBuildHarness(172);
