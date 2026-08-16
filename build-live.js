@@ -17,6 +17,30 @@
     document.documentElement.dataset.build = build;
   }
 
+  function loadScript(src) {
+    return new Promise((resolve) => {
+      if ([...document.scripts].some((s) => s.src.includes(src))) return resolve();
+      const s = document.createElement('script');
+      s.src = `${src}?v=${encodeURIComponent(metaBuild)}`;
+      s.defer = true;
+      s.onload = resolve;
+      s.onerror = resolve;
+      document.body.appendChild(s);
+    });
+  }
+
+  async function loadCloudModules() {
+    if (!document.querySelector('link[href*="admin-dashboard.css"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = `admin-dashboard.css?v=${encodeURIComponent(metaBuild)}`;
+      document.head.appendChild(link);
+    }
+    await loadScript('supabase-cloud.js');
+    await loadScript('admin-ui.js');
+    window.MyBodyAdminUI?.init?.();
+  }
+
   function indicator() {
     return document.getElementById('pullRefresh');
   }
@@ -136,6 +160,7 @@
 
   function init() {
     setBuild(currentBuild || metaBuild);
+    loadCloudModules().catch(() => {});
     document.addEventListener('touchstart', onTouchStart, { passive: true });
     document.addEventListener('touchmove', onTouchMove, { passive: false });
     document.addEventListener('touchend', onTouchEnd, { passive: true });
