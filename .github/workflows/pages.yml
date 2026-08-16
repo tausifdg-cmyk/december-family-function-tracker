@@ -48,12 +48,18 @@ jobs:
           test -s assets/exercises/barbell-squat.gif
           test -s assets/exercises/dumbbell-curl.gif
           ! grep -R "__BUILD__" index.html service-worker.js manifest.json
+          grep -q 'id="pullRefresh"' index.html
+          grep -q 'id="workoutHistory"' index.html
+          grep -q 'id="foodHistory"' index.html
+          grep -q 'id="progressList"' index.html
+          ! grep -q 'HistorySheet' index.html
           node --check core-storage.js
           node --check exercise-library.js
           node --check app-production.js
           node --check navigation-fix.js
           node --check build-live.js
           node --check service-worker.js
+          node tests/production-smoke.js
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
