@@ -779,6 +779,16 @@
       save?.classList.remove('saved');
       if (save) save.textContent = 'Save';
     }
+    if (food && event.target.matches('.food-name')) {
+      const query = event.target.value.trim().toLowerCase();
+      const selected = findFood(query);
+      const exactMatch = selected && (selected.name.toLowerCase() === query || (selected.aliases || []).some((alias) => String(alias).toLowerCase() === query));
+      if (exactMatch) {
+        const unit = preferredFoodUnit(selected);
+        $('.food-unit', food).value = unit;
+        $('.food-amount', food).value = unit === 'each' ? 1 : num(selected.defaultGrams, 100);
+      }
+    }
   }
 
   async function registerServiceWorker() {

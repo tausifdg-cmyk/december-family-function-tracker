@@ -53,6 +53,9 @@ function verifyMarkup() {
   assert.match(auth, /id="logoutBtn"/, 'Header logout button must remain available');
   assert.match(auth, /id="authIosInstall"/, 'Web login must expose iPhone installation help');
   assert.match(auth, /Download Android APK/, 'Web login must expose the Android APK');
+  const app = read('app-production.js');
+  assert.match(app, /function preferredFoodUnit/, 'Food logger must infer natural units');
+  assert.match(app, /selected\.aliases.*exactMatch/s, 'Exact food names and aliases must update the unit while typing');
 }
 
 function verifyHealthSync() {
