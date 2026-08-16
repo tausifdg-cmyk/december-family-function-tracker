@@ -176,7 +176,7 @@
     const day = activity();
     const burn = energyBurn();
     const balance = burn.total - totals.calories;
-    text('#todayLabel', new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' }));
+    text('#todayLabel', new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }));
     text('#dashIntake', Math.round(totals.calories));
     text('#dashBurn', Math.round(burn.total));
     text('#dashBalance', `${balance >= 0 ? '-' : '+'}${Math.abs(Math.round(balance))}`);
