@@ -40,6 +40,7 @@ jobs:
           test -s index.html
           test -s production.css
           test -s app-production.js
+          test -s exercise-library.js
           test -s core-storage.js
           test -s assets/workout-hero.webp
           test -s assets/exercises/dumbbell-bench-press.gif
@@ -48,6 +49,7 @@ jobs:
           test -s assets/exercises/dumbbell-curl.gif
           ! grep -R "__BUILD__" index.html service-worker.js manifest.json
           node --check core-storage.js
+          node --check exercise-library.js
           node --check app-production.js
           node --check navigation-fix.js
           node --check build-live.js
