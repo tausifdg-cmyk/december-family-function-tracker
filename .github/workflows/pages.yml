@@ -56,6 +56,7 @@ jobs:
           node --check core-storage.js
           node --check exercise-library.js
           node --check app-production.js
+          node --check health-sync.js
           node --check navigation-fix.js
           node --check build-live.js
           node --check service-worker.js

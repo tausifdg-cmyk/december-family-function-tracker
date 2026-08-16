@@ -35,6 +35,9 @@
       <span id="buildBadge">Build #__BUILD__</span>
     </div>
     <div class="header-actions">
+      <button id="shareAppBtn" class="icon-btn" type="button" aria-label="Share MYBODY 2.0">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.1m-6.6 6.7 6.6 4.1"/></svg>
+      </button>
       <button id="themeBtn" class="icon-btn" type="button" aria-label="Switch theme">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>
       </button>
@@ -48,7 +51,7 @@
         <div class="summary-metrics">
           <article class="summary-goal summary-calories"><div><span>Calories</span><strong id="scoreCalories">0 / 0</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreCaloriesBar"></span></div></article>
           <article class="summary-goal summary-protein"><div><span>Protein</span><strong id="scoreProtein">0 / 0g</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreProteinBar"></span></div></article>
-          <article class="summary-goal summary-steps"><div><span>Steps</span><strong id="scoreSteps">0 / 0</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreStepsBar"></span></div></article>
+          <article class="summary-goal summary-steps"><div class="summary-goal-head"><div><span>Steps</span><strong id="scoreSteps">0 / 0</strong></div><button id="quickStepSyncBtn" class="summary-sync-btn" type="button" aria-label="Sync iPhone steps now" title="Sync steps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 8m16 8-2.2 1.8A7 7 0 0 1 5.5 15"/></svg></button></div><div class="mini-progress" aria-hidden="true"><span id="scoreStepsBar"></span></div><small id="quickStepSyncStatus" class="summary-sync-status">Manual</small></article>
           <article class="summary-goal summary-water"><div><span>Water</span><strong id="scoreWater">0 / 0L</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreWaterBar"></span></div></article>
         </div>
       </section>
@@ -149,8 +152,29 @@
         <div class="settings-note"><b>How burn is calculated</b><p id="bmrExplanation">—</p></div>
         <button id="saveSettings" class="primary full" type="button">Save settings</button>
       </section>
+      <section class="card ios-sync-card" aria-labelledby="iosStepSyncTitle">
+        <div class="sync-card-head"><div><span class="eyebrow">IPHONE STEPS</span><h3 id="iosStepSyncTitle">Apple Health Shortcut</h3></div><span id="hourlySyncBadge" class="sync-badge">Setup needed</span></div>
+        <p id="healthSyncStatus" class="muted-copy">Connect an Apple Shortcut to bring today’s step total into this app without a paid developer account.</p>
+        <div class="sync-actions"><button id="manualStepSyncBtn" class="secondary" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 8m16 8-2.2 1.8A7 7 0 0 1 5.5 15"/></svg>Sync now</button><button id="setupIosShortcutBtn" class="primary" type="button">Set up iPhone sync</button></div>
+        <p class="sync-privacy">Step values arrive through a URL fragment and are stored only in your MYBODY profile. They are not sent to GitHub Pages.</p>
+      </section>
+      <section class="card app-share-card" aria-labelledby="shareAppTitle"><div><span class="eyebrow">APP ACCESS</span><h3 id="shareAppTitle">Share MYBODY 2.0</h3><p class="muted-copy">Send the app link using the phone’s share sheet, or copy it on desktop.</p></div><button id="shareAppSettingsBtn" class="secondary" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.1m-6.6 6.7 6.6 4.1"/></svg>Share app</button></section>
     </section>
   </main>
+
+  <div id="iosShortcutSheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="iosShortcutTitle"><section class="sheet-panel shortcut-panel" tabindex="-1">
+    <header class="sheet-head"><div><h2 id="iosShortcutTitle">Connect iPhone steps</h2><p>No paid Apple Developer account required</p></div><button id="closeIosShortcutSheet" type="button" class="sheet-close" aria-label="Close iPhone Shortcut setup"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+    <div class="shortcut-callout"><b>How it works</b><p>The Shortcut totals today’s Steps from Apple Health, then opens MYBODY 2.0 with the number in a private URL fragment.</p></div>
+    <ol class="shortcut-steps">
+      <li><b>Create a Shortcut</b><span>Name it <strong>MYBODY Step Sync</strong>.</span></li>
+      <li><b>Read today’s Steps</b><span>Add <strong>Find Health Samples</strong>, filter Type to Steps and Start Date to today, then calculate the Sum.</span></li>
+      <li><b>Open the sync link</b><span>Add a URL action using the copied template, replace <strong>STEP_TOTAL</strong> with the calculated Sum, then add <strong>Open URLs</strong>.</span></li>
+      <li><b>Add hourly automations</b><span>In Shortcuts → Automation, add a Time of Day trigger for each hour you want, select this Shortcut, and choose Run Immediately.</span></li>
+    </ol>
+    <div class="shortcut-template"><span>Private sync-link template</span><code id="shortcutSyncTemplate"></code></div>
+    <div class="shortcut-sheet-actions"><button id="createIosShortcutBtn" type="button" class="primary full">Copy template &amp; open Shortcuts</button><button id="markShortcutReadyBtn" type="button" class="secondary full">I’ve finished setup</button></div>
+    <p class="shortcut-limit">Apple requires confirmation when a Shortcut is installed and requires separate Time of Day automations for true hourly scheduling. The app cannot bypass those iOS controls.</p>
+  </section></div>
 
   <div id="exerciseLibrarySheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="exerciseLibraryTitle"><section class="sheet-panel exercise-library-panel" tabindex="-1">
     <header class="sheet-head"><div><h2 id="exerciseLibraryTitle">Exercise library</h2><p>42 real-human and 3D-avatar video demonstrations that work offline</p></div><button type="button" class="sheet-close" data-sheet-close aria-label="Close exercise library"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
@@ -181,6 +205,7 @@
   <script src="core-storage.js?v=__BUILD__" defer></script>
   <script src="exercise-library.js?v=__BUILD__" defer></script>
   <script src="app-production.js?v=__BUILD__" defer></script>
+  <script src="health-sync.js?v=__BUILD__" defer></script>
   <script src="navigation-fix.js?v=__BUILD__" defer></script>
   <script src="build-live.js?v=__BUILD__" defer></script>
 </body>

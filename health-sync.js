@@ -1,61 +1,259 @@
-/* Apple Health bridge.
-   In the native iOS wrapper this talks to HealthKit through WKWebView and updates
-   the existing screen in place. In Safari/PWA mode Apple does not expose HealthKit,
-   so the app keeps manual step entry available instead of launching a new page.
-*/
-(function(){
-  const STORAGE_KEY='decemberTracker.v1';
-  const today=()=>new Date().toLocaleDateString('en-CA');
-  const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
-  const nativeBridge=()=>window.webkit?.messageHandlers?.healthkit;
+/* MYBODY 2.0 iPhone step sync and app sharing.
+   Web/PWA mode accepts Apple Shortcut data through the URL fragment, which is
+   never sent to the web server. The optional native wrapper continues to use
+   its HealthKit WKWebView bridge. */
+(function () {
+  'use strict';
 
-  function load(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{}}catch{return{}}}
-  function saveSteps(steps,source='Apple Health',syncedAt=new Date().toISOString()){
-    const value=Math.max(0,Math.round(Number(steps)||0));
-    const s=load();s.activity=s.activity||{};const k=today();
-    s.activity[k]={...(s.activity[k]||{}),steps:value,stepsSource:source,stepsSyncedAt:syncedAt||new Date().toISOString()};
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(s));
+  const Store = window.MyBodyStore;
+  if (!Store) throw new Error('MyBodyStore must load before health-sync.js');
+
+  const SHORTCUT_NAME = 'MYBODY Step Sync';
+  const SHORTCUT_READY_KEY = 'mybody.shortcut.ready.v1';
+  const HOUR = 60 * 60 * 1000;
+
+  const $ = (selector) => document.querySelector(selector);
+  const nativeBridge = () => window.webkit?.messageHandlers?.healthkit;
+  const isNative = () => Boolean(nativeBridge());
+  const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const shortcutReady = () => localStorage.getItem(SHORTCUT_READY_KEY) === '1';
+
+  function cleanAppUrl() {
+    const url = new URL('./', window.location.href);
+    url.hash = '';
+    url.search = '';
+    return url.href;
+  }
+
+  function shortcutTemplate() {
+    return `${cleanAppUrl()}#mybody-sync?steps=STEP_TOTAL`;
+  }
+
+  function todayActivity() {
+    const state = Store.read();
+    const activity = state.activity?.[Store.localDate()] || {};
+    return {
+      steps: Store.number(activity.steps, 0, 0, 200000),
+      source: activity.stepsSource || activity.stepSource || 'Manual',
+      syncedAt: activity.stepsSyncedAt || activity.stepSyncedAt || ''
+    };
+  }
+
+  function saveSteps(steps, source = 'Apple Shortcut', syncedAt = new Date().toISOString()) {
+    const value = Math.round(Store.number(String(steps).replaceAll(',', ''), NaN, 0, 200000));
+    if (!Number.isFinite(value)) return false;
+    const state = Store.read();
+    const date = Store.localDate();
+    state.activity[date] = {
+      ...(state.activity[date] || {}),
+      steps: value,
+      stepsSource: source,
+      stepsSyncedAt: syncedAt
+    };
+    const result = Store.write(state);
+    if (!result.ok) return false;
+    localStorage.setItem(SHORTCUT_READY_KEY, '1');
+    window.MyBodyApp?.render?.();
+    updateStatus();
+    window.dispatchEvent(new CustomEvent('mybody:steps-synced', { detail: { steps: value, source, syncedAt } }));
     return value;
   }
-  function stateForToday(){const s=load(),a=s.activity?.[today()]||{};return{steps:Number(a.steps)||0,source:a.stepsSource||'Manual',syncedAt:a.stepsSyncedAt||''}}
-  function formatTime(iso){if(!iso)return'Not synced yet';const d=new Date(iso);return Number.isNaN(d.getTime())?'Not synced yet':`Last sync ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`}
-  function isNative(){return !!nativeBridge()}
-  function requestNative(action='syncSteps'){
-    const bridge=nativeBridge();
-    if(!bridge){showWebNotice();return false}
-    bridge.postMessage({action});return true;
+
+  function parseShortcutHash(hash = window.location.hash) {
+    const raw = String(hash || '').replace(/^#/, '');
+    if (!raw.startsWith('mybody-sync?')) return null;
+    const params = new URLSearchParams(raw.slice('mybody-sync?'.length));
+    const steps = Number(String(params.get('steps') || '').replaceAll(',', ''));
+    if (!Number.isFinite(steps) || steps < 0 || steps > 200000) return { error: 'The Shortcut did not provide a valid step total.' };
+    return { steps: Math.round(steps) };
   }
-  function syncNow(){return requestNative('syncSteps')}
-  function receiveNativeSteps(payload){
-    const p=payload||{};
-    if(p.error){setStatus(`Apple Health: ${p.error}`);return false}
-    const steps=saveSteps(p.steps,'Apple Health',p.syncedAt||new Date().toISOString());
-    const input=document.getElementById('stepsInput');if(input)input.value=steps;
-    refreshLabels();
-    window.dispatchEvent(new CustomEvent('tausif-health-steps',{detail:{steps,source:'Apple Health'}}));
-    // Re-render the existing dashboard without navigating or reloading.
-    if(typeof renderAll==='function')renderAll();
+
+  function consumeShortcutHash() {
+    const payload = parseShortcutHash();
+    if (!payload) return false;
+    if (!localStorage.getItem(Store.SESSION_KEY)) return false;
+    const destination = `${window.location.pathname}${window.location.search}#today`;
+    window.history.replaceState(null, '', destination);
+    if (payload.error) {
+      toast(payload.error, 'error');
+      return false;
+    }
+    const saved = saveSteps(payload.steps, 'Apple Health via Shortcut');
+    if (saved === false) {
+      toast('Could not save the iPhone step total.', 'error');
+      return false;
+    }
+    toast(`${Number(saved).toLocaleString()} steps synced from iPhone`);
+    window.dispatchEvent(new CustomEvent('mybody:navigate', { detail: { id: 'today' } }));
     return true;
   }
-  function setStatus(text){const a=document.getElementById('healthSyncStatus'),b=document.getElementById('quickHealthStatus');if(a)a.textContent=text;if(b)b.textContent=text}
-  function showWebNotice(){
-    setStatus('Apple Health direct sync is available in the iPhone app. Manual Steps entry still works here.');
-    const input=document.getElementById('stepsInput');input?.focus();
+
+  function formatSyncTime(iso) {
+    const value = new Date(iso);
+    if (!iso || Number.isNaN(value.getTime())) return '';
+    return value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
-  function injectCard(){
-    const settings=document.querySelector('#settings .form-card');if(!settings||document.getElementById('appleHealthCard'))return;
-    const current=stateForToday(),native=isNative();const card=document.createElement('section');card.id='appleHealthCard';card.className='settings-note';
-    card.innerHTML=`<b>Apple Health steps</b><p id="healthSyncStatus">${esc(current.steps?`${current.steps.toLocaleString()} steps • ${current.source} • ${formatTime(current.syncedAt)}`:(native?'Ready to sync':'Native iPhone app required for direct Health sync'))}</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button id="healthSyncBtn" type="button" class="secondary">${native?' Sync now':' Apple Health'}</button></div><p class="muted-copy" style="margin-top:8px">${native?'Sync stays on this screen. HealthKit also refreshes the cached step total in the background when iOS delivers updates.':'Safari/Home Screen apps cannot read HealthKit directly. Use the Steps field manually, or install the native iPhone version.'}</p>`;
-    settings.insertBefore(card,settings.querySelector('#saveSettings'));document.getElementById('healthSyncBtn')?.addEventListener('click',syncNow);
+
+  function updateStatus() {
+    const current = todayActivity();
+    const ready = isNative() || shortcutReady();
+    const syncTime = formatSyncTime(current.syncedAt);
+    const age = current.syncedAt ? Date.now() - new Date(current.syncedAt).getTime() : Infinity;
+    const due = ready && age > HOUR;
+    const next = current.syncedAt ? new Date(new Date(current.syncedAt).getTime() + HOUR) : null;
+    const status = $('#healthSyncStatus');
+    const quick = $('#quickStepSyncStatus');
+    const badge = $('#hourlySyncBadge');
+
+    if (status) {
+      if (current.syncedAt) status.textContent = `${current.steps.toLocaleString()} steps from ${current.source} • Last sync ${syncTime}${due ? ' • Hourly sync due' : ` • Next by ${formatSyncTime(next.toISOString())}`}`;
+      else if (isNative()) status.textContent = 'Apple Health is ready. Tap Sync now to request today’s steps.';
+      else if (ready) status.textContent = 'Shortcut connected. Run it once, then add your hourly Time of Day automations.';
+      else status.textContent = 'Connect an Apple Shortcut to bring today’s step total into this app without a paid developer account.';
+    }
+    if (quick) quick.textContent = current.syncedAt ? `${syncTime}${due ? ' • due' : ''}` : ready ? 'Ready' : 'Manual';
+    if (badge) {
+      badge.classList.toggle('ready', ready && !due);
+      badge.classList.toggle('due', due);
+      badge.textContent = !ready ? 'Setup needed' : due ? 'Sync due' : isNative() ? 'HealthKit ready' : 'Hourly ready';
+    }
   }
-  function injectQuickSync(){
-    const quick=document.querySelector('#today .form-card');if(!quick||document.getElementById('quickHealthSync'))return;
-    const cur=stateForToday(),native=isNative();const row=document.createElement('div');row.id='quickHealthSync';row.className='settings-note';row.style.marginTop='12px';
-    row.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b> Apple Health steps</b><p id="quickHealthStatus">${esc(cur.steps?`${cur.steps.toLocaleString()} steps • ${formatTime(cur.syncedAt)}`:(native?'Ready to sync on this screen':'Manual steps in web version'))}</p></div><button id="quickHealthBtn" type="button" class="secondary">${native?'Sync steps':'Health sync'}</button></div>`;
-    quick.appendChild(row);document.getElementById('quickHealthBtn')?.addEventListener('click',syncNow);
+
+  function toast(message, type = 'success') {
+    const node = $('#appToast');
+    if (!node) return;
+    node.textContent = message;
+    node.dataset.type = type;
+    node.classList.add('show');
+    window.clearTimeout(toast.timer);
+    toast.timer = window.setTimeout(() => node.classList.remove('show'), 2600);
   }
-  function refreshLabels(){const cur=stateForToday(),full=cur.steps?`${cur.steps.toLocaleString()} steps • ${cur.source} • ${formatTime(cur.syncedAt)}`:'Not synced yet',short=cur.steps?`${cur.steps.toLocaleString()} steps • ${formatTime(cur.syncedAt)}`:'Ready to sync';const a=document.getElementById('healthSyncStatus'),b=document.getElementById('quickHealthStatus');if(a)a.textContent=full;if(b)b.textContent=short}
-  function init(){injectQuickSync();injectCard();refreshLabels();if(isNative())requestNative('requestSteps')}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-  window.appleHealthSteps={syncNow,saveSteps,receiveNativeSteps,isNative};
-})();
+
+  function openSetup() {
+    const sheet = $('#iosShortcutSheet');
+    if (!sheet) return;
+    const template = $('#shortcutSyncTemplate');
+    if (template) template.textContent = shortcutTemplate();
+    sheet.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    sheet.querySelector('.sheet-panel')?.focus({ preventScroll: true });
+  }
+
+  function closeSetup() {
+    $('#iosShortcutSheet')?.classList.add('hidden');
+    if (!document.querySelector('.sheet-backdrop:not(.hidden),.media-lightbox:not(.hidden)')) document.body.classList.remove('modal-open');
+  }
+
+  async function copyText(value) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+    const input = document.createElement('textarea');
+    input.value = value;
+    input.setAttribute('readonly', '');
+    input.style.position = 'fixed';
+    input.style.opacity = '0';
+    document.body.appendChild(input);
+    input.select();
+    const copied = document.execCommand('copy');
+    input.remove();
+    return copied;
+  }
+
+  async function createShortcut() {
+    if (!isIOS()) {
+      toast('Open MYBODY 2.0 on an iPhone to create the Apple Shortcut.', 'error');
+      return;
+    }
+    try {
+      await copyText(shortcutTemplate());
+      toast('Sync-link template copied. Opening Shortcuts…');
+      window.setTimeout(() => { window.location.href = 'shortcuts://create-shortcut'; }, 220);
+    } catch (_) {
+      toast('Could not copy the sync-link template.', 'error');
+    }
+  }
+
+  function markShortcutReady() {
+    localStorage.setItem(SHORTCUT_READY_KEY, '1');
+    closeSetup();
+    updateStatus();
+    toast('iPhone Shortcut marked ready');
+  }
+
+  function manualSync() {
+    if (isNative()) {
+      $('#quickStepSyncBtn')?.classList.add('syncing');
+      nativeBridge().postMessage({ action: 'syncSteps' });
+      return;
+    }
+    if (!isIOS() || !shortcutReady()) {
+      openSetup();
+      return;
+    }
+    $('#quickStepSyncBtn')?.classList.add('syncing');
+    window.location.href = `shortcuts://run-shortcut?name=${encodeURIComponent(SHORTCUT_NAME)}`;
+    window.setTimeout(() => $('#quickStepSyncBtn')?.classList.remove('syncing'), 2500);
+  }
+
+  function receiveNativeSteps(payload = {}) {
+    $('#quickStepSyncBtn')?.classList.remove('syncing');
+    if (payload.error) {
+      toast(`Apple Health: ${payload.error}`, 'error');
+      return false;
+    }
+    const saved = saveSteps(payload.steps, 'Apple Health', payload.syncedAt || new Date().toISOString());
+    if (saved === false) return false;
+    toast(`${Number(saved).toLocaleString()} steps synced from Apple Health`);
+    return true;
+  }
+
+  async function shareApp() {
+    const data = { title: 'MYBODY 2.0', text: 'Track workouts, food, steps and progress with MYBODY 2.0.', url: cleanAppUrl() };
+    try {
+      if (navigator.share) {
+        await navigator.share(data);
+        return;
+      }
+      await copyText(data.url);
+      toast('App link copied');
+    } catch (error) {
+      if (error?.name !== 'AbortError') toast('Could not share the app link.', 'error');
+    }
+  }
+
+  function init() {
+    const template = $('#shortcutSyncTemplate');
+    if (template) template.textContent = shortcutTemplate();
+    $('#quickStepSyncBtn')?.addEventListener('click', manualSync);
+    $('#manualStepSyncBtn')?.addEventListener('click', manualSync);
+    $('#setupIosShortcutBtn')?.addEventListener('click', openSetup);
+    $('#closeIosShortcutSheet')?.addEventListener('click', closeSetup);
+    $('#createIosShortcutBtn')?.addEventListener('click', createShortcut);
+    $('#markShortcutReadyBtn')?.addEventListener('click', markShortcutReady);
+    $('#shareAppBtn')?.addEventListener('click', shareApp);
+    $('#shareAppSettingsBtn')?.addEventListener('click', shareApp);
+    window.addEventListener('hashchange', consumeShortcutHash);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) updateStatus(); });
+    consumeShortcutHash();
+    updateStatus();
+    window.setInterval(updateStatus, 60 * 1000);
+    if (isNative()) nativeBridge().postMessage({ action: 'requestSteps' });
+  }
+
+  window.MyBodyHealthSync = Object.freeze({
+    parseShortcutHash,
+    consumeShortcutHash,
+    saveSteps,
+    manualSync,
+    receiveNativeSteps,
+    shareApp,
+    shortcutTemplate,
+    updateStatus,
+    isNative
+  });
+  // Keep the existing WKWebView bridge contract used by the optional native wrapper.
+  window.appleHealthSteps = Object.freeze({ syncNow: manualSync, saveSteps, receiveNativeSteps, isNative });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
+}());

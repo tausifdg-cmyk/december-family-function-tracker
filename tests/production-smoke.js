@@ -23,7 +23,7 @@ function verifyMarkup() {
   const html = read('index-production.html');
   const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, 'HTML must not contain duplicate IDs');
-  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList']) {
+  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'quickStepSyncBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'iosShortcutSheet']) {
     assert.ok(ids.includes(id), `Missing required element #${id}`);
   }
   assert.doesNotMatch(html, /(?:todayDetails|workoutHistorySheet|foodHistorySheet|progressHistorySheet)" class="sheet-backdrop/);
@@ -31,6 +31,49 @@ function verifyMarkup() {
   const summary = html.match(/<section class="card daily-summary"[\s\S]*?<\/section>/)?.[0] || '';
   for (const id of ['scoreCalories', 'scoreProtein', 'scoreSteps', 'scoreWater']) assert.match(summary, new RegExp(`id="${id}"`), `Top summary must include #${id}`);
   assert.doesNotMatch(html, /class="score-grid"/, 'Daily goal tiles should not be duplicated lower on the page');
+  assert.match(html, /src="health-sync\.js\?v=__BUILD__"/, 'Production page must load the iPhone sync and sharing controller');
+  assert.match(html, /Time of Day trigger for each hour/, 'Hourly Shortcut setup guidance must remain visible');
+}
+
+function verifyHealthSync() {
+  const storage = new Map([['tausifTracker.session.v1', 'test-user']]);
+  let state = { activity: {}, config: {}, weights: [], abdomen: [], pantWaist: [], nutrition: {}, workoutLog: {}, workouts: [], customFoods: [] };
+  let replacedWith = '';
+  let rendered = 0;
+  const context = {
+    console,
+    URL,
+    URLSearchParams,
+    Date,
+    navigator: { userAgent: 'iPhone', platform: 'iPhone', maxTouchPoints: 5 },
+    location: { href: 'https://example.test/app/?build=181#today', pathname: '/app/', search: '?build=181', hash: '#today' },
+    history: { replaceState(_a, _b, value) { replacedWith = value; } },
+    localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, String(value)) },
+    CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options?.detail; } },
+    document: { readyState: 'loading', addEventListener() {}, querySelector() { return null; } },
+    setTimeout() {}, clearTimeout() {}, setInterval() {}, dispatchEvent() {},
+    MyBodyStore: {
+      SESSION_KEY: 'tausifTracker.session.v1',
+      localDate: () => '2026-08-16',
+      number(value, fallback = 0, min = -Infinity, max = Infinity) { const parsed = Number(value); return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback; },
+      read: () => state,
+      write(next) { state = next; return { ok: true, state }; }
+    },
+    MyBodyApp: { render() { rendered += 1; } }
+  };
+  context.window = context;
+  vm.runInNewContext(read('health-sync.js'), context, { filename: 'health-sync.js' });
+  const sync = context.MyBodyHealthSync;
+  assert.equal(sync.parseShortcutHash('#mybody-sync?steps=12%2C345').steps, 12345, 'Shortcut parser should accept a formatted step total');
+  assert.match(sync.parseShortcutHash('#mybody-sync?steps=bad').error, /valid step total/, 'Shortcut parser should reject invalid values');
+  context.location.hash = '#mybody-sync?steps=4321';
+  assert.equal(sync.consumeShortcutHash(), true, 'Signed-in Shortcut payload should be consumed');
+  assert.equal(state.activity['2026-08-16'].steps, 4321, 'Shortcut steps should update today’s activity');
+  assert.equal(state.activity['2026-08-16'].stepsSource, 'Apple Health via Shortcut');
+  assert.equal(storage.get('mybody.shortcut.ready.v1'), '1', 'Successful sync should mark Shortcut setup ready');
+  assert.equal(replacedWith, '/app/?build=181#today', 'Sensitive step fragment should be removed from browser history');
+  assert.ok(rendered > 0, 'Dashboard should re-render after step sync');
+  assert.equal(sync.shortcutTemplate(), 'https://example.test/app/#mybody-sync?steps=STEP_TOTAL', 'Shortcut template should use a clean app URL');
 }
 
 function verifyNavigation() {
@@ -146,6 +189,7 @@ async function verifyServiceWorkerMediaCache() {
   assert.equal(videos.length, 58, 'Service worker must pre-cache 42 avatar and 16 real-human videos');
   assert.equal(posters.length, 42, 'Service worker must pre-cache one poster per exercise');
   assert.equal(new Set(videos).size, videos.length, 'Service worker video cache entries must be unique');
+  assert.ok(installedAssets.includes('./health-sync.js'), 'iPhone sync controller must be available offline');
 }
 
 async function runBuildHarness(remoteBuild) {
@@ -195,6 +239,7 @@ async function runBuildHarness(remoteBuild) {
 async function main() {
   verifyMarkup();
   verifyNavigation();
+  verifyHealthSync();
   verifyExerciseAliases();
   await verifyServiceWorkerMediaCache();
   const current = await runBuildHarness(172);
