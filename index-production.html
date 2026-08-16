@@ -60,13 +60,24 @@
       </section>
       <section class="inline-details" aria-labelledby="todayDetailsTitle">
         <div class="section-head compact"><div><p class="eyebrow">DETAILS</p><h3 id="todayDetailsTitle">Body, activity and energy</h3></div></div>
-        <section class="energy-strip" aria-label="Detailed daily metrics">
-          <article class="metric-card metric-burn"><span>Estimated burn</span><strong id="dashBurn">0</strong><small>kcal today</small></article>
-          <article class="metric-card metric-balance"><span>Energy balance</span><strong id="dashBalance">0</strong><small id="dashBalanceLabel">kcal</small></article>
-        </section>
-        <section class="card balance-card">
-          <div class="balance-head"><div><span>Daily energy budget</span><strong id="budgetHeadline">—</strong></div></div>
-          <div class="energy-flow"><div><span>Base burn</span><b id="baseBurn">0 kcal</b></div><span>+</span><div><span>Steps</span><b id="stepBurn">0 kcal</b></div><span>+</span><div><span>Exercise</span><b id="exerciseBurn">0 kcal</b></div><span>=</span><div><span>Total burn</span><b id="totalBurn">0 kcal</b></div></div>
+        <section class="card energy-overview" aria-label="Daily energy summary">
+          <div class="energy-overview-head">
+            <div class="energy-budget-summary">
+              <span>Daily energy budget</span>
+              <strong id="budgetHeadline">—</strong>
+            </div>
+            <div class="energy-balance-summary">
+              <span>Energy balance</span>
+              <strong id="dashBalance">0</strong>
+              <small id="dashBalanceLabel">kcal</small>
+            </div>
+          </div>
+          <div class="energy-flow" aria-label="Estimated burn breakdown">
+            <div><span>Base burn</span><b id="baseBurn">0 kcal</b></div>
+            <div><span>Steps</span><b id="stepBurn">0 kcal</b></div>
+            <div><span>Exercise</span><b id="exerciseBurn">0 kcal</b></div>
+            <div class="energy-total"><span>Estimated burn</span><b><span id="dashBurn">0</span> kcal</b></div>
+          </div>
         </section>
         <section class="card form-card">
           <h3>Update today</h3>
