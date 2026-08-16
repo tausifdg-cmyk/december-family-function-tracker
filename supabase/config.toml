@@ -1,0 +1,3 @@
+[functions.ios-step-sync]
+verify_jwt = false
+

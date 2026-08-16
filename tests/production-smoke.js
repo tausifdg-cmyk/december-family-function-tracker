@@ -23,7 +23,7 @@ function verifyMarkup() {
   const html = read('index-production.html');
   const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, 'HTML must not contain duplicate IDs');
-  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'quickStepSyncBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'iosShortcutSheet']) {
+  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'quickStepSyncBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'iosShortcutSheet', 'shortcutSyncEndpoint', 'shortcutSyncToken', 'copyShortcutEndpointBtn', 'copyShortcutTokenBtn']) {
     assert.ok(ids.includes(id), `Missing required element #${id}`);
   }
   assert.doesNotMatch(html, /(?:todayDetails|workoutHistorySheet|foodHistorySheet|progressHistorySheet)" class="sheet-backdrop/);
@@ -33,6 +33,8 @@ function verifyMarkup() {
   assert.doesNotMatch(html, /class="score-grid"/, 'Daily goal tiles should not be duplicated lower on the page');
   assert.match(html, /src="health-sync\.js\?v=__BUILD__"/, 'Production page must load the iPhone sync and sharing controller');
   assert.match(html, /Time of Day trigger for each hour/, 'Hourly Shortcut setup guidance must remain visible');
+  assert.match(html, /Get Contents of URL/, 'Background Shortcut guidance must use an HTTP request');
+  assert.match(html, /Do not add Open URLs/, 'Background Shortcut guidance must explicitly avoid opening Safari');
 }
 
 function verifyHealthSync() {
@@ -45,6 +47,7 @@ function verifyHealthSync() {
     URL,
     URLSearchParams,
     Date,
+    crypto: { getRandomValues(bytes) { bytes.fill(7); return bytes; } },
     navigator: { userAgent: 'iPhone', platform: 'iPhone', maxTouchPoints: 5 },
     location: { href: 'https://example.test/app/?build=181#today', pathname: '/app/', search: '?build=181', hash: '#today' },
     history: { replaceState(_a, _b, value) { replacedWith = value; } },
@@ -74,6 +77,9 @@ function verifyHealthSync() {
   assert.equal(replacedWith, '/app/?build=181#today', 'Sensitive step fragment should be removed from browser history');
   assert.ok(rendered > 0, 'Dashboard should re-render after step sync');
   assert.equal(sync.shortcutTemplate(), 'https://example.test/app/#mybody-sync?steps=STEP_TOTAL', 'Shortcut template should use a clean app URL');
+  const background = sync.backgroundSyncConfig();
+  assert.equal(background.endpoint, 'https://vucmcxkgpghnahnocirk.supabase.co/functions/v1/ios-step-sync');
+  assert.match(background.token, /^[a-f0-9]{64}$/, 'Background sync token must be a 256-bit hex capability');
 }
 
 function verifyNavigation() {

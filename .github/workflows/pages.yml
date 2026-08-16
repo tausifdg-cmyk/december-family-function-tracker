@@ -42,6 +42,8 @@ jobs:
           test -s app-production.js
           test -s exercise-library.js
           test -s core-storage.js
+          test -s supabase/functions/ios-step-sync/index.ts
+          test -s supabase/migrations/20260816123000_create_ios_step_sync.sql
           test -s assets/workout-hero.webp
           test "$(find assets/exercises/avatars -type f -name '*.mp4' | wc -l)" -eq 42
           test "$(find assets/exercises/avatars -type f -name '*.webp' | wc -l)" -eq 42
