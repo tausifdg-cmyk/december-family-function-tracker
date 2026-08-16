@@ -87,11 +87,23 @@ function verifyExerciseAliases() {
   assert.equal(new Set(library.exercises.map((exercise) => exercise.media.src)).size, 42, 'Every exercise needs unique primary media');
   assert.equal(library.exercises.filter((exercise) => exercise.media.kind === 'real-video').length, 16, 'Licensed real-video count should remain explicit');
   assert.equal(library.exercises.filter((exercise) => exercise.media.kind === 'avatar-video').length, 26, 'Avatar-video count should cover the remaining catalog');
+  const checkedVideos = new Set();
+  const verifyVideo = (path) => {
+    if (checkedVideos.has(path)) return;
+    checkedVideos.add(path);
+    const bytes = fs.readFileSync(new URL(path, root));
+    const atoms = bytes.toString('latin1');
+    assert.ok(bytes.length > 1024, `${path} must contain a real video payload`);
+    for (const atom of ['ftyp', 'moov', 'mdat']) assert.ok(atoms.includes(atom), `${path} must contain an MP4 ${atom} atom`);
+  };
   library.exercises.forEach((exercise) => {
     assert.match(exercise.media.src, /^assets\/exercises\/(real|avatars)\/[a-z0-9-]+\.mp4$/, `${exercise.name} needs a local video path`);
     assert.match(exercise.media.poster, /^assets\/exercises\/(real|avatars)\/[a-z0-9-]+\.webp$/, `${exercise.name} needs a local poster`);
     assert.match(library.renderMedia(exercise), /<video[^>]+playsinline/, `${exercise.name} should render as iPhone-safe video media`);
+    verifyVideo(exercise.media.src);
+    if (exercise.media.fallback) verifyVideo(exercise.media.fallback);
   });
+  assert.equal(checkedVideos.size, 58, 'All primary and fallback videos must be validated');
 }
 
 async function verifyServiceWorkerMediaCache() {

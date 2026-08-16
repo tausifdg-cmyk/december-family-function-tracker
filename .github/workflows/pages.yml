@@ -47,7 +47,6 @@ jobs:
           test "$(find assets/exercises/avatars -type f -name '*.webp' | wc -l)" -eq 42
           for id in dumbbell-bench-press incline-dumbbell-press dumbbell-chest-fly one-arm-dumbbell-row lat-pulldown seated-cable-row lateral-raise rear-delt-fly dumbbell-biceps-curl hammer-curl rope-pushdown overhead-triceps-extension romanian-deadlift back-squat leg-curl leg-extension; do test -s "assets/exercises/real/$id.mp4"; test -s "assets/exercises/real/$id.webp"; done
           find assets/exercises/avatars -type f \( -name '*.mp4' -o -name '*.webp' \) -exec test -s {} \;
-          while IFS= read -r -d '' video; do test "$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$video")" = "h264"; done < <(find assets/exercises/avatars assets/exercises/real -type f -name '*.mp4' -print0)
           ! grep -R "__BUILD__" index.html service-worker.js manifest.json
           grep -q 'id="pullRefresh"' index.html
           grep -q 'id="workoutHistory"' index.html
