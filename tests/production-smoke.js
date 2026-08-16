@@ -27,7 +27,7 @@ function verifyMarkup() {
     assert.ok(ids.includes(id), `Missing required element #${id}`);
   }
   assert.doesNotMatch(html, /(?:todayDetails|workoutHistorySheet|foodHistorySheet|progressHistorySheet)" class="sheet-backdrop/);
-  assert.match(html, /42 animated GIF demonstrations that work offline/);
+  assert.match(html, /42 real-human and 3D-avatar video demonstrations that work offline/);
 }
 
 function verifyNavigation() {
@@ -84,10 +84,13 @@ function verifyExerciseAliases() {
   const library = context.window.MyBodyExerciseLibrary;
   assert.equal(library.exercises.length, 42, 'Offline catalog size should remain stable');
   assert.equal(library.find('Lever Pec Deck Fly').id, 'dumbbell-chest-fly', 'ExerciseDB sample name should resolve offline');
-  assert.equal(new Set(library.exercises.map((exercise) => exercise.gif)).size, 42, 'Every exercise needs a unique GIF');
+  assert.equal(new Set(library.exercises.map((exercise) => exercise.media.src)).size, 42, 'Every exercise needs unique primary media');
+  assert.equal(library.exercises.filter((exercise) => exercise.media.kind === 'real-video').length, 16, 'Licensed real-video count should remain explicit');
+  assert.equal(library.exercises.filter((exercise) => exercise.media.kind === 'avatar-video').length, 26, 'Avatar-video count should cover the remaining catalog');
   library.exercises.forEach((exercise) => {
-    assert.match(exercise.gif, /^assets\/exercises\/guides\/[a-z0-9-]+\.gif$/, `${exercise.name} needs a local GIF path`);
-    assert.match(library.renderMedia(exercise), /<img[^>]+\.gif/, `${exercise.name} should render as GIF media`);
+    assert.match(exercise.media.src, /^assets\/exercises\/(real|avatars)\/[a-z0-9-]+\.mp4$/, `${exercise.name} needs a local video path`);
+    assert.match(exercise.media.poster, /^assets\/exercises\/(real|avatars)\/[a-z0-9-]+\.webp$/, `${exercise.name} needs a local poster`);
+    assert.match(library.renderMedia(exercise), /<video[^>]+playsinline/, `${exercise.name} should render as iPhone-safe video media`);
   });
 }
 
@@ -123,9 +126,11 @@ async function verifyServiceWorkerMediaCache() {
   vm.runInNewContext(read('service-worker.js').replaceAll('__BUILD__', 'test'), context, { filename: 'service-worker.js' });
   listeners.get('install')({ waitUntil(promise) { installPromise = promise; } });
   await installPromise;
-  const gifs = installedAssets.filter((asset) => /assets\/exercises\/guides\/.+\.gif$/.test(asset));
-  assert.equal(gifs.length, 42, 'Service worker must pre-cache every exercise GIF');
-  assert.equal(new Set(gifs).size, 42, 'Service worker GIF cache entries must be unique');
+  const videos = installedAssets.filter((asset) => /assets\/exercises\/(real|avatars)\/.+\.mp4$/.test(asset));
+  const posters = installedAssets.filter((asset) => /assets\/exercises\/(real|avatars)\/.+\.webp$/.test(asset));
+  assert.equal(videos.length, 58, 'Service worker must pre-cache 42 avatar and 16 real-human videos');
+  assert.equal(posters.length, 42, 'Service worker must pre-cache one poster per exercise');
+  assert.equal(new Set(videos).size, videos.length, 'Service worker video cache entries must be unique');
 }
 
 async function runBuildHarness(remoteBuild) {

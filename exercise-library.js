@@ -2,6 +2,25 @@
   'use strict';
   const root = typeof window !== 'undefined' ? window : self;
 
+  const realVideos = Object.freeze({
+    'dumbbell-bench-press': 'Barbell Bench Press',
+    'incline-dumbbell-press': 'Incline Machine Press',
+    'dumbbell-chest-fly': 'Pec Deck Fly',
+    'one-arm-dumbbell-row': 'Single Arm Dumbbell Row - Legs apart',
+    'lat-pulldown': 'Lat Pulldown with V-Grip',
+    'seated-cable-row': 'Seated Cable Row Neutral Grip',
+    'lateral-raise': 'Dumbbell Lateral Raise',
+    'rear-delt-fly': 'Machine Reverse Fly',
+    'dumbbell-biceps-curl': 'Machine Bicep Curl',
+    'hammer-curl': 'Hammer Curls',
+    'rope-pushdown': 'Cable Tricep Pushdown',
+    'overhead-triceps-extension': 'Overhead Cable Rope Extension',
+    'romanian-deadlift': 'Kettlebell Romanian Deadlift',
+    'back-squat': 'Barbell Back Squat',
+    'leg-curl': 'Lying Leg Curl',
+    'leg-extension': 'Leg Extension'
+  });
+
   const exercises = [
     ['dumbbell-bench-press', 'Dumbbell Bench Press', ['bench press', 'machine chest press', 'barbell bench press', 'chest press'], 'Chest', 'Dumbbells • bench', 'chest', 'press', ['Keep shoulder blades set', 'Lower with control', 'Press without bouncing']],
     ['incline-dumbbell-press', 'Incline Dumbbell Press', ['incline press', 'incline bench press', 'incline hammer press', 'low-to-high cable fly'], 'Chest', 'Dumbbells • incline bench', 'chest', 'press', ['Use a moderate bench angle', 'Keep wrists stacked', 'Finish above upper chest']],
@@ -45,7 +64,28 @@
     ['reverse-lunge', 'Reverse Lunge', ['lunge', 'lower body workout'], 'Full Body', 'Bodyweight or dumbbells', 'legs', 'lunge', ['Step back softly', 'Keep front foot planted', 'Push through the front leg']],
     ['bird-dog', 'Bird Dog', ['lower back mobility', 'mobility'], 'Mobility', 'Bodyweight', 'core', 'birddog', ['Keep hips square', 'Reach long, not high', 'Move slowly']],
     ['lower-back-rotation', 'Lower-back Rotation', ['lower back rotation'], 'Mobility', 'Bodyweight', 'core', 'rotation', ['Keep shoulders relaxed', 'Use a gentle range', 'Breathe into the stretch']]
-  ].map(([id, name, aliases, category, equipment, muscle, pattern, cues]) => Object.freeze({ id, name, aliases, category, equipment, muscle, pattern, cues, gif: `assets/exercises/guides/${id}.gif` }));
+  ].map(([id, name, aliases, category, equipment, muscle, pattern, cues]) => {
+    const sourceName = realVideos[id];
+    const avatar = `assets/exercises/avatars/${id}`;
+    const media = sourceName ? {
+      kind: 'real-video',
+      src: `assets/exercises/real/${id}.mp4`,
+      poster: `assets/exercises/real/${id}.webp`,
+      fallback: `${avatar}.mp4`,
+      sourceName,
+      credit: 'Your Move',
+      license: 'YMove free app-use licence',
+      sourceUrl: 'https://ymove.app/free-exercise-videos'
+    } : {
+      kind: 'avatar-video',
+      src: `${avatar}.mp4`,
+      poster: `${avatar}.webp`,
+      sourceName: `${name} 3D avatar`,
+      credit: 'MyBody 2.0 original',
+      license: 'Original app media'
+    };
+    return Object.freeze({ id, name, aliases, category, equipment, muscle, pattern, cues, media: Object.freeze(media) });
+  });
 
   const normalise = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const exact = new Map();
@@ -74,12 +114,14 @@
 
   function renderMedia(name, options = {}) {
     const exercise = typeof name === 'object' ? name : find(name);
-    if (!exercise.gif || exercise.id.startsWith('custom-')) return renderSvg(exercise, Boolean(options.animated));
+    if (!exercise.media || exercise.id.startsWith('custom-')) return renderSvg(exercise, Boolean(options.animated));
     const label = String(exercise.name).replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
-    const alt = options.decorative ? '' : `${label} animated exercise demonstration`;
-    const loading = options.priority ? 'eager' : 'lazy';
-    const priority = options.priority ? ' fetchpriority="high"' : '';
-    return `<img class="exercise-gif${options.full ? ' is-full' : ''}" src="${exercise.gif}" width="320" height="190" loading="${loading}" decoding="async"${priority} alt="${alt}">`;
+    const media = exercise.media;
+    const autoplay = options.animated ? ' autoplay' : '';
+    const controls = options.full ? ' controls' : '';
+    const accessibility = options.decorative ? ' aria-hidden="true" tabindex="-1"' : ` aria-label="${label} video demonstration"`;
+    const fallback = media.fallback ? `<source src="${media.fallback}" type="video/mp4">` : '';
+    return `<video class="exercise-video${options.full ? ' is-full' : ''}" width="480" height="286" poster="${media.poster}" preload="metadata" muted loop playsinline${autoplay}${controls}${accessibility}><source src="${media.src}" type="video/mp4">${fallback}</video>`;
   }
 
   const categories = Object.freeze(['All', ...new Set(exercises.map((exercise) => exercise.category))]);

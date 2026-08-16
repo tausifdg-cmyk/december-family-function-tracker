@@ -66,7 +66,8 @@
     const name = button.dataset.name || 'Exercise demo';
     const media = exerciseMedia(name);
     text('#exerciseLightboxTitle', media.name);
-    text('#exerciseLightboxMeta', [button.dataset.sets, media.category, media.equipment].filter(Boolean).join(' • '));
+    const variation = media.media?.kind === 'real-video' && media.media.sourceName !== media.name ? `Demo: ${media.media.sourceName}` : '';
+    text('#exerciseLightboxMeta', [button.dataset.sets, media.category, media.equipment, variation].filter(Boolean).join(' • '));
     stage.innerHTML = ExerciseLibrary.renderMedia(media, { animated: true, full: true, priority: true });
     const cues = $('#exerciseCues');
     if (cues) cues.innerHTML = media.cues.map((cue) => `<span>${escapeHtml(cue)}</span>`).join('');

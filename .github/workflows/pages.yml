@@ -43,8 +43,10 @@ jobs:
           test -s exercise-library.js
           test -s core-storage.js
           test -s assets/workout-hero.webp
-          test "$(find assets/exercises/guides -type f -name '*.gif' | wc -l)" -eq 42
-          find assets/exercises/guides -type f -name '*.gif' -exec test -s {} \;
+          test "$(find assets/exercises/avatars -type f -name '*.mp4' | wc -l)" -eq 42
+          test "$(find assets/exercises/avatars -type f -name '*.webp' | wc -l)" -eq 42
+          for id in dumbbell-bench-press incline-dumbbell-press dumbbell-chest-fly one-arm-dumbbell-row lat-pulldown seated-cable-row lateral-raise rear-delt-fly dumbbell-biceps-curl hammer-curl rope-pushdown overhead-triceps-extension romanian-deadlift back-squat leg-curl leg-extension; do test -s "assets/exercises/real/$id.mp4"; test -s "assets/exercises/real/$id.webp"; done
+          find assets/exercises/avatars -type f \( -name '*.mp4' -o -name '*.webp' \) -exec test -s {} \;
           ! grep -R "__BUILD__" index.html service-worker.js manifest.json
           grep -q 'id="pullRefresh"' index.html
           grep -q 'id="workoutHistory"' index.html
