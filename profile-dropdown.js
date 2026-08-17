@@ -2,6 +2,12 @@
 (function(){
   'use strict';
   const DATA_KEY='decemberTracker.v1';
+  const SHARE_MESSAGE=`MYBODY 2.0
+iPhone / iPad app: https://tausifdg-cmyk.github.io/december-family-function-tracker/
+
+Android APK: https://github.com/tausifdg-cmyk/december-family-function-tracker/releases/download/android-latest/mybody-android.apk
+
+Web: https://tausifdg-cmyk.github.io/december-family-function-tracker/`;
   const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   function profileData(){
     let local=null,data={};
@@ -18,11 +24,10 @@
     document.getElementById('cloudAccountBtn')?.setAttribute('aria-expanded','false');
   }
   async function shareApp(msg){
-    const url=location.origin+location.pathname;
     try{
-      if(navigator.share){await navigator.share({title:'MYBODY 2.0',text:'Track workouts, nutrition, steps and progress with MYBODY 2.0.',url});return;}
-      await navigator.clipboard.writeText(url);
-      if(msg)msg.textContent='App link copied.';
+      if(navigator.share){await navigator.share({text:SHARE_MESSAGE});return;}
+      await navigator.clipboard.writeText(SHARE_MESSAGE);
+      if(msg)msg.textContent='Share message copied.';
     }catch(e){if(e?.name!=='AbortError'&&msg)msg.textContent='Unable to share right now.';}
   }
   function style(){
