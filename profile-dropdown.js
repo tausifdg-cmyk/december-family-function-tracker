@@ -2,6 +2,7 @@
 (function(){
   'use strict';
   const DATA_KEY='decemberTracker.v1';
+  const ADMIN_EMAIL='tausif.4946@gmail.com';
   const SHARE_MESSAGE=`MYBODY 2.0
 iPhone / iPad app: https://tausifdg-cmyk.github.io/december-family-function-tracker/
 
@@ -13,10 +14,11 @@ Web: https://tausifdg-cmyk.github.io/december-family-function-tracker/`;
     let local=null,data={};
     try{ local=window.MyBodyCloud?.localAccount?.()||null; }catch{}
     try{ data=JSON.parse(localStorage.getItem(DATA_KEY)||'{}')||{}; }catch{}
+    const email=String(local?.email||data?.profile?.email||'').trim().toLowerCase();
     return {
       name:data?.profile?.name||local?.name||'User',
-      email:local?.email||data?.profile?.email||'',
-      admin:Boolean(window.MyBodyCloud?.isAdmin?.())
+      email,
+      admin:email===ADMIN_EMAIL||Boolean(window.MyBodyCloud?.isAdmin?.())
     };
   }
   function closeMenu(){
@@ -24,11 +26,21 @@ Web: https://tausifdg-cmyk.github.io/december-family-function-tracker/`;
     document.getElementById('cloudAccountBtn')?.setAttribute('aria-expanded','false');
   }
   async function shareApp(msg){
+    let copied=false;
     try{
-      if(navigator.share){await navigator.share({text:SHARE_MESSAGE});return;}
-      await navigator.clipboard.writeText(SHARE_MESSAGE);
-      if(msg)msg.textContent='Share message copied.';
-    }catch(e){if(e?.name!=='AbortError'&&msg)msg.textContent='Unable to share right now.';}
+      if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(SHARE_MESSAGE);copied=true;}
+    }catch{}
+    try{
+      if(navigator.share){
+        await navigator.share({text:SHARE_MESSAGE});
+        if(msg)msg.textContent=copied?'Exact share message copied too.':'Shared.';
+        return;
+      }
+      if(msg)msg.textContent=copied?'Exact share message copied. Paste it into WhatsApp, Messages or Email.':'Unable to share right now.';
+    }catch(e){
+      if(e?.name==='AbortError'){if(msg&&copied)msg.textContent='Exact share message copied. You can paste it anywhere.';return;}
+      if(msg)msg.textContent=copied?'Exact share message copied. Paste it into the app you want.':'Unable to share right now.';
+    }
   }
   function style(){
     if(document.getElementById('profileDropdownStyles'))return;
@@ -52,7 +64,7 @@ Web: https://tausifdg-cmyk.github.io/december-family-function-tracker/`;
     document.querySelectorAll('.cloud-auth-overlay').forEach(x=>x.remove());
     const p=profileData();
     const card=document.createElement('div');card.id='profileDropdownCard';card.className='profile-dropdown-card';card.setAttribute('role','menu');
-    card.innerHTML=`<div class="profile-dd-head"><div class="profile-dd-name">${esc(p.name)}</div><div class="profile-dd-email">${esc(p.email)}</div></div><div class="profile-dd-actions">${p.admin?'<button id="profileAdminAction" class="profile-dd-btn profile-dd-admin" type="button">Admin</button>':''}<button id="profileShareAction" class="profile-dd-btn" type="button">Share App</button><button id="profileLogoutAction" class="profile-dd-btn profile-dd-logout" type="button">Log out</button></div><div id="profileDropdownMsg" class="profile-dd-msg"></div>`;
+    card.innerHTML=`<div class="profile-dd-head"><div class="profile-dd-name">${esc(p.name)}</div><div class="profile-dd-email">${esc(p.email)}</div></div><div class="profile-dd-actions">${p.admin?'<button id="profileAdminAction" class="profile-dd-btn profile-dd-admin" type="button">Users Report</button>':''}<button id="profileShareAction" class="profile-dd-btn" type="button">Share App</button><button id="profileLogoutAction" class="profile-dd-btn profile-dd-logout" type="button">Log out</button></div><div id="profileDropdownMsg" class="profile-dd-msg"></div>`;
     document.body.appendChild(card);btn.setAttribute('aria-expanded','true');position(card,btn);
     card.querySelector('#profileAdminAction')?.addEventListener('click',()=>{closeMenu();window.MyBodyAdminUI?.open?.();});
     card.querySelector('#profileShareAction')?.addEventListener('click',()=>shareApp(card.querySelector('#profileDropdownMsg')));
