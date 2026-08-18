@@ -3,8 +3,11 @@
 
   const DATA_KEY = 'decemberTracker.v1';
   const SESSION_KEY = 'tausifTracker.session.v1';
-  const SCHEMA_VERSION = 2;
+  const ACCOUNTS_KEY = 'tausifTracker.accounts.v1';
+  const SCHEMA_VERSION = 3;
   const RETENTION_DAYS = 730;
+  const ADMIN_EMAIL = 'tausif.4946@gmail.com';
+  const ADMIN_PLAN_VERSION = 'admin-6day-double-muscle-v2';
 
   const defaultWorkouts = [
     { name: 'Chest + Triceps', focus: 'Upper chest • chest • triceps', exercises: [['Barbell bench press', 4, 8], ['Incline dumbbell press', 3, 10], ['Machine chest press', 3, 12], ['Cable fly', 3, 15], ['Rope pushdown', 3, 12], ['Overhead cable extension', 3, 12]] },
@@ -12,6 +15,15 @@
     { name: 'Legs + Core', focus: 'Quads • hamstrings • glutes • abs', exercises: [['Squat / Hack squat', 4, 8], ['Romanian deadlift', 3, 10], ['Leg press', 3, 12], ['Leg curl', 3, 12], ['Leg extension', 3, 15], ['Calf raise', 4, 15], ['Cable crunch', 3, 15]] },
     { name: 'Shoulders + Upper Chest', focus: 'Delts • upper chest', exercises: [['Incline bench press', 4, 8], ['Seated dumbbell press', 3, 10], ['Lateral raise', 4, 15], ['Reverse pec deck', 4, 15], ['Low-to-high cable fly', 3, 15]] },
     { name: 'Back + Arms', focus: 'V-taper • biceps • triceps', exercises: [['Pulldown', 4, 10], ['T-bar row', 3, 10], ['Straight-arm pulldown', 3, 15], ['Incline curl', 3, 12], ['Rope pushdown', 3, 12]] }
+  ];
+
+  const adminWorkouts = [
+    { name: 'Monday • Chest + Triceps', focus: 'Chest • upper chest • triceps', exercises: [['Bench Press',3,10,[12,10,8]],['Incline DB Press',3,10,[12,10,8]],['Machine Chest Press',3,10,[12,10,10]],['Cable Chest Fly',3,15,[15,15,12]],['Push-ups (Finisher)',2,18,[20,15]],['Cable Rope Pushdown',3,12,[15,12,12]],['Skull Crushers',3,10,[12,10,10]],['Single-arm Overhead Extension',2,12,[15,12]],['Dips',2,10,[12,10]]] },
+    { name: 'Tuesday • Back + Biceps', focus: 'Lats • mid back • biceps', exercises: [['Wide-grip Lat Pulldown',3,10,[12,10,8]],['Single-arm Lat Pulldown',2,12,[12,12]],['Seated Cable Row',3,10,[12,10,10]],['Chest-supported Row',3,10,[12,10,8]],['Straight-arm Pulldown',2,15,[15,15]],['Barbell Curl',3,10,[12,10,8]],['Alternating DB Curl',2,11,[12,10]],['Machine Preacher Curl',2,14,[15,12]],['Hammer Curl',2,12,[12,12]]] },
+    { name: 'Wednesday • Shoulders + Legs', focus: 'Delts • quads • hamstrings • calves', exercises: [['Seated Shoulder Press',3,10,[12,10,8]],['Lateral Raises',3,14,[15,15,12]],['Rear Delt Fly',2,15,[15,15]],['Front Raises',2,12,[12,12]],['Leg Press',3,12,[15,12,10]],['Hack Squat / Smith Squat',3,10,[12,10,8]],['Leg Extension',3,14,[15,15,12]],['Hamstring Curl',3,13,[15,12,12]],['Standing Calf Raise',3,12,[15,12,10]]] },
+    { name: 'Thursday • Chest + Triceps', focus: 'Chest variation • triceps variation', exercises: [['Incline Smith Press',3,10,[12,10,8]],['Decline Machine Press',3,11,[12,10,10]],['Cable Crossover (Lower Chest)',2,15,[15,15]],['Pec Deck Fly',2,14,[15,12]],['Push-ups (Finisher)',2,20,[20,20]],['Rope Overhead Extension',3,13,[15,12,12]],['Close-grip Bench Press / Smith',3,10,[12,10,8]],['Tricep Kickback',2,14,[15,12]],['Reverse Grip Pushdown',2,14,[15,12]]] },
+    { name: 'Friday • Back + Biceps', focus: 'Back variation • biceps variation', exercises: [['Neutral Grip Pulldown',3,10,[12,10,8]],['T-Bar Row',3,10,[12,10,8]],['Unilateral Cable Row',2,12,[12,12]],['Machine Row (Wide Chest Supported)',2,11,[12,10]],['Rope Pullovers',2,15,[15,15]],['EZ Bar Curl',3,10,[12,10,8]],['Incline DB Curl',2,11,[12,10]],['Spider Curl',2,14,[15,12]],['Reverse Curl',2,12,[12,12]]] },
+    { name: 'Saturday • Shoulders + Legs', focus: 'Shoulder variation • leg variation', exercises: [['Standing OHP',3,10,[12,10,8]],['Cable Lateral Raise',3,14,[15,15,12]],['Reverse Pec Deck',2,15,[15,15]],['DB Upright Row',2,11,[12,10]],['Barbell Squat / Smith Squat',3,10,[12,10,8]],['Bulgarian Split Squat',2,12,[12,12]],['Leg Extension (Slow Reps)',2,15,[15,15]],['Romanian Deadlift',3,11,[12,10,10]],['Standing Calf Raise',2,15,[15,15]]] }
   ];
 
   const defaults = {
@@ -47,6 +59,19 @@
     return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   }
 
+  function activeEmail(source) {
+    const profileEmail = String(source?.profile?.email || '').trim().toLowerCase();
+    if (profileEmail) return profileEmail;
+    try {
+      const sid = localStorage.getItem(SESSION_KEY) || '';
+      const accounts = JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || '[]');
+      const account = Array.isArray(accounts) ? accounts.find((item) => item && item.id === sid) : null;
+      return String(account?.email || '').trim().toLowerCase();
+    } catch (_) {
+      return '';
+    }
+  }
+
   function normalise(input) {
     const source = safeRecord(input);
     const state = clone(defaults);
@@ -77,13 +102,22 @@
     state.workouts = safeArray(source.workouts).map((workout) => ({
       name: String(workout.name || 'Workout'),
       focus: String(workout.focus || ''),
-      exercises: safeArray(workout.exercises).map((exercise) => [String(exercise[0] || 'Exercise'), number(exercise[1], 3, 1, 20), number(exercise[2], 10, 1, 100)])
+      exercises: safeArray(workout.exercises).map((exercise) => {
+        const scheme = safeArray(exercise[3]).map((rep) => number(rep, 10, 1, 100));
+        return [String(exercise[0] || 'Exercise'), number(exercise[1], 3, 1, 20), number(exercise[2], 10, 1, 100), scheme];
+      })
     })).filter((workout) => workout.exercises.length) || clone(defaultWorkouts);
     if (!state.workouts.length) state.workouts = clone(defaultWorkouts);
     state.theme = source.theme === 'light' ? 'light' : 'dark';
     state.schemaVersion = SCHEMA_VERSION;
     if (source.profile) state.profile = safeRecord(source.profile);
     if (source.planSummary) state.planSummary = safeRecord(source.planSummary);
+    if (activeEmail(source) === ADMIN_EMAIL && source.adminWorkoutPlanVersion !== ADMIN_PLAN_VERSION) {
+      state.workouts = clone(adminWorkouts);
+      state.adminWorkoutPlanVersion = ADMIN_PLAN_VERSION;
+    } else if (source.adminWorkoutPlanVersion) {
+      state.adminWorkoutPlanVersion = String(source.adminWorkoutPlanVersion);
+    }
     return state;
   }
 
@@ -109,7 +143,15 @@
       if (raw && !parsed) {
         try { localStorage.setItem(`${DATA_KEY}.corrupt.${Date.now()}`, raw.slice(0, 250000)); } catch (_) {}
       }
-      return normalise(parsed);
+      const state = normalise(parsed);
+      if (activeEmail(parsed || {}) === ADMIN_EMAIL && parsed?.adminWorkoutPlanVersion !== ADMIN_PLAN_VERSION) {
+        try {
+          const payload = JSON.stringify(state);
+          localStorage.setItem(DATA_KEY, payload);
+          if (scoped !== DATA_KEY) localStorage.setItem(scoped, payload);
+        } catch (_) {}
+      }
+      return state;
     } catch (_) {
       return normalise(null);
     }
