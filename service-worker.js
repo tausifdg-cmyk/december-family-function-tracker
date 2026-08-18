@@ -4,7 +4,7 @@ const BUILD = '__BUILD__';
 const CACHE_PREFIX = 'mybody20-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${BUILD}`;
 const PAGE_CACHE = `${CACHE_PREFIX}pages-${BUILD}`;
-const ESSENTIAL_SHELL = ['./', './index.html', './manifest.json', './production.css', './coach.css', './food-data.js', './supabase-cloud.js', './auth-onboarding.js', './cloud-auto-connect.js', './login-forgot-password.js', './admin-ui.js', './profile-dropdown.js', './admin-dashboard.css', './core-storage.js', './coach-engine.js', './coach-ui.js', './exercise-library.js', './app-production.js', './health-sync.js', './navigation-fix.js', './build-live.js', './icons/icon-192.png', './apple-touch-icon.png'];
+const ESSENTIAL_SHELL = ['./', './index.html', './manifest.json', './production.css', './coach.css', './food-data.js', './supabase-cloud.js', './auth-onboarding.js', './cloud-auto-connect.js', './login-forgot-password.js', './admin-ui.js', './profile-dropdown.js', './admin-dashboard.css', './core-storage.js', './coach-engine.js', './coach-guard.js', './coach-ui.js', './exercise-library.js', './app-production.js', './health-sync.js', './navigation-fix.js', './build-live.js', './icons/icon-192.png', './apple-touch-icon.png'];
 const EXERCISE_MEDIA = [...new Set(self.MyBodyExerciseLibrary.exercises.flatMap((exercise) => [exercise.media?.src, exercise.media?.poster, exercise.media?.fallback].filter(Boolean)).map((asset) => `./${asset}`))];
 const OPTIONAL_ASSETS = ['./latest.html', './assets/workout-hero.webp'];
 self.addEventListener('install', (event) => {
