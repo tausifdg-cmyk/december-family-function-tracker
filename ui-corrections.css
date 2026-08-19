@@ -1,0 +1,123 @@
+/* MYBODY 2.0 pending UI corrections implemented 2026-08-19 */
+
+/* 1) Coach secondary actions must never change shape after navigation/re-render. */
+#experienceBrief > .xp-coach-tools{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:100%!important;
+  margin-top:12px!important;
+  padding-top:12px!important;
+  border-top:1px solid var(--line)!important;
+  position:relative!important;
+  z-index:2!important;
+  visibility:visible!important;
+  opacity:1!important;
+  flex-wrap:nowrap!important;
+}
+#experienceBrief > .xp-coach-tools button{
+  display:grid!important;
+  place-items:center!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:44px!important;
+  padding:8px 6px!important;
+  border:1px solid var(--line)!important;
+  border-radius:11px!important;
+  background:var(--card)!important;
+  color:var(--text)!important;
+  font-size:11px!important;
+  font-weight:850!important;
+  line-height:1.15!important;
+  white-space:nowrap!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#experienceBrief > .xp-coach-tools button:first-child{
+  border-color:color-mix(in srgb,var(--accent) 40%,var(--line))!important;
+  background:color-mix(in srgb,var(--accent-soft) 72%,var(--card))!important;
+  color:var(--accent)!important;
+}
+
+/* 2) Global fixed-nav safe zone. No content/control may finish underneath the bottom nav. */
+:root{--content-safe-bottom:calc(var(--nav-height) + var(--safe-bottom) + 30px)}
+body{padding-bottom:var(--content-safe-bottom)!important}
+.app-shell{padding-bottom:var(--content-safe-bottom)!important}
+.panel{scroll-padding-bottom:var(--content-safe-bottom);padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + 18px)}
+.panel > :last-child{margin-bottom:18px}
+
+.sheet-backdrop .sheet-panel,
+.xp-modal-panel,
+.p2-modal-panel,
+.p3-modal-panel,
+.p4-modal-panel,
+.p5-modal-panel,
+.coach-modal-panel{
+  padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + 30px)!important;
+  scroll-padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + 30px)!important;
+}
+#workoutEditor .sheet-panel,
+#foodManager .sheet-panel,
+#exerciseDetailSheet .sheet-panel{
+  padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + 38px)!important;
+}
+#workoutEditor #saveWorkoutPlan,
+#foodManager #customFoodList,
+#exerciseDetailSheet #saveExerciseDetailBtn{
+  margin-bottom:12px!important;
+}
+
+/* 3) Searchable food picker. */
+.mb-food-search-menu{
+  position:fixed;
+  z-index:95000;
+  display:grid;
+  gap:5px;
+  max-height:min(52dvh,390px);
+  overflow:auto;
+  padding:7px;
+  border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));
+  border-radius:14px;
+  background:color-mix(in srgb,var(--surface) 98%,transparent);
+  box-shadow:0 18px 48px rgba(0,0,0,.45);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  overscroll-behavior:contain;
+}
+.mb-food-search-menu.hidden{display:none}
+.mb-food-option,
+.mb-food-internet{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  min-height:48px;
+  padding:9px 10px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:var(--card);
+  color:var(--text);
+  text-align:left;
+}
+.mb-food-option strong,.mb-food-option small,.mb-food-internet strong,.mb-food-internet small{display:block}
+.mb-food-option strong,.mb-food-internet strong{font-size:13px;line-height:1.25}
+.mb-food-option small,.mb-food-internet small{margin-top:2px;color:var(--muted);font-size:10px;line-height:1.3}
+.mb-food-option > span:last-child,.mb-food-internet > span:last-child{color:var(--accent);font-size:10px;font-weight:850;white-space:nowrap}
+.mb-food-internet{border-color:color-mix(in srgb,var(--accent) 35%,var(--line));background:color-mix(in srgb,var(--accent-soft) 34%,var(--card))}
+.mb-food-loading,.mb-food-empty{padding:12px;color:var(--muted);font-size:11px;line-height:1.4}
+.mb-food-confirm{display:grid;gap:10px;padding:11px;border:1px solid color-mix(in srgb,var(--accent) 38%,var(--line));border-radius:12px;background:var(--card)}
+.mb-food-confirm h4{margin:0;font-size:14px}
+.mb-food-confirm p{margin:0;color:var(--muted);font-size:10px;line-height:1.4}
+.mb-food-confirm-macros{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.mb-food-confirm-macros span{padding:7px 4px;border:1px solid var(--line);border-radius:9px;background:var(--surface);text-align:center;font-size:9px;color:var(--muted)}
+.mb-food-confirm-macros b{display:block;color:var(--text);font-size:12px}
+.mb-food-confirm-actions{display:grid;grid-template-columns:1fr auto;gap:7px}
+.mb-food-confirm-actions button{min-height:40px;padding:7px 10px;border-radius:10px;font-size:10px;font-weight:850}
+.mb-food-source{color:var(--muted);font-size:9px!important}
+
+@media(max-width:430px){
+  #experienceBrief > .xp-coach-tools{gap:7px!important}
+  #experienceBrief > .xp-coach-tools button{min-height:42px!important;padding:7px 4px!important;font-size:10px!important}
+  .mb-food-confirm-macros{grid-template-columns:1fr 1fr}
+}
