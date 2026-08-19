@@ -35,6 +35,7 @@ jobs:
           sed -i '/food-data.js?v=__BUILD__/i\  <script src="supabase-cloud.js?v=__BUILD__" defer></script>' index.html
           sed -i '/core-storage.js?v=__BUILD__/a\  <script src="coach-engine.js?v=__BUILD__" defer></script>\n  <script src="coach-guard.js?v=__BUILD__" defer></script>' index.html
           sed -i '/app-production.js?v=__BUILD__/a\  <script src="coach-ui.js?v=__BUILD__" defer></script>\n  <script src="performance-guard.js?v=__BUILD__" defer></script>\n  <script src="phase2.js?v=__BUILD__" defer></script>\n  <script src="workout-redesign.js?v=__BUILD__" defer></script>\n  <script src="today-redesign.js?v=__BUILD__" defer></script>\n  <script src="phase3.js?v=__BUILD__" defer></script>\n  <script src="phase4.js?v=__BUILD__" defer></script>\n  <script src="phase5.js?v=__BUILD__" defer></script>\n  <script src="experience-core.js?v=__BUILD__" defer></script>\n  <script src="experience-state.js?v=__BUILD__" defer></script>\n  <script src="experience-coach-actions.js?v=__BUILD__" defer></script>\n  <script src="experience-food.js?v=__BUILD__" defer></script>\n  <script src="experience-workout.js?v=__BUILD__" defer></script>\n  <script src="experience-progress.js?v=__BUILD__" defer></script>\n  <script src="experience-launch.js?v=__BUILD__" defer></script>\n  <script src="experience-telemetry.js?v=__BUILD__" defer></script>\n  <script src="share-gallery-upgrade.js?v=__BUILD__" defer></script>' index.html
+          sed -i '/health-sync.js?v=__BUILD__/a\  <script src="ios-health-upgrade.js?v=__BUILD__" defer></script>' index.html
           sed -i '/auth-onboarding.js?v=__BUILD__/a\  <script src="cloud-auto-connect.js?v=__BUILD__" defer></script>\n  <script src="login-forgot-password.js?v=__BUILD__" defer></script>\n  <script src="admin-ui.js?v=__BUILD__" defer></script>\n  <script src="profile-dropdown.js?v=__BUILD__" defer></script>' index.html
           sed -i "s/__BUILD__/$BUILD/g" index.html service-worker.js manifest.json
           cp index.html latest.html
@@ -74,6 +75,7 @@ jobs:
           test -s experience-launch.js
           test -s experience-telemetry.js
           test -s share-gallery-upgrade.js
+          test -s ios-health-upgrade.js
           test -s exercise-library.js
           test -s core-storage.js
           test -s supabase-cloud.js
@@ -96,7 +98,7 @@ jobs:
           grep -q 'id="workoutHistory"' index.html
           grep -q 'id="foodHistory"' index.html
           grep -q 'id="progressList"' index.html
-          for asset in coach.css phase2.css workout-redesign.css today-redesign.css phase3.css phase4.css phase5.css experience-core.css experience-v2.css share-gallery-upgrade.css coach-engine.js coach-guard.js coach-ui.js performance-guard.js phase2.js workout-redesign.js today-redesign.js phase3.js phase4.js phase5.js experience-core.js experience-state.js experience-coach-actions.js experience-food.js experience-workout.js experience-progress.js experience-launch.js experience-telemetry.js share-gallery-upgrade.js supabase-cloud.js cloud-auto-connect.js login-forgot-password.js admin-ui.js profile-dropdown.js; do grep -q "$asset" index.html; done
+          for asset in coach.css phase2.css workout-redesign.css today-redesign.css phase3.css phase4.css phase5.css experience-core.css experience-v2.css share-gallery-upgrade.css coach-engine.js coach-guard.js coach-ui.js performance-guard.js phase2.js workout-redesign.js today-redesign.js phase3.js phase4.js phase5.js experience-core.js experience-state.js experience-coach-actions.js experience-food.js experience-workout.js experience-progress.js experience-launch.js experience-telemetry.js share-gallery-upgrade.js ios-health-upgrade.js supabase-cloud.js cloud-auto-connect.js login-forgot-password.js admin-ui.js profile-dropdown.js; do grep -q "$asset" index.html; done
           ! grep -q 'auth-production-redirect.js' index.html
           ! grep -q 'cloud-auth-bridge.js' index.html
           ! grep -q 'HistorySheet' index.html
@@ -122,6 +124,7 @@ jobs:
           node --check experience-launch.js
           node --check experience-telemetry.js
           node --check share-gallery-upgrade.js
+          node --check ios-health-upgrade.js
           node --check app-production.js
           node --check health-sync.js
           node --check navigation-fix.js
