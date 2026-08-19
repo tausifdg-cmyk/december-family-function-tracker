@@ -1,9 +1,33 @@
 /* MYBODY 2.0 local/offline music player */
-:root{--music-bar-height:74px}
+:root{--music-bar-height:74px;--music-bar-collapsed-height:50px}
 html.mb-music-active{--content-safe-bottom:calc(var(--nav-height) + var(--safe-bottom) + var(--music-bar-height) + 34px)}
+html.mb-music-active.mb-music-collapsed{--content-safe-bottom:calc(var(--nav-height) + var(--safe-bottom) + var(--music-bar-collapsed-height) + 26px)}
 html.mb-music-active body,
 html.mb-music-active .app-shell{padding-bottom:var(--content-safe-bottom)!important}
 html.mb-music-active .panel{scroll-padding-bottom:var(--content-safe-bottom)!important;padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + var(--music-bar-height) + 24px)!important}
+html.mb-music-active.mb-music-collapsed .panel{padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + var(--music-bar-collapsed-height) + 20px)!important}
+html.mb-music-active .sheet-backdrop .sheet-panel,
+html.mb-music-active .exercise-detail-panel,
+html.mb-music-active .xp-modal-panel,
+html.mb-music-active .p2-modal-panel,
+html.mb-music-active .p3-modal-panel,
+html.mb-music-active .p4-modal-panel,
+html.mb-music-active .p5-modal-panel,
+html.mb-music-active .coach-modal-panel{
+  padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + var(--music-bar-height) + 34px)!important;
+  scroll-padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + var(--music-bar-height) + 34px)!important;
+}
+html.mb-music-active.mb-music-collapsed .sheet-backdrop .sheet-panel,
+html.mb-music-active.mb-music-collapsed .exercise-detail-panel,
+html.mb-music-active.mb-music-collapsed .xp-modal-panel,
+html.mb-music-active.mb-music-collapsed .p2-modal-panel,
+html.mb-music-active.mb-music-collapsed .p3-modal-panel,
+html.mb-music-active.mb-music-collapsed .p4-modal-panel,
+html.mb-music-active.mb-music-collapsed .p5-modal-panel,
+html.mb-music-active.mb-music-collapsed .coach-modal-panel{
+  padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + var(--music-bar-collapsed-height) + 28px)!important;
+  scroll-padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + var(--music-bar-collapsed-height) + 28px)!important;
+}
 
 .mb-music-launcher{position:fixed;z-index:68020;right:14px;bottom:calc(var(--nav-height) + var(--safe-bottom) + 12px);display:flex;align-items:center;gap:7px;min-height:42px;padding:8px 12px;border:1px solid color-mix(in srgb,var(--accent) 32%,var(--line));border-radius:999px;background:color-mix(in srgb,var(--surface) 96%,transparent);color:var(--text);box-shadow:0 10px 32px rgba(0,0,0,.32);backdrop-filter:blur(14px);font-size:11px;font-weight:850}
 .mb-music-launcher svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
@@ -16,6 +40,15 @@ html.mb-music-active .mb-music-launcher{display:none}
 .mb-music-copy{min-width:0}.mb-music-copy strong,.mb-music-copy span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mb-music-copy strong{font-size:12px}.mb-music-copy span{margin-top:2px;color:var(--muted);font-size:9px}
 .mb-music-mini-controls{display:flex;align-items:center;gap:5px}.mb-music-mini-controls button{display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font-size:16px}.mb-music-mini-controls .mb-music-toggle{color:var(--accent)}
 .mb-music-mini-progress{grid-column:1/-1;width:100%;height:4px;margin:0;accent-color:var(--accent)}
+.mb-music-mini-controls .mb-music-collapse{color:var(--accent);font-size:18px}
+.mb-music-mini.collapsed{grid-template-columns:minmax(0,1fr) auto;min-height:var(--music-bar-collapsed-height);padding:5px 7px;border-radius:14px}
+.mb-music-mini.collapsed .mb-music-mini-main{grid-template-columns:32px minmax(0,1fr);gap:7px}
+.mb-music-mini.collapsed .mb-music-cover{width:32px;height:32px;border-radius:9px;font-size:15px}
+.mb-music-mini.collapsed .mb-music-copy span{display:none}
+.mb-music-mini.collapsed .mb-music-copy strong{font-size:11px}
+.mb-music-mini.collapsed .mb-music-mini-controls .mb-music-secondary{display:none}
+.mb-music-mini.collapsed .mb-music-mini-controls button{width:34px;height:34px;border-radius:10px}
+.mb-music-mini.collapsed .mb-music-mini-progress{display:none}
 
 .mb-music-modal{position:fixed;z-index:97000;inset:0;display:grid;align-items:end;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}
 .mb-music-modal.hidden{display:none}
