@@ -1,8 +1,11 @@
 /* MYBODY Today dashboard + workout effort polish */
 #today.tr-today{gap:14px}
 #today.tr-today>.section-head:first-child{margin-bottom:2px}
-#today.tr-today>.section-head:first-child h3{font-size:clamp(30px,7vw,42px);letter-spacing:-.025em}
-#today.tr-today>.section-head:first-child .pill{min-height:46px;padding:11px 16px;font-size:15px;border-radius:14px}
+#today.tr-today>.section-head:first-child h3{font-size:clamp(24px,5.8vw,31px);letter-spacing:-.02em}
+#today.tr-today>.section-head:first-child .pill{min-height:44px;padding:10px 14px;font-size:14px;border-radius:14px}
+
+/* Keep every main page title one visual step below MYBODY 2.0 */
+.panel>.section-head:first-child h3{font-size:clamp(24px,5.8vw,31px)!important;line-height:1.02;letter-spacing:.005em}
 
 /* Coach becomes guidance, not a duplicate metrics dashboard */
 #today .coach-card.tr-coach-compact{padding:18px;border-radius:22px;background:radial-gradient(circle at 92% 8%,color-mix(in srgb,var(--accent) 13%,transparent),transparent 34%),linear-gradient(150deg,color-mix(in srgb,var(--accent-soft) 60%,var(--card)),var(--card) 70%)}
@@ -61,16 +64,31 @@
 #today .tr-weekly .insight strong{font-size:clamp(24px,6vw,32px);letter-spacing:-.03em}
 #today .tr-weekly .insight small{font-size:11px}
 
-/* 3D glossy effort controls */
+/* Compact food logging cards */
+#food .meal-card{padding:13px 14px;margin-bottom:10px;border-radius:17px}
+#food .meal-head{gap:10px;margin-bottom:8px}
+#food .meal-head small{font-size:10px}
+#food .meal-head h3{font-size:18px;line-height:1.05}
+#food .meal-head .secondary{min-height:38px;padding:7px 10px;font-size:12px;border-radius:11px}
+#food .meal-items{display:grid;gap:7px}
+#food .food-row{gap:7px;padding:8px 9px;border-radius:12px}
+#food .food-row input,#food .food-row select{min-height:39px;padding:7px 8px;font-size:14px}
+#food .food-macro{font-size:12px;line-height:1.1}
+#food .food-macro small{font-size:10px;margin-top:2px}
+#food .food-save{min-height:38px;padding:7px 9px;font-size:11px}
+#food .food-cancel{width:36px;height:36px}
+#food .meal-items .empty{margin:4px 0 2px;font-size:12px}
+
+/* Softer 3D effort controls: still distinct, less neon */
 .p2-effort>div,.wr-effort>div{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important}
-.p2-effort button,.wr-effort button{position:relative;min-width:0!important;min-height:40px!important;padding:6px 3px!important;border-radius:11px!important;color:#fff!important;font-size:11px!important;font-weight:900!important;letter-spacing:.01em;text-shadow:0 1px 1px rgba(0,0,0,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.38),inset 0 -8px 14px rgba(0,0,0,.18),0 4px 0 rgba(0,0,0,.38),0 7px 14px rgba(0,0,0,.28)!important;transition:transform .1s ease,box-shadow .1s ease,filter .1s ease!important;overflow:hidden}
-.p2-effort button:before,.wr-effort button:before{content:"";position:absolute;left:7%;right:7%;top:3px;height:38%;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0));pointer-events:none}
-.p2-effort button[data-effort="easy"],.wr-effort button[data-effort="easy"]{border-color:#56d96b!important;background:linear-gradient(180deg,#52e36d 0%,#20b947 55%,#128c34 100%)!important}
-.p2-effort button[data-effort="good"],.wr-effort button[data-effort="good"]{border-color:#4bbcff!important;background:linear-gradient(180deg,#55c9ff 0%,#218fe8 55%,#1265b8 100%)!important}
-.p2-effort button[data-effort="hard"],.wr-effort button[data-effort="hard"]{border-color:#ffb63f!important;background:linear-gradient(180deg,#ffc54b 0%,#ef8b13 55%,#b85b05 100%)!important}
-.p2-effort button[data-effort="max"],.wr-effort button[data-effort="max"]{border-color:#ff5c66!important;background:linear-gradient(180deg,#ff6d76 0%,#e52e3d 55%,#a70f25 100%)!important}
-.p2-effort button:active,.wr-effort button:active,.p2-effort button.active,.wr-effort button.active{transform:translateY(3px)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -5px 12px rgba(0,0,0,.22),0 1px 0 rgba(0,0,0,.45),0 3px 8px rgba(0,0,0,.24)!important;filter:saturate(1.16) brightness(1.06)}
-.p2-effort button.active,.wr-effort button.active{outline:2px solid #fff!important;outline-offset:1px}
+.p2-effort button,.wr-effort button{position:relative;min-width:0!important;min-height:40px!important;padding:6px 3px!important;border-radius:11px!important;color:#f4f6f2!important;font-size:11px!important;font-weight:900!important;letter-spacing:.01em;text-shadow:0 1px 1px rgba(0,0,0,.65);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -6px 10px rgba(0,0,0,.20),0 3px 0 rgba(0,0,0,.34),0 5px 10px rgba(0,0,0,.22)!important;transition:transform .1s ease,box-shadow .1s ease,filter .1s ease!important;overflow:hidden;filter:saturate(.72) brightness(.82)}
+.p2-effort button:before,.wr-effort button:before{content:"";position:absolute;left:9%;right:9%;top:3px;height:30%;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,0));pointer-events:none}
+.p2-effort button[data-effort="easy"],.wr-effort button[data-effort="easy"]{border-color:#3b8150!important;background:linear-gradient(180deg,#39784a 0%,#285d3a 56%,#1b432b 100%)!important}
+.p2-effort button[data-effort="good"],.wr-effort button[data-effort="good"]{border-color:#3c6f98!important;background:linear-gradient(180deg,#3f6f92 0%,#2c5578 56%,#1d3e5d 100%)!important}
+.p2-effort button[data-effort="hard"],.wr-effort button[data-effort="hard"]{border-color:#946b35!important;background:linear-gradient(180deg,#8c693c 0%,#6f4e28 56%,#4f351d 100%)!important}
+.p2-effort button[data-effort="max"],.wr-effort button[data-effort="max"]{border-color:#8d4650!important;background:linear-gradient(180deg,#884650 0%,#6b3039 56%,#4a2028 100%)!important}
+.p2-effort button:active,.wr-effort button:active,.p2-effort button.active,.wr-effort button.active{transform:translateY(2px)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -4px 9px rgba(0,0,0,.24),0 1px 0 rgba(0,0,0,.40),0 2px 6px rgba(0,0,0,.20)!important;filter:saturate(.86) brightness(.93)}
+.p2-effort button.active,.wr-effort button.active{outline:2px solid color-mix(in srgb,#fff 72%,var(--accent))!important;outline-offset:1px}
 
 @media(max-width:700px){
   #today .tr-dashboard .summary-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -81,7 +99,7 @@
   #today .tr-weekly{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(max-width:430px){
-  #today.tr-today>.section-head:first-child h3{font-size:30px}
+  #today.tr-today>.section-head:first-child h3,.panel>.section-head:first-child h3{font-size:27px!important}
   #today .coach-card.tr-coach-compact{padding:15px}
   #today .tr-coach-compact .coach-readiness{min-width:86px}
   #today .daily-summary.tr-dashboard{padding:13px}
@@ -93,6 +111,11 @@
   #today .today-workout-content{padding:16px}
   #today .tr-weekly .insight{padding:13px 10px}
   #today .tr-weekly .insight strong{font-size:23px}
+  #food .nutrition-grid{gap:8px}
+  #food .metric-card{padding:12px}
+  #food .metric-card strong{font-size:22px}
+  #food .meal-card{padding:11px 12px}
+  #food .food-row{padding:7px}
   .p2-effort button,.wr-effort button{min-height:38px!important;font-size:10px!important;padding:5px 1px!important}
 }
 @media(max-width:360px){
