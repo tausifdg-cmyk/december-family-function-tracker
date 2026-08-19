@@ -32,6 +32,14 @@ try{
     assert.deepEqual(labels.map(x=>x.trim()),['View plan','Weekly review','Recalculate']);
     assert.equal(await page.locator('#experienceBrief .xp-coach > [data-xp-action="workout"]').count(),0,'duplicate workout CTA should be removed from Coach card');
     assert.equal(await page.locator('#today .today-workout-card [data-nav="workout"]').count(),1,'Featured workout should keep one Start workout CTA');
+    assert.equal(await page.evaluate(()=>document.body.classList.contains('modal-open')),false,'Today should not be scroll locked without a modal');
+    const scrollInfo=await page.evaluate(()=>({height:document.documentElement.scrollHeight,view:window.innerHeight}));
+    if(scrollInfo.height>scrollInfo.view+100){
+      await page.evaluate(()=>window.scrollTo(0,Math.min(600,document.documentElement.scrollHeight-window.innerHeight)));
+      await page.waitForTimeout(120);
+      assert.ok(await page.evaluate(()=>window.scrollY)>50,'Today should scroll vertically on mobile');
+      await page.evaluate(()=>window.scrollTo(0,0));
+    }
     await page.locator('#workout-tab').click();
     assert.equal(await page.locator('#dayPicker').count(),1,'workout day selector should exist');
     await page.locator('#food-tab').click();
