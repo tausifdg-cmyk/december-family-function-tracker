@@ -55,6 +55,8 @@ jobs:
           test -s experience-core.css
           test -s experience-v2.css
           test -s share-gallery-upgrade.css
+          test -s ui-corrections.css
+          test -s media-diet-upgrade.css
           test -s app-production.js
           test -s coach-engine.js
           test -s coach-guard.js
@@ -75,6 +77,8 @@ jobs:
           test -s experience-launch.js
           test -s experience-telemetry.js
           test -s share-gallery-upgrade.js
+          test -s ui-corrections.js
+          test -s media-diet-upgrade.js
           test -s ios-health-upgrade.js
           test -s exercise-library.js
           test -s core-storage.js
@@ -124,6 +128,8 @@ jobs:
           node --check experience-launch.js
           node --check experience-telemetry.js
           node --check share-gallery-upgrade.js
+          node --check ui-corrections.js
+          node --check media-diet-upgrade.js
           node --check ios-health-upgrade.js
           node --check app-production.js
           node --check health-sync.js
