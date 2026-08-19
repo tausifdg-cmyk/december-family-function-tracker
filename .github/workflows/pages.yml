@@ -31,10 +31,10 @@ jobs:
           BUILD="${{ github.run_number }}"
           printf '{"build":"%s"}\n' "$BUILD" > build.json
           cp index-production.html index.html
-          sed -i '/production.css?v=__BUILD__/a\  <link rel="stylesheet" href="coach.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase2.css?v=__BUILD__">\n  <link rel="stylesheet" href="workout-redesign.css?v=__BUILD__">\n  <link rel="stylesheet" href="today-redesign.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase3.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase4.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase5.css?v=__BUILD__">\n  <link rel="stylesheet" href="experience-core.css?v=__BUILD__">\n  <link rel="stylesheet" href="admin-dashboard.css?v=__BUILD__">' index.html
+          sed -i '/production.css?v=__BUILD__/a\  <link rel="stylesheet" href="coach.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase2.css?v=__BUILD__">\n  <link rel="stylesheet" href="workout-redesign.css?v=__BUILD__">\n  <link rel="stylesheet" href="today-redesign.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase3.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase4.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase5.css?v=__BUILD__">\n  <link rel="stylesheet" href="experience-core.css?v=__BUILD__">\n  <link rel="stylesheet" href="experience-v2.css?v=__BUILD__">\n  <link rel="stylesheet" href="admin-dashboard.css?v=__BUILD__">' index.html
           sed -i '/food-data.js?v=__BUILD__/i\  <script src="supabase-cloud.js?v=__BUILD__" defer></script>' index.html
           sed -i '/core-storage.js?v=__BUILD__/a\  <script src="coach-engine.js?v=__BUILD__" defer></script>\n  <script src="coach-guard.js?v=__BUILD__" defer></script>' index.html
-          sed -i '/app-production.js?v=__BUILD__/a\  <script src="coach-ui.js?v=__BUILD__" defer></script>\n  <script src="phase2.js?v=__BUILD__" defer></script>\n  <script src="workout-redesign.js?v=__BUILD__" defer></script>\n  <script src="today-redesign.js?v=__BUILD__" defer></script>\n  <script src="phase3.js?v=__BUILD__" defer></script>\n  <script src="phase4.js?v=__BUILD__" defer></script>\n  <script src="phase5.js?v=__BUILD__" defer></script>\n  <script src="experience-core.js?v=__BUILD__" defer></script>' index.html
+          sed -i '/app-production.js?v=__BUILD__/a\  <script src="coach-ui.js?v=__BUILD__" defer></script>\n  <script src="phase2.js?v=__BUILD__" defer></script>\n  <script src="workout-redesign.js?v=__BUILD__" defer></script>\n  <script src="today-redesign.js?v=__BUILD__" defer></script>\n  <script src="phase3.js?v=__BUILD__" defer></script>\n  <script src="phase4.js?v=__BUILD__" defer></script>\n  <script src="phase5.js?v=__BUILD__" defer></script>\n  <script src="experience-core.js?v=__BUILD__" defer></script>\n  <script src="experience-coach-actions.js?v=__BUILD__" defer></script>\n  <script src="experience-food.js?v=__BUILD__" defer></script>\n  <script src="experience-workout.js?v=__BUILD__" defer></script>\n  <script src="experience-progress.js?v=__BUILD__" defer></script>\n  <script src="experience-launch.js?v=__BUILD__" defer></script>\n  <script src="experience-telemetry.js?v=__BUILD__" defer></script>' index.html
           sed -i '/auth-onboarding.js?v=__BUILD__/a\  <script src="cloud-auto-connect.js?v=__BUILD__" defer></script>\n  <script src="login-forgot-password.js?v=__BUILD__" defer></script>\n  <script src="admin-ui.js?v=__BUILD__" defer></script>\n  <script src="profile-dropdown.js?v=__BUILD__" defer></script>' index.html
           sed -i "s/__BUILD__/$BUILD/g" index.html service-worker.js manifest.json
           cp index.html latest.html
@@ -52,6 +52,7 @@ jobs:
           test -s phase4.css
           test -s phase5.css
           test -s experience-core.css
+          test -s experience-v2.css
           test -s app-production.js
           test -s coach-engine.js
           test -s coach-guard.js
@@ -63,6 +64,12 @@ jobs:
           test -s phase4.js
           test -s phase5.js
           test -s experience-core.js
+          test -s experience-coach-actions.js
+          test -s experience-food.js
+          test -s experience-workout.js
+          test -s experience-progress.js
+          test -s experience-launch.js
+          test -s experience-telemetry.js
           test -s exercise-library.js
           test -s core-storage.js
           test -s supabase-cloud.js
@@ -73,6 +80,8 @@ jobs:
           test -s admin-dashboard.css
           test -s supabase/functions/ios-step-sync/index.ts
           test -s supabase/migrations/20260816123000_create_ios_step_sync.sql
+          test -s supabase/migrations/20260819031500_create_product_analytics.sql
+          test -s tests/browser-e2e.mjs
           test -s assets/workout-hero.webp
           test "$(find assets/exercises/avatars -type f -name '*.mp4' | wc -l)" -eq 42
           test "$(find assets/exercises/avatars -type f -name '*.webp' | wc -l)" -eq 42
@@ -83,29 +92,7 @@ jobs:
           grep -q 'id="workoutHistory"' index.html
           grep -q 'id="foodHistory"' index.html
           grep -q 'id="progressList"' index.html
-          grep -q 'coach.css' index.html
-          grep -q 'phase2.css' index.html
-          grep -q 'workout-redesign.css' index.html
-          grep -q 'today-redesign.css' index.html
-          grep -q 'phase3.css' index.html
-          grep -q 'phase4.css' index.html
-          grep -q 'phase5.css' index.html
-          grep -q 'experience-core.css' index.html
-          grep -q 'coach-engine.js' index.html
-          grep -q 'coach-guard.js' index.html
-          grep -q 'coach-ui.js' index.html
-          grep -q 'phase2.js' index.html
-          grep -q 'workout-redesign.js' index.html
-          grep -q 'today-redesign.js' index.html
-          grep -q 'phase3.js' index.html
-          grep -q 'phase4.js' index.html
-          grep -q 'phase5.js' index.html
-          grep -q 'experience-core.js' index.html
-          grep -q 'supabase-cloud.js' index.html
-          grep -q 'cloud-auto-connect.js' index.html
-          grep -q 'login-forgot-password.js' index.html
-          grep -q 'admin-ui.js' index.html
-          grep -q 'profile-dropdown.js' index.html
+          for asset in coach.css phase2.css workout-redesign.css today-redesign.css phase3.css phase4.css phase5.css experience-core.css experience-v2.css coach-engine.js coach-guard.js coach-ui.js phase2.js workout-redesign.js today-redesign.js phase3.js phase4.js phase5.js experience-core.js experience-coach-actions.js experience-food.js experience-workout.js experience-progress.js experience-launch.js experience-telemetry.js supabase-cloud.js cloud-auto-connect.js login-forgot-password.js admin-ui.js profile-dropdown.js; do grep -q "$asset" index.html; done
           ! grep -q 'auth-production-redirect.js' index.html
           ! grep -q 'cloud-auth-bridge.js' index.html
           ! grep -q 'HistorySheet' index.html
@@ -122,6 +109,12 @@ jobs:
           node --check phase4.js
           node --check phase5.js
           node --check experience-core.js
+          node --check experience-coach-actions.js
+          node --check experience-food.js
+          node --check experience-workout.js
+          node --check experience-progress.js
+          node --check experience-launch.js
+          node --check experience-telemetry.js
           node --check app-production.js
           node --check health-sync.js
           node --check navigation-fix.js
@@ -133,6 +126,16 @@ jobs:
           node --check profile-dropdown.js
           node --check service-worker.js
           node tests/production-smoke.js
+
+      - name: Mobile browser E2E
+        run: |
+          set -euo pipefail
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+          python3 -m http.server 4173 >/tmp/mybody-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID' EXIT
+          node tests/browser-e2e.mjs
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
