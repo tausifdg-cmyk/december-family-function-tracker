@@ -31,10 +31,10 @@ jobs:
           BUILD="${{ github.run_number }}"
           printf '{"build":"%s"}\n' "$BUILD" > build.json
           cp index-production.html index.html
-          sed -i '/production.css?v=__BUILD__/a\  <link rel="stylesheet" href="coach.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase2.css?v=__BUILD__">\n  <link rel="stylesheet" href="workout-redesign.css?v=__BUILD__">\n  <link rel="stylesheet" href="today-redesign.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase3.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase4.css?v=__BUILD__">\n  <link rel="stylesheet" href="admin-dashboard.css?v=__BUILD__">' index.html
+          sed -i '/production.css?v=__BUILD__/a\  <link rel="stylesheet" href="coach.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase2.css?v=__BUILD__">\n  <link rel="stylesheet" href="workout-redesign.css?v=__BUILD__">\n  <link rel="stylesheet" href="today-redesign.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase3.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase4.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase5.css?v=__BUILD__">\n  <link rel="stylesheet" href="admin-dashboard.css?v=__BUILD__">' index.html
           sed -i '/food-data.js?v=__BUILD__/i\  <script src="supabase-cloud.js?v=__BUILD__" defer></script>' index.html
           sed -i '/core-storage.js?v=__BUILD__/a\  <script src="coach-engine.js?v=__BUILD__" defer></script>\n  <script src="coach-guard.js?v=__BUILD__" defer></script>' index.html
-          sed -i '/app-production.js?v=__BUILD__/a\  <script src="coach-ui.js?v=__BUILD__" defer></script>\n  <script src="phase2.js?v=__BUILD__" defer></script>\n  <script src="workout-redesign.js?v=__BUILD__" defer></script>\n  <script src="today-redesign.js?v=__BUILD__" defer></script>\n  <script src="phase3.js?v=__BUILD__" defer></script>\n  <script src="phase4.js?v=__BUILD__" defer></script>' index.html
+          sed -i '/app-production.js?v=__BUILD__/a\  <script src="coach-ui.js?v=__BUILD__" defer></script>\n  <script src="phase2.js?v=__BUILD__" defer></script>\n  <script src="workout-redesign.js?v=__BUILD__" defer></script>\n  <script src="today-redesign.js?v=__BUILD__" defer></script>\n  <script src="phase3.js?v=__BUILD__" defer></script>\n  <script src="phase4.js?v=__BUILD__" defer></script>\n  <script src="phase5.js?v=__BUILD__" defer></script>' index.html
           sed -i '/auth-onboarding.js?v=__BUILD__/a\  <script src="cloud-auto-connect.js?v=__BUILD__" defer></script>\n  <script src="login-forgot-password.js?v=__BUILD__" defer></script>\n  <script src="admin-ui.js?v=__BUILD__" defer></script>\n  <script src="profile-dropdown.js?v=__BUILD__" defer></script>' index.html
           sed -i "s/__BUILD__/$BUILD/g" index.html service-worker.js manifest.json
           cp index.html latest.html
@@ -50,6 +50,7 @@ jobs:
           test -s today-redesign.css
           test -s phase3.css
           test -s phase4.css
+          test -s phase5.css
           test -s app-production.js
           test -s coach-engine.js
           test -s coach-guard.js
@@ -59,6 +60,7 @@ jobs:
           test -s today-redesign.js
           test -s phase3.js
           test -s phase4.js
+          test -s phase5.js
           test -s exercise-library.js
           test -s core-storage.js
           test -s supabase-cloud.js
@@ -85,6 +87,7 @@ jobs:
           grep -q 'today-redesign.css' index.html
           grep -q 'phase3.css' index.html
           grep -q 'phase4.css' index.html
+          grep -q 'phase5.css' index.html
           grep -q 'coach-engine.js' index.html
           grep -q 'coach-guard.js' index.html
           grep -q 'coach-ui.js' index.html
@@ -93,6 +96,7 @@ jobs:
           grep -q 'today-redesign.js' index.html
           grep -q 'phase3.js' index.html
           grep -q 'phase4.js' index.html
+          grep -q 'phase5.js' index.html
           grep -q 'supabase-cloud.js' index.html
           grep -q 'cloud-auto-connect.js' index.html
           grep -q 'login-forgot-password.js' index.html
@@ -112,6 +116,7 @@ jobs:
           node --check today-redesign.js
           node --check phase3.js
           node --check phase4.js
+          node --check phase5.js
           node --check app-production.js
           node --check health-sync.js
           node --check navigation-fix.js
