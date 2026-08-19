@@ -57,6 +57,7 @@ jobs:
           test -s share-gallery-upgrade.css
           test -s ui-corrections.css
           test -s media-diet-upgrade.css
+          test -s music-player.css
           test -s app-production.js
           test -s coach-engine.js
           test -s coach-guard.js
@@ -79,6 +80,8 @@ jobs:
           test -s share-gallery-upgrade.js
           test -s ui-corrections.js
           test -s media-diet-upgrade.js
+          test -s youtube-legacy-recovery.js
+          test -s music-player.js
           test -s ios-health-upgrade.js
           test -s exercise-library.js
           test -s core-storage.js
@@ -130,6 +133,8 @@ jobs:
           node --check share-gallery-upgrade.js
           node --check ui-corrections.js
           node --check media-diet-upgrade.js
+          node --check youtube-legacy-recovery.js
+          node --check music-player.js
           node --check ios-health-upgrade.js
           node --check app-production.js
           node --check health-sync.js
