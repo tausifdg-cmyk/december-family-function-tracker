@@ -1,0 +1,94 @@
+/* MYBODY 2.0 exercise viewer alignment + operational instructions */
+.media-lightbox.mb-viewer-refined{
+  padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + 18px)!important;
+}
+html.mb-music-active .media-lightbox.mb-viewer-refined{
+  padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + var(--music-bar-height,74px) + 28px)!important;
+}
+html.mb-music-active.mb-music-collapsed .media-lightbox.mb-viewer-refined{
+  padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + var(--music-bar-collapsed-height,50px) + 22px)!important;
+}
+.media-lightbox.mb-viewer-refined .lightbox-stage{
+  display:grid!important;
+  grid-template-rows:minmax(0,1fr) auto auto!important;
+  place-items:stretch!important;
+  align-content:stretch!important;
+  overflow:auto!important;
+  overscroll-behavior:contain;
+  padding:0!important;
+}
+.media-lightbox.mb-viewer-refined .exercise-motion-stage{
+  grid-row:1;
+  min-height:260px!important;
+  height:auto!important;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+}
+.media-lightbox.mb-viewer-refined .exercise-motion-stage .exercise-motion,
+.media-lightbox.mb-viewer-refined .exercise-motion-stage .exercise-gif,
+.media-lightbox.mb-viewer-refined .exercise-motion-stage .exercise-video{
+  max-height:100%;
+}
+.media-lightbox.mb-viewer-refined .lightbox-muscle{display:none!important}
+.media-lightbox.mb-viewer-refined .lightbox-guide{
+  position:static!important;
+  grid-row:2;
+  width:auto!important;
+  max-width:none!important;
+  margin:10px 12px 0!important;
+  padding:0!important;
+  border:1px solid #364036!important;
+  border-radius:14px!important;
+  background:rgba(8,12,8,.96)!important;
+  overflow:hidden;
+}
+.media-lightbox.mb-viewer-refined .mb-instructions-toggle{
+  width:100%;
+  min-height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 13px;
+  border:0;
+  background:transparent;
+  color:#f7f9f5;
+  font-size:12px;
+  font-weight:850;
+  text-align:left;
+}
+.media-lightbox.mb-viewer-refined .mb-instructions-toggle span:last-child{
+  color:var(--accent);
+  font-size:11px;
+}
+.media-lightbox.mb-viewer-refined .mb-instructions-body{
+  padding:0 13px 12px;
+}
+.media-lightbox.mb-viewer-refined .mb-instructions-body.hidden{display:none}
+.media-lightbox.mb-viewer-refined .lightbox-guide p{margin:0 0 8px}
+.media-lightbox.mb-viewer-refined .mb-media-source{
+  position:static!important;
+  grid-row:3;
+  width:auto!important;
+  margin:10px 12px 12px!important;
+  order:3;
+  z-index:2;
+}
+.media-lightbox.mb-viewer-refined .mb-youtube-stage,
+.media-lightbox.mb-viewer-refined .mb-youtube-empty{
+  width:100%;
+}
+.media-lightbox.mb-viewer-refined .mb-youtube-frame{
+  border-radius:0!important;
+  border-left:0!important;
+  border-right:0!important;
+}
+@media(max-width:720px){
+  .media-lightbox.mb-viewer-refined{gap:10px;padding-left:10px!important;padding-right:10px!important}
+  .media-lightbox.mb-viewer-refined .lightbox-head{padding-inline:4px}
+  .media-lightbox.mb-viewer-refined .lightbox-stage{border-radius:16px}
+  .media-lightbox.mb-viewer-refined .exercise-motion-stage{min-height:230px!important}
+  .media-lightbox.mb-viewer-refined .mb-media-source{margin:9px 10px 10px!important}
+  .media-lightbox.mb-viewer-refined .lightbox-guide{margin:9px 10px 0!important}
+}
