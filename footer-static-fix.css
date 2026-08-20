@@ -1,0 +1,22 @@
+/* MYBODY 2.0 safe legal footer placement.
+   Hide the legacy body-level footer and render the legal notice as the true
+   final flow item of each tab panel. No DOM mutation is used. */
+body > footer{
+  display:none!important;
+}
+.app-shell > .panel::after{
+  content:"© 2026 MYBODY 2.0 / Tausif Pathan. All rights reserved. · Energy estimates are approximate and are not medical advice";
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  margin:30px 0 8px;
+  padding:16px 14px 12px;
+  border-top:1px solid var(--line);
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.45;
+  text-align:center;
+}
+html.mb-music-active .app-shell > .panel::after{
+  margin-bottom:8px;
+}
