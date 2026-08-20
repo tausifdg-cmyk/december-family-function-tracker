@@ -9,6 +9,7 @@ function loadCorrections(){
   loadAsset('script','src',`ui-corrections.js?v=${v}`,'uiCorrections');
   loadAsset('link','href',`media-diet-upgrade.css?v=${v}`,'mediaDietUpgrade');
   loadAsset('script','src',`media-diet-upgrade.js?v=${v}`,'mediaDietUpgrade');
+  loadAsset('script','src',`diet-plan-fix.js?v=${v}`,'dietPlanFix');
   loadAsset('script','src',`youtube-legacy-recovery.js?v=${v}`,'youtubeLegacyRecovery');
   loadAsset('link','href',`music-player.css?v=${v}`,'musicPlayer');
   loadAsset('script','src',`music-player.js?v=${v}`,'musicPlayer');
