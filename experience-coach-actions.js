@@ -20,6 +20,8 @@ function loadCorrections(){
   loadAsset('link','href',`food-compact-safe.css?v=${v}`,'foodCompactSafe');
   loadAsset('link','href',`music-visibility-safe.css?v=${v}`,'musicVisibilitySafe');
   loadAsset('script','src',`music-visibility-safe.js?v=${v}`,'musicVisibilitySafe');
+  loadAsset('link','href',`food-keyboard-fix.css?v=${v}`,'foodKeyboardFix');
+  loadAsset('script','src',`food-keyboard-fix.js?v=${v}`,'foodKeyboardFix');
 }
 function removeDuplicateWorkoutCta(){const primary=$('#experienceBrief .xp-coach > [data-xp-action="workout"]');const featured=$('#today .today-workout-card [data-nav="workout"]');if(primary&&featured)primary.remove()}
 function init(){loadCorrections();removeDuplicateWorkoutCta();window.addEventListener('mybody:state',()=>setTimeout(removeDuplicateWorkoutCta,80));document.addEventListener('click',e=>{if(e.target.closest('[data-nav],.tab'))setTimeout(removeDuplicateWorkoutCta,100)},true)}
