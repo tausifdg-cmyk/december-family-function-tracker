@@ -1,5 +1,6 @@
 /* MYBODY 2.0 - safe mobile viewport/input stability. CSS only, no DOM or viewport-meta mutation. */
 html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
+.app-shell{touch-action:pan-y!important;}
 button,a,.tab{touch-action:manipulation;}
 @media (max-width:768px){
   input,select,textarea,
