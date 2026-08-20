@@ -5,9 +5,9 @@ const Store=window.MyBodyStore;
 if(!Store)return;
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 const USDA='https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY';
-let menu=null,activeInput=null,searchTimer=null,requestSeq=0,suppress=false;
+let menu=null,activeInput=null,searchTimer=null,requestSeq=0,suppress=false,positionFrame=0;
 
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const num=(v,f=0)=>{const n=Number(v);return Number.isFinite(n)?n:f};
 const round=(v,p=1)=>Math.round(num(v)*10**p)/10**p;
 function state(){return Store.read()}
@@ -36,7 +36,39 @@ function ensureMenu(){
   return menu;
 }
 function positionMenu(input){
-  const m=ensureMenu(),r=input.getBoundingClientRect(),margin=8,width=Math.min(Math.max(r.width,290),window.innerWidth-margin*2);let left=Math.min(Math.max(margin,r.left),window.innerWidth-width-margin);const below=window.innerHeight-r.bottom;const placeAbove=below<220&&r.top>240;m.style.width=`${width}px`;m.style.left=`${left}px`;m.style.top=placeAbove?'auto':`${Math.min(window.innerHeight-72,r.bottom+6)}px`;m.style.bottom=placeAbove?`${Math.max(8,window.innerHeight-r.top+6)}px`:'auto';}
+  const m=ensureMenu();if(!input||!document.contains(input)||m.classList.contains('hidden'))return;
+  cancelAnimationFrame(positionFrame);
+  positionFrame=requestAnimationFrame(()=>{
+    if(!input||!document.contains(input)||m.classList.contains('hidden'))return;
+    const r=input.getBoundingClientRect();
+    const vv=window.visualViewport;
+    const viewportWidth=vv?.width||window.innerWidth;
+    const viewportHeight=vv?.height||window.innerHeight;
+    const offsetLeft=vv?.offsetLeft||0;
+    const offsetTop=vv?.offsetTop||0;
+    const margin=8,gap=4;
+    if(r.bottom<0||r.top>viewportHeight){m.classList.add('hidden');return}
+    const width=Math.min(Math.max(180,r.width),viewportWidth-margin*2);
+    const left=Math.max(offsetLeft+margin,Math.min(r.left,offsetLeft+viewportWidth-width-margin));
+    const below=offsetTop+viewportHeight-r.bottom;
+    const above=r.top-offsetTop;
+    const placeAbove=below<170&&above>220;
+    const maxHeight=Math.max(120,Math.min(320,(placeAbove?above:below)-14));
+    m.style.setProperty('position','fixed','important');
+    m.style.setProperty('left',`${Math.round(left)}px`,'important');
+    m.style.setProperty('right','auto','important');
+    m.style.setProperty('width',`${Math.round(width)}px`,'important');
+    m.style.setProperty('max-height',`${Math.round(maxHeight)}px`,'important');
+    if(placeAbove){
+      m.style.setProperty('top','auto','important');
+      m.style.setProperty('bottom',`${Math.max(8,Math.round(viewportHeight-(r.top-offsetTop)+gap))}px`,'important');
+    }else{
+      m.style.setProperty('top',`${Math.round(r.bottom+gap)}px`,'important');
+      m.style.setProperty('bottom','auto','important');
+    }
+    m.style.setProperty('transform','none','important');
+  });
+}
 function closeMenu(){if(menu)menu.classList.add('hidden');activeInput=null;clearTimeout(searchTimer)}
 function inputContext(input){const row=input.closest('.food-row');return row?{type:'meal',meal:row.dataset.meal,index:row.dataset.index}:{type:'manager'}}
 function findContextInput(ctx){if(ctx.type==='manager')return $('#customFoodName');return $(`.food-row[data-meal="${CSS.escape(String(ctx.meal))}"][data-index="${CSS.escape(String(ctx.index))}"] .food-name`)}
@@ -102,7 +134,18 @@ function onInput(e){const input=e.target.closest('.food-name,#customFoodName');i
 function onFocus(e){const input=e.target.closest('.food-name,#customFoodName');if(!input)return;input.setAttribute('autocomplete','off');input.removeAttribute('list');renderLocal(input,input.value)}
 function onKeydown(e){if(!activeInput||menu?.classList.contains('hidden'))return;if(e.key==='Escape'){closeMenu();activeInput?.focus();return}if(e.key==='Enter'){const first=$('.mb-food-option',menu);if(first){e.preventDefault();first.click()}}}
 function refreshInputs(){$$('.food-name,#customFoodName').forEach(input=>{input.setAttribute('autocomplete','off');input.removeAttribute('list');input.setAttribute('aria-autocomplete','list')})}
-function init(){ensureMenu();refreshInputs();document.addEventListener('input',onInput,true);document.addEventListener('focusin',onFocus,true);document.addEventListener('keydown',onKeydown,true);document.addEventListener('pointerdown',e=>{if(!e.target.closest('.mb-food-search-menu,.food-name,#customFoodName'))closeMenu()},true);window.addEventListener('resize',()=>{if(activeInput&&!menu.classList.contains('hidden'))positionMenu(activeInput)});window.addEventListener('scroll',()=>{if(activeInput&&!menu.classList.contains('hidden'))positionMenu(activeInput)},true);window.addEventListener('mybody:state',()=>setTimeout(refreshInputs,100));document.addEventListener('click',e=>{if(e.target.closest('[data-tab="food"],#food-tab,[data-action="add-food"],#manageFoodsBtn'))setTimeout(refreshInputs,140)},true)}
+function reposition(){if(activeInput&&menu&&!menu.classList.contains('hidden'))positionMenu(activeInput)}
+function init(){
+  ensureMenu();refreshInputs();
+  document.addEventListener('input',onInput,true);document.addEventListener('focusin',onFocus,true);document.addEventListener('keydown',onKeydown,true);
+  document.addEventListener('pointerdown',e=>{if(!e.target.closest('.mb-food-search-menu,.food-name,#customFoodName'))closeMenu()},true);
+  $('.app-shell')?.addEventListener('scroll',reposition,{passive:true});
+  window.addEventListener('resize',reposition,{passive:true});
+  window.visualViewport?.addEventListener('resize',reposition,{passive:true});
+  window.visualViewport?.addEventListener('scroll',reposition,{passive:true});
+  window.addEventListener('mybody:state',()=>setTimeout(refreshInputs,100));
+  document.addEventListener('click',e=>{if(e.target.closest('[data-tab="food"],#food-tab,[data-action="add-food"],#manageFoodsBtn'))setTimeout(refreshInputs,140)},true);
+}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
 window.MyBodyUICorrections=Object.freeze({localMatches,searchInternet});
 })();
