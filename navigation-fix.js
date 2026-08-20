@@ -2,6 +2,14 @@
   'use strict';
   const VALID_TABS = new Set(['today', 'workout', 'food', 'progress', 'settings']);
   let activeTab = 'today';
+  function resetScroll() {
+    const shell = document.querySelector('.app-shell');
+    if (shell) {
+      try { shell.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }
+      catch (_) { shell.scrollTop = 0; shell.scrollLeft = 0; }
+    }
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); } catch (_) {}
+  }
   function selectTab(requested, options = {}) {
     const id = VALID_TABS.has(requested) && document.getElementById(requested) ? requested : 'today';
     activeTab = id;
@@ -19,7 +27,7 @@
     });
     try { sessionStorage.setItem('mybody.activeTab', id); } catch (_) {}
     if (options.updateHash !== false && location.hash !== `#${id}`) history.replaceState(null, '', `#${id}`);
-    if (options.scroll !== false) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    if (options.scroll !== false) requestAnimationFrame(resetScroll);
     window.dispatchEvent(new CustomEvent('mybody:tabchange', { detail: { id } }));
   }
   function handleNavClick(event) {
