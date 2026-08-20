@@ -2,8 +2,8 @@
   'use strict';
   const metaBuild = document.querySelector('meta[name="app-build"]')?.content || '__BUILD__';
   const currentBuild = /^\d+$/.test(String(metaBuild)) ? Number(metaBuild) : 0;
-  const THRESHOLD = 66;
-  const MAX_PULL = 96;
+  const THRESHOLD = 76;
+  const MAX_PULL = 104;
   let startY = 0;
   let pullDistance = 0;
   let tracking = false;
@@ -43,6 +43,10 @@
 
   function indicator() {
     return document.getElementById('pullRefresh');
+  }
+
+  function scroller() {
+    return document.querySelector('.app-shell');
   }
 
   function setIndicator(message, options = {}) {
@@ -125,13 +129,20 @@
   }
 
   function canStart(event) {
-    if (checking || window.scrollY > 0 || event.touches?.length !== 1) return false;
+    if (checking || event.touches?.length !== 1) return false;
     if (document.body.classList.contains('modal-open')) return false;
-    return !event.target.closest('input,select,textarea,[contenteditable="true"]');
+    const pane = scroller();
+    if (!pane || pane.scrollTop > 1) return false;
+    if (event.target.closest('input,select,textarea,[contenteditable="true"]')) return false;
+    /* Pull-to-refresh is deliberately restricted to the header. Content swipes must always scroll. */
+    return Boolean(event.target.closest('.topbar,#pullRefresh'));
   }
 
   function onTouchStart(event) {
-    if (!canStart(event)) return;
+    if (!canStart(event)) {
+      tracking = false;
+      return;
+    }
     startY = event.touches[0].clientY;
     pullDistance = 0;
     tracking = true;
@@ -139,14 +150,16 @@
 
   function onTouchMove(event) {
     if (!tracking || checking) return;
+    const pane = scroller();
     const delta = event.touches[0].clientY - startY;
-    if (delta <= 0 || window.scrollY > 0) {
+    if (delta <= 0 || (pane && pane.scrollTop > 1)) {
+      tracking = false;
       pullDistance = 0;
       setIndicator('Pull to check for update', { distance: 0, visible: false });
       return;
     }
     event.preventDefault();
-    pullDistance = Math.min(MAX_PULL, delta * .55);
+    pullDistance = Math.min(MAX_PULL, delta * .5);
     const ready = pullDistance >= THRESHOLD;
     setIndicator(ready ? 'Release to check for update' : 'Pull to check for update', { distance: pullDistance, visible: true, ready });
   }
