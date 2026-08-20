@@ -1,0 +1,9 @@
+/* MYBODY 2.0 - safe mobile viewport/input stability. CSS only, no DOM or viewport-meta mutation. */
+html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
+button,a,.tab{touch-action:manipulation;}
+@media (max-width:768px){
+  input,select,textarea,
+  #food .food-name,#food .food-amount,#food .food-unit,#customFoodName{
+    font-size:16px!important;
+  }
+}
