@@ -40,7 +40,10 @@
 }
 
 /* 2) Global fixed-nav safe zone. No content/control may finish underneath the bottom nav. */
-:root{--content-safe-bottom:calc(var(--nav-height) + var(--safe-bottom) + 30px)}
+:root{
+  --nav-height:64px;
+  --content-safe-bottom:calc(var(--nav-height) + var(--safe-bottom) + 30px);
+}
 body{padding-bottom:var(--content-safe-bottom)!important}
 .app-shell{padding-bottom:var(--content-safe-bottom)!important}
 .panel{scroll-padding-bottom:var(--content-safe-bottom);padding-bottom:calc(var(--nav-height) + var(--safe-bottom) + 18px)}
@@ -192,10 +195,17 @@ body{
   right:0!important;
   bottom:0!important;
   top:auto!important;
+  height:calc(var(--nav-height) + var(--safe-bottom))!important;
+  padding:4px max(7px,var(--safe-right)) calc(4px + var(--safe-bottom)) max(7px,var(--safe-left))!important;
   transform:none!important;
   translate:none!important;
   margin:0!important;
   z-index:90000!important;
+}
+.tab{
+  min-height:48px!important;
+  padding:3px 2px!important;
+  gap:3px!important;
 }
 .mb-music-mini{
   position:fixed!important;
