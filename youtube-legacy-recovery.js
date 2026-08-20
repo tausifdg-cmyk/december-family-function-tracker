@@ -10,8 +10,6 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const clean=v=>String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 let player=null,renderToken=0,apiPromise=null;
 
-/* Vetted exercise-demo candidates. First item is preferred; later items are fallbacks
-   if YouTube reports unavailable, removed or embedding-disabled (100/101/150). */
 const BY_ID=Object.freeze({
   'dumbbell-bench-press':['CayG6UYqL8g'],
   'incline-dumbbell-press':['HFVwgST_WG4','oZVCBM9f8Eo','4eusnSBHniE','oS2Uy3MAbgs'],
@@ -57,8 +55,6 @@ const BY_ID=Object.freeze({
   'lower-back-rotation':['-Mhakz8PvRY','acwMSzYfUc8']
 });
 
-/* Exact workout-name overrides are important because several plan exercises are variations
-   that intentionally resolve to a close library movement. */
 const BY_NAME=Object.freeze({
   'bench press':['CayG6UYqL8g'],
   'barbell bench press':['CayG6UYqL8g'],
@@ -129,18 +125,22 @@ function candidatesFor(exercise,name=currentTitle()){
   if(exact?.length)return unique(exact);
   const byId=BY_ID[exercise?.id];
   if(byId?.length)return unique(byId);
-  for(const n of [exercise?.name,...(exercise?.aliases||[])]){
-    const hit=BY_NAME[clean(n)];if(hit?.length)return unique(hit);
-  }
+  for(const n of [exercise?.name,...(exercise?.aliases||[])]){const hit=BY_NAME[clean(n)];if(hit?.length)return unique(hit)}
   return [];
+}
+function ensureReferrerPolicy(){
+  let meta=document.querySelector('meta[name="referrer"]');
+  if(!meta){meta=document.createElement('meta');meta.name='referrer';document.head.prepend(meta)}
+  meta.content='strict-origin-when-cross-origin';
 }
 function destroyPlayer(){renderToken++;try{player?.destroy?.()}catch(_){ }player=null}
 function setStatus(text,kind=''){const el=$('#mbYoutubeStatus');if(el){el.textContent=text;el.dataset.kind=kind}}
-function showFailure(exercise){
+function showFailure(exercise,message){
   const stage=$('#exerciseMotion');if(!stage)return;
-  stage.innerHTML=`<div class="mb-youtube-empty"><strong>YouTube demo unavailable right now</strong><p>No vetted embedded candidate for ${esc(exercise?.name||currentTitle())} could be played. Use <b>Offline · Database</b> for the cached demonstration.</p><button type="button" class="secondary" data-media-source="offline">Use offline demo</button></div>`;
+  stage.innerHTML=`<div class="mb-youtube-empty"><strong>YouTube demo unavailable right now</strong><p>${esc(message||`No vetted embedded candidate for ${exercise?.name||currentTitle()} could be played.`)} Use <b>Offline · Database</b> for the cached demonstration.</p><button type="button" class="secondary" data-media-source="offline">Use offline demo</button></div>`;
 }
 function loadApi(){
+  ensureReferrerPolicy();
   if(window.YT?.Player)return Promise.resolve(window.YT);
   if(apiPromise)return apiPromise;
   apiPromise=new Promise((resolve,reject)=>{
@@ -149,12 +149,9 @@ function loadApi(){
     const prior=window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady=function(){try{prior?.()}catch(_){ }finish()};
     if(!document.querySelector('script[data-mybody-youtube-api]')){
-      const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.async=true;s.dataset.mybodyYoutubeApi='1';s.onerror=()=>{if(!settled){settled=true;apiPromise=null;reject(new Error('YouTube API failed to load'))}};document.head.appendChild(s);
+      const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.async=true;s.dataset.mybodyYoutubeApi='1';s.referrerPolicy='strict-origin-when-cross-origin';s.onerror=()=>{if(!settled){settled=true;apiPromise=null;reject(new Error('YouTube API failed to load'))}};document.head.appendChild(s);
     }
-    const started=Date.now(),timer=setInterval(()=>{
-      if(finish()){clearInterval(timer);return}
-      if(Date.now()-started>10000){clearInterval(timer);if(!settled){settled=true;apiPromise=null;reject(new Error('YouTube API timeout'))}}
-    },100);
+    const started=Date.now(),timer=setInterval(()=>{if(finish()){clearInterval(timer);return}if(Date.now()-started>10000){clearInterval(timer);if(!settled){settled=true;apiPromise=null;reject(new Error('YouTube API timeout'))}}},100);
   });
   return apiPromise;
 }
@@ -167,24 +164,29 @@ async function mountCandidate(exercise,candidates,index,token){
     const YT=await loadApi();if(token!==renderToken||!$('#mbYoutubePlayer'))return;
     try{player?.destroy?.()}catch(_){ }player=null;
     player=new YT.Player('mbYoutubePlayer',{
-      videoId:id,width:'100%',height:'100%',
-      playerVars:{playsinline:1,rel:0,controls:1,fs:1,origin:location.origin},
+      videoId:id,width:'100%',height:'100%',host:'https://www.youtube.com',
+      playerVars:{playsinline:1,rel:0,controls:1,fs:1,origin:location.origin,widget_referrer:location.href},
       events:{
-        onReady:()=>{if(token===renderToken)setStatus(`Verified YouTube demo${candidates.length>1?` · ${index+1}/${candidates.length}`:''} · internet required`,'ready')},
+        onReady:event=>{
+          if(token!==renderToken)return;
+          try{event.target.getIframe().referrerPolicy='strict-origin-when-cross-origin'}catch(_){ }
+          setStatus(`Verified YouTube demo${candidates.length>1?` · ${index+1}/${candidates.length}`:''} · internet required`,'ready');
+        },
         onError:event=>{
           if(token!==renderToken)return;
           const code=Number(event?.data);
+          if(code===153){showFailure(exercise,'YouTube blocked this embedded player because the browser did not provide the required referrer identity.');return}
           if([2,5,100,101,150].includes(code)){
             const frame=$('.mb-youtube-frame');if(frame)frame.innerHTML='<div id="mbYoutubePlayer"></div>';
             mountCandidate(exercise,candidates,index+1,token);
-          }else setStatus('YouTube playback error. Try again or use Offline · Database.','error');
+          }else setStatus(`YouTube playback error${code?` (${code})`:''}. Try again or use Offline · Database.`,'error');
         }
       }
     });
   }catch(_){if(token===renderToken)setStatus('Could not connect to YouTube. Check internet or use Offline · Database.','error')}
 }
 function renderEmbedded(){
-  destroyPlayer();
+  destroyPlayer();ensureReferrerPolicy();
   const stage=$('#exerciseMotion');if(!stage)return;
   const exercise=currentExercise(),candidates=candidatesFor(exercise),token=++renderToken;
   if(!candidates.length){showFailure(exercise);return}
@@ -207,6 +209,7 @@ function intercept(e){
   renderEmbedded();
 }
 function init(){
+  ensureReferrerPolicy();
   try{localStorage.removeItem('mybody.youtube.exercise-links.v1')}catch(_){ }
   document.addEventListener('click',intercept,true);
   document.addEventListener('click',e=>{if(e.target.closest?.('[data-action="close-exercise-media"]'))destroyPlayer()},true);
