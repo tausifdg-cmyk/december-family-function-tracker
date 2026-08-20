@@ -1,0 +1,18 @@
+/* MYBODY 2.0 - isolated food keyboard/autocomplete safety. */
+#food .food-name,
+#food .food-amount,
+#food .food-unit,
+#customFoodName{
+  font-size:16px!important;
+  transform:none!important;
+  zoom:1!important;
+  -webkit-text-size-adjust:100%!important;
+}
+.mb-food-search-menu{
+  position:fixed!important;
+  margin:0!important;
+  transform:none!important;
+  max-width:calc(100vw - 16px)!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch;
+}
