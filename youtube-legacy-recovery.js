@@ -34,27 +34,27 @@ const BY_ID=Object.freeze({
   'overhead-triceps-extension':['_gsUck-7M74','T1EO7u2n7WU','hS82Wlo67O0'],
   'wrist-curl':['VGkF2NTtao0','S-ynXc4M-mY'],
   'romanian-deadlift':['xgusDooVfKU'],
-  'back-squat':['kjlfpqXnyL8','BjGLs6KGWUc'],
+  'back-squat':['vNmdIUYmQ0A'],
   'sumo-squat':['kjlfpqXnyL8'],
-  'leg-press':['cDGOn-yfKJA'],
+  'leg-press':['cDGOn-yfKJA','3aYsOsBA7ZE'],
   'leg-curl':['jxctD6fL_FQ','Dq5y4WEcqqo'],
   'leg-extension':['yR_LqZYSIgM'],
   'calf-raise':['-M4-G8p8fmc'],
   'glute-bridge':['LFvZ-d4rDac'],
-  'hip-adduction':['kjlfpqXnyL8'],
+  'hip-adduction':['a_hgGryn8CQ'],
   'russian-twist':['wkD8rjkodUI','JyUqwkVpsi8'],
   'v-sit-twist':['wkD8rjkodUI','JyUqwkVpsi8'],
-  'flutter-kicks':['hq_0YlyfqGM'],
+  'flutter-kicks':['KmwA9FDo13I'],
   'v-sit-hold':['3tQuBuZLma4'],
   'mountain-climber':['hq_0YlyfqGM'],
-  'standing-knee-crunch':['hq_0YlyfqGM'],
-  'seated-knee-tuck':['3tQuBuZLma4'],
+  'standing-knee-crunch':['54q250IUEAc'],
+  'seated-knee-tuck':['54q250IUEAc','QMEhYqwKj2k'],
   'plank':['mwlp75MS6Rg'],
-  'cable-crunch':['wkD8rjkodUI'],
+  'cable-crunch':['3qjoXDTuyOE'],
   'dumbbell-thruster':['2F7obW0u3Uc','tAxpvB1xRGQ'],
   'reverse-lunge':['8TNK5mD0UfM','SkNsa3eBwLA'],
   'bird-dog':['GlOpvsoCzeU','55Ij-z8vs4U','RlN8pKgKUN0'],
-  'lower-back-rotation':['GlOpvsoCzeU','LFvZ-d4rDac']
+  'lower-back-rotation':['-Mhakz8PvRY','acwMSzYfUc8']
 });
 
 /* Exact workout-name overrides are important because several plan exercises are variations
@@ -110,9 +110,9 @@ const BY_NAME=Object.freeze({
   'rear delt fly':['EA7u4Q_8HQ0'],
   'reverse pec deck':['EA7u4Q_8HQ0'],
   'db upright row':['K0dYqPCaO14'],
-  'leg press':['cDGOn-yfKJA'],
-  'hack squat smith squat':['kjlfpqXnyL8'],
-  'barbell squat smith squat':['kjlfpqXnyL8'],
+  'leg press':['cDGOn-yfKJA','3aYsOsBA7ZE'],
+  'hack squat smith squat':['vNmdIUYmQ0A','kjlfpqXnyL8'],
+  'barbell squat smith squat':['vNmdIUYmQ0A','kjlfpqXnyL8'],
   'bulgarian split squat':['SkNsa3eBwLA'],
   'leg extension slow reps':['yR_LqZYSIgM'],
   'hamstring curl':['jxctD6fL_FQ','Dq5y4WEcqqo'],
@@ -144,14 +144,17 @@ function loadApi(){
   if(window.YT?.Player)return Promise.resolve(window.YT);
   if(apiPromise)return apiPromise;
   apiPromise=new Promise((resolve,reject)=>{
-    const started=Date.now();
-    const done=()=>window.YT?.Player?resolve(window.YT):null;
+    let settled=false;
+    const finish=()=>{if(!settled&&window.YT?.Player){settled=true;resolve(window.YT);return true}return false};
     const prior=window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady=function(){try{prior?.()}catch(_){ }done()};
+    window.onYouTubeIframeAPIReady=function(){try{prior?.()}catch(_){ }finish()};
     if(!document.querySelector('script[data-mybody-youtube-api]')){
-      const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.async=true;s.dataset.mybodyYoutubeApi='1';s.onerror=()=>reject(new Error('YouTube API failed to load'));document.head.appendChild(s);
+      const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.async=true;s.dataset.mybodyYoutubeApi='1';s.onerror=()=>{if(!settled){settled=true;apiPromise=null;reject(new Error('YouTube API failed to load'))}};document.head.appendChild(s);
     }
-    const timer=setInterval(()=>{if(done())clearInterval(timer);else if(Date.now()-started>10000){clearInterval(timer);reject(new Error('YouTube API timeout'))}},100);
+    const started=Date.now(),timer=setInterval(()=>{
+      if(finish()){clearInterval(timer);return}
+      if(Date.now()-started>10000){clearInterval(timer);if(!settled){settled=true;apiPromise=null;reject(new Error('YouTube API timeout'))}}
+    },100);
   });
   return apiPromise;
 }
@@ -164,12 +167,11 @@ async function mountCandidate(exercise,candidates,index,token){
     const YT=await loadApi();if(token!==renderToken||!$('#mbYoutubePlayer'))return;
     try{player?.destroy?.()}catch(_){ }player=null;
     player=new YT.Player('mbYoutubePlayer',{
-      videoId:id,
-      width:'100%',height:'100%',
+      videoId:id,width:'100%',height:'100%',
       playerVars:{playsinline:1,rel:0,controls:1,fs:1,origin:location.origin},
       events:{
-        onReady:()=>{if(token===renderToken)setStatus('Verified YouTube demo · internet required','ready')},
-        onError:(event)=>{
+        onReady:()=>{if(token===renderToken)setStatus(`Verified YouTube demo${candidates.length>1?` · ${index+1}/${candidates.length}`:''} · internet required`,'ready')},
+        onError:event=>{
           if(token!==renderToken)return;
           const code=Number(event?.data);
           if([2,5,100,101,150].includes(code)){
@@ -179,7 +181,7 @@ async function mountCandidate(exercise,candidates,index,token){
         }
       }
     });
-  }catch(_){if(token===renderToken){setStatus('Could not connect to YouTube. Check internet or use Offline · Database.','error')}}
+  }catch(_){if(token===renderToken)setStatus('Could not connect to YouTube. Check internet or use Offline · Database.','error')}
 }
 function renderEmbedded(){
   destroyPlayer();
@@ -205,7 +207,6 @@ function intercept(e){
   renderEmbedded();
 }
 function init(){
-  /* Ignore obsolete user-pasted links: verified mappings are authoritative. */
   try{localStorage.removeItem('mybody.youtube.exercise-links.v1')}catch(_){ }
   document.addEventListener('click',intercept,true);
   document.addEventListener('click',e=>{if(e.target.closest?.('[data-action="close-exercise-media"]'))destroyPlayer()},true);
