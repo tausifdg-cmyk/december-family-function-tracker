@@ -21,18 +21,26 @@ function scheduleFoodMenu(){
 }
 function positionFoodMenu(){
   const menu=$('.mb-food-search-menu');
-  if(!menu||menu.classList.contains('hidden')||!foodInput||!document.contains(foodInput))return;
-  const r=foodInput.getBoundingClientRect();
+  const shell=$('.app-shell');
+  if(!menu||!shell||menu.classList.contains('hidden')||!foodInput||!document.contains(foodInput))return;
+
+  if(menu.parentElement!==shell) shell.appendChild(menu);
+
+  const inputRect=foodInput.getBoundingClientRect();
+  const shellRect=shell.getBoundingClientRect();
   const margin=8;
   const gap=4;
-  const width=Math.min(r.width,window.innerWidth-margin*2);
-  const left=Math.max(margin,Math.min(r.left,window.innerWidth-width-margin));
-  const below=window.innerHeight-r.bottom;
-  const maxHeight=Math.max(150,Math.min(360,below-14));
-  menu.style.setProperty('position','fixed','important');
+  const width=Math.min(inputRect.width,shell.clientWidth-margin*2);
+  const contentLeft=inputRect.left-shellRect.left+shell.scrollLeft;
+  const contentTop=inputRect.bottom-shellRect.top+shell.scrollTop+gap;
+  const left=Math.max(margin,Math.min(contentLeft,shell.scrollWidth-width-margin));
+  const visibleBelow=Math.max(120,shellRect.bottom-inputRect.bottom-12);
+  const maxHeight=Math.min(360,visibleBelow);
+
+  menu.style.setProperty('position','absolute','important');
   menu.style.setProperty('left',`${Math.round(left)}px`,'important');
   menu.style.setProperty('right','auto','important');
-  menu.style.setProperty('top',`${Math.round(r.bottom+gap)}px`,'important');
+  menu.style.setProperty('top',`${Math.round(contentTop)}px`,'important');
   menu.style.setProperty('bottom','auto','important');
   menu.style.setProperty('width',`${Math.round(width)}px`,'important');
   menu.style.setProperty('max-height',`${Math.round(maxHeight)}px`,'important');
@@ -88,7 +96,14 @@ function wire(){
   },true);
   document.addEventListener('focusin',e=>{
     const input=e.target.closest?.('.food-name,#customFoodName');
-    if(input){foodInput=input;scheduleFoodMenu();}
+    if(input){
+      foodInput=input;
+      scheduleFoodMenu();
+      setTimeout(scheduleFoodMenu,160);
+    }
+  },true);
+  document.addEventListener('focusout',e=>{
+    if(e.target===foodInput) setTimeout(()=>{ if(document.activeElement!==foodInput) scheduleFoodMenu(); },0);
   },true);
   document.addEventListener('input',e=>{
     const input=e.target.closest?.('.food-name,#customFoodName');
@@ -100,7 +115,6 @@ function wire(){
   $('.app-shell')?.addEventListener('scroll',scheduleFoodMenu,{passive:true});
   window.addEventListener('resize',scheduleFoodMenu,{passive:true});
   window.visualViewport?.addEventListener('resize',scheduleFoodMenu,{passive:true});
-  window.visualViewport?.addEventListener('scroll',scheduleFoodMenu,{passive:true});
   new MutationObserver(syncMusicVisibility).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
   window.addEventListener('mybody:state',()=>{setTimeout(ensureMusicControls,80);setTimeout(scheduleFoodMenu,100)});
 }
