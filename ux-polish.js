@@ -4,11 +4,6 @@
 const $=(s,r=document)=>r.querySelector(s);
 let foodInput=null,menuFrame=0;
 
-function lockViewport(){
-  const meta=$('meta[name="viewport"]');
-  if(meta) meta.setAttribute('content','width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover');
-}
-
 function scrollContentTop(){
   const shell=$('.app-shell');
   if(!shell)return;
@@ -102,9 +97,6 @@ function wire(){
       setTimeout(scheduleFoodMenu,160);
     }
   },true);
-  document.addEventListener('focusout',e=>{
-    if(e.target===foodInput) setTimeout(()=>{ if(document.activeElement!==foodInput) scheduleFoodMenu(); },0);
-  },true);
   document.addEventListener('input',e=>{
     const input=e.target.closest?.('.food-name,#customFoodName');
     if(input){foodInput=input;scheduleFoodMenu();}
@@ -120,7 +112,9 @@ function wire(){
 }
 
 function init(){
-  lockViewport();
+  /* Do not rewrite the viewport meta tag at runtime on iOS. Runtime viewport
+     mutation can reset safe-area calculations and make the Home Screen app
+     render underneath the status bar. The canonical HTML viewport is retained. */
   ensureMusicControls();
   wire();
   setTimeout(ensureMusicControls,300);
