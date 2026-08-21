@@ -55,6 +55,11 @@
 /* Quick update + weekly summary */
 #today .form-card.tr-quick-update{padding:18px}
 #today .form-card.tr-quick-update h3{font-size:23px;margin:0 0 13px}
+#today .tr-expected-weight{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:-2px 0 14px;padding:13px 14px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:15px;background:linear-gradient(120deg,color-mix(in srgb,var(--accent-soft) 58%,var(--card)),var(--card));box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 7%,transparent)}
+#today .tr-expected-weight>div{min-width:0}
+#today .tr-expected-weight span{display:block;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+#today .tr-expected-weight strong{display:block;margin-top:3px;color:var(--accent);font-size:clamp(24px,6vw,31px);line-height:1;letter-spacing:-.035em}
+#today .tr-expected-weight small{max-width:52%;color:var(--muted);font-size:11px;line-height:1.35;text-align:right}
 #today .tr-quick-update label{font-size:12px}
 #today .tr-quick-update input{min-height:48px;font-size:18px;font-weight:800}
 #today .insight-grid.tr-weekly{gap:9px}
@@ -109,6 +114,9 @@
   #today .tr-dashboard .summary-goal span{font-size:11px}
   #today .tr-dashboard .summary-goal strong{font-size:18px}
   #today .today-workout-content{padding:16px}
+  #today .tr-expected-weight{align-items:flex-start;padding:12px 13px}
+  #today .tr-expected-weight strong{font-size:27px}
+  #today .tr-expected-weight small{max-width:48%;font-size:10px}
   #today .tr-weekly .insight{padding:13px 10px}
   #today .tr-weekly .insight strong{font-size:23px}
   #food .nutrition-grid{gap:8px}
@@ -122,6 +130,8 @@
   #today .tr-dashboard .summary-goal{grid-template-columns:40px minmax(0,1fr)}
   #today .tr-dashboard .summary-goal:before{width:40px;height:40px}
   #today .tr-dashboard .summary-goal strong{font-size:16px}
+  #today .tr-expected-weight{display:block}
+  #today .tr-expected-weight small{display:block;max-width:none;margin-top:7px;text-align:left}
   #today .tr-weekly{grid-template-columns:1fr 1fr}
   #today .tr-weekly .insight:last-child{grid-column:1/-1}
   .p2-effort button,.wr-effort button{font-size:9px!important}
