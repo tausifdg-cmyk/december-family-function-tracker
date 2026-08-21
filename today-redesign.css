@@ -60,6 +60,13 @@
 #today .tr-expected-weight span{display:block;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 #today .tr-expected-weight strong{display:block;margin-top:3px;color:var(--accent);font-size:clamp(24px,6vw,31px);line-height:1;letter-spacing:-.035em}
 #today .tr-expected-weight small{max-width:52%;color:var(--muted);font-size:11px;line-height:1.35;text-align:right}
+/* Stacked forecast cards and full-width expected-weight trend */
+#today .tr-expected-weight{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+#today .tr-expected-weight>div{width:100%!important;max-width:none!important;box-sizing:border-box;padding:16px 15px;border:1px solid color-mix(in srgb,var(--accent) 34%,var(--line));border-radius:16px;background:linear-gradient(120deg,color-mix(in srgb,var(--accent-soft) 40%,var(--card)),var(--card))}
+#today .tr-expected-weight .tr-ew-main small{display:block!important;width:100%!important;max-width:none!important;margin-top:9px!important;text-align:left!important;font-size:12px!important;line-height:1.45!important}
+#today .tr-expected-weight .tr-ew-factors span{display:block;margin-top:7px;font-size:11px;line-height:1.4;text-transform:none;letter-spacing:0}
+#today .tr-expected-weight .tr-ew-advice p{position:relative;margin:10px 0 0;padding-left:16px;font-size:14px;line-height:1.45}
+#today .tr-expected-weight .tr-ew-advice p:before{content:"";position:absolute;left:1px;top:.58em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
 #today .tr-quick-update label{font-size:12px}
 #today .tr-quick-update input{min-height:48px;font-size:18px;font-weight:800}
 #today .insight-grid.tr-weekly{gap:9px}
@@ -114,9 +121,9 @@
   #today .tr-dashboard .summary-goal span{font-size:11px}
   #today .tr-dashboard .summary-goal strong{font-size:18px}
   #today .today-workout-content{padding:16px}
-  #today .tr-expected-weight{align-items:flex-start;padding:12px 13px}
+  #today .tr-expected-weight{align-items:stretch!important;padding:0!important}
   #today .tr-expected-weight strong{font-size:27px}
-  #today .tr-expected-weight small{max-width:48%;font-size:10px}
+  #today .tr-expected-weight small{max-width:none!important;width:100%!important;text-align:left!important;font-size:11px}
   #today .tr-weekly .insight{padding:13px 10px}
   #today .tr-weekly .insight strong{font-size:23px}
   #food .nutrition-grid{gap:8px}
@@ -130,8 +137,7 @@
   #today .tr-dashboard .summary-goal{grid-template-columns:40px minmax(0,1fr)}
   #today .tr-dashboard .summary-goal:before{width:40px;height:40px}
   #today .tr-dashboard .summary-goal strong{font-size:16px}
-  #today .tr-expected-weight{display:block}
-  #today .tr-expected-weight small{display:block;max-width:none;margin-top:7px;text-align:left}
+  #today .tr-expected-weight{display:grid!important}
   #today .tr-weekly{grid-template-columns:1fr 1fr}
   #today .tr-weekly .insight:last-child{grid-column:1/-1}
   .p2-effort button,.wr-effort button{font-size:9px!important}
