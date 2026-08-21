@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const ADMIN_EMAIL='tausif.4946@gmail.com';
+const ADMIN_EMAIL='tausifdg@gmail.com';
 const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=v=>v?new Date(v).toLocaleString():'Never';
 function localEmail(){try{return String(window.MyBodyCloud?.localAccount?.()?.email||'').trim().toLowerCase()}catch{return''}}
