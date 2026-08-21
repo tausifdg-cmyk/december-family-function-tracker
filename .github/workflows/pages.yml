@@ -34,7 +34,7 @@ jobs:
           sed -i '/production.css?v=__BUILD__/a\  <link rel="stylesheet" href="coach.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase2.css?v=__BUILD__">\n  <link rel="stylesheet" href="workout-redesign.css?v=__BUILD__">\n  <link rel="stylesheet" href="today-redesign.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase3.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase4.css?v=__BUILD__">\n  <link rel="stylesheet" href="phase5.css?v=__BUILD__">\n  <link rel="stylesheet" href="experience-core.css?v=__BUILD__">\n  <link rel="stylesheet" href="experience-v2.css?v=__BUILD__">\n  <link rel="stylesheet" href="share-gallery-upgrade.css?v=__BUILD__">\n  <link rel="stylesheet" href="admin-dashboard.css?v=__BUILD__">' index.html
           sed -i '/food-data.js?v=__BUILD__/i\  <script src="supabase-cloud.js?v=__BUILD__" defer></script>' index.html
           sed -i '/core-storage.js?v=__BUILD__/a\  <script src="coach-engine.js?v=__BUILD__" defer></script>\n  <script src="coach-guard.js?v=__BUILD__" defer></script>' index.html
-          sed -i '/app-production.js?v=__BUILD__/a\  <script src="coach-ui.js?v=__BUILD__" defer></script>\n  <script src="performance-guard.js?v=__BUILD__" defer></script>\n  <script src="phase2.js?v=__BUILD__" defer></script>\n  <script src="workout-redesign.js?v=__BUILD__" defer></script>\n  <script src="today-redesign.js?v=__BUILD__" defer></script>\n  <script src="phase3.js?v=__BUILD__" defer></script>\n  <script src="phase4.js?v=__BUILD__" defer></script>\n  <script src="phase5.js?v=__BUILD__" defer></script>\n  <script src="experience-core.js?v=__BUILD__" defer></script>\n  <script src="experience-state.js?v=__BUILD__" defer></script>\n  <script src="experience-coach-actions.js?v=__BUILD__" defer></script>\n  <script src="experience-food.js?v=__BUILD__" defer></script>\n  <script src="experience-workout.js?v=__BUILD__" defer></script>\n  <script src="experience-progress.js?v=__BUILD__" defer></script>\n  <script src="experience-launch.js?v=__BUILD__" defer></script>\n  <script src="experience-telemetry.js?v=__BUILD__" defer></script>\n  <script src="share-gallery-upgrade.js?v=__BUILD__" defer></script>' index.html
+          sed -i '/app-production.js?v=__BUILD__/a\  <script src="coach-ui.js?v=__BUILD__" defer></script>\n  <script src="performance-guard.js?v=__BUILD__" defer></script>\n  <script src="phase2.js?v=__BUILD__" defer></script>\n  <script src="workout-redesign.js?v=__BUILD__" defer></script>\n  <script src="today-redesign.js?v=__BUILD__" defer></script>\n  <script src="phase3.js?v=__BUILD__" defer></script>\n  <script src="phase4.js?v=__BUILD__" defer></script>\n  <script src="phase5.js?v=__BUILD__" defer></script>\n  <script src="experience-core.js?v=__BUILD__" defer></script>\n  <script src="experience-state.js?v=__BUILD__" defer></script>\n  <script src="experience-coach-actions.js?v=__BUILD__" defer></script>\n  <script src="experience-food.js?v=__BUILD__" defer></script>\n  <script src="experience-workout.js?v=__BUILD__" defer></script>\n  <script src="experience-progress.js?v=__BUILD__" defer></script>\n  <script src="history-log-editor.js?v=__BUILD__" defer></script>\n  <script src="experience-launch.js?v=__BUILD__" defer></script>\n  <script src="experience-telemetry.js?v=__BUILD__" defer></script>\n  <script src="share-gallery-upgrade.js?v=__BUILD__" defer></script>' index.html
           sed -i '/health-sync.js?v=__BUILD__/a\  <script src="ios-health-upgrade.js?v=__BUILD__" defer></script>' index.html
           sed -i '/auth-onboarding.js?v=__BUILD__/a\  <script src="account-data-merge.js?v=__BUILD__" defer></script>\n  <script src="cloud-auto-connect.js?v=__BUILD__" defer></script>\n  <script src="login-forgot-password.js?v=__BUILD__" defer></script>\n  <script src="admin-ui.js?v=__BUILD__" defer></script>\n  <script src="profile-dropdown.js?v=__BUILD__" defer></script>' index.html
           sed -i "s/__BUILD__/$BUILD/g" index.html service-worker.js manifest.json
@@ -75,6 +75,7 @@ jobs:
           test -s experience-food.js
           test -s experience-workout.js
           test -s experience-progress.js
+          test -s history-log-editor.js
           test -s experience-launch.js
           test -s experience-telemetry.js
           test -s share-gallery-upgrade.js
@@ -106,7 +107,7 @@ jobs:
           grep -q 'id="workoutHistory"' index.html
           grep -q 'id="foodHistory"' index.html
           grep -q 'id="progressList"' index.html
-          for asset in coach.css phase2.css workout-redesign.css today-redesign.css phase3.css phase4.css phase5.css experience-core.css experience-v2.css share-gallery-upgrade.css coach-engine.js coach-guard.js coach-ui.js performance-guard.js phase2.js workout-redesign.js today-redesign.js phase3.js phase4.js phase5.js experience-core.js experience-state.js experience-coach-actions.js experience-food.js experience-workout.js experience-progress.js experience-launch.js experience-telemetry.js share-gallery-upgrade.js ios-health-upgrade.js supabase-cloud.js account-data-merge.js cloud-auto-connect.js login-forgot-password.js admin-ui.js profile-dropdown.js; do grep -q "$asset" index.html; done
+          for asset in coach.css phase2.css workout-redesign.css today-redesign.css phase3.css phase4.css phase5.css experience-core.css experience-v2.css share-gallery-upgrade.css coach-engine.js coach-guard.js coach-ui.js performance-guard.js phase2.js workout-redesign.js today-redesign.js phase3.js phase4.js phase5.js experience-core.js experience-state.js experience-coach-actions.js experience-food.js experience-workout.js experience-progress.js history-log-editor.js experience-launch.js experience-telemetry.js share-gallery-upgrade.js ios-health-upgrade.js supabase-cloud.js account-data-merge.js cloud-auto-connect.js login-forgot-password.js admin-ui.js profile-dropdown.js; do grep -q "$asset" index.html; done
           ! grep -q 'auth-production-redirect.js' index.html
           ! grep -q 'cloud-auth-bridge.js' index.html
           ! grep -q 'HistorySheet' index.html
@@ -129,6 +130,7 @@ jobs:
           node --check experience-food.js
           node --check experience-workout.js
           node --check experience-progress.js
+          node --check history-log-editor.js
           node --check experience-launch.js
           node --check experience-telemetry.js
           node --check share-gallery-upgrade.js
