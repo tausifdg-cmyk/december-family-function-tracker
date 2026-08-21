@@ -2,7 +2,59 @@
 (function(){
   'use strict';
 
+  function isRecoveryLink(){
+    try{
+      const h=new URLSearchParams((location.hash||'').replace(/^#/,''));
+      return h.get('type')==='recovery' && Boolean(h.get('access_token'));
+    }catch{return false}
+  }
+
+  function showRecoveryForm(){
+    if(!isRecoveryLink()) return false;
+    const form=document.getElementById('authForm');
+    const title=document.querySelector('.auth-title, #authTitle, .auth-card h1, .auth-card h2');
+    const err=document.getElementById('authError');
+    if(!form) return false;
+
+    if(title) title.textContent='Set new password';
+    form.innerHTML=`
+      <label class="auth-label">New password
+        <input id="recoveryNewPassword" class="auth-input" type="password" autocomplete="new-password" minlength="8" placeholder="Minimum 8 characters" required>
+      </label>
+      <label class="auth-label">Confirm new password
+        <input id="recoveryConfirmPassword" class="auth-input" type="password" autocomplete="new-password" minlength="8" placeholder="Re-enter new password" required>
+      </label>
+      <button id="recoverySavePassword" class="auth-btn" type="button">Save new password</button>
+      <p id="recoveryPasswordMsg" class="auth-error" style="min-height:22px"></p>`;
+
+    const p1=form.querySelector('#recoveryNewPassword');
+    const p2=form.querySelector('#recoveryConfirmPassword');
+    const btn=form.querySelector('#recoverySavePassword');
+    const msg=form.querySelector('#recoveryPasswordMsg');
+    if(err) err.textContent='';
+
+    btn.onclick=async()=>{
+      const a=p1.value||'',b=p2.value||'';
+      if(a.length<8){msg.textContent='Password must be at least 8 characters.';p1.focus();return}
+      if(a!==b){msg.textContent='Passwords do not match.';p2.focus();return}
+      if(!window.MyBodyCloud?.updatePassword){msg.textContent='Password recovery is still loading. Please wait a moment and try again.';return}
+      btn.disabled=true;msg.style.color='#a8f000';msg.textContent='Saving new password…';
+      try{
+        await window.MyBodyCloud.updatePassword(a);
+        history.replaceState(null,'',location.pathname+location.search);
+        msg.textContent='Password updated successfully. Reloading login…';
+        setTimeout(()=>location.reload(),900);
+      }catch(e){
+        msg.style.color='#ff7277';
+        msg.textContent=e?.message||'Could not update password.';
+        btn.disabled=false;
+      }
+    };
+    return true;
+  }
+
   function addForgotPassword(){
+    if(showRecoveryForm()) return;
     const form=document.getElementById('authForm');
     const emailInput=document.getElementById('authEmail');
     const submit=form?.querySelector('.auth-btn');
