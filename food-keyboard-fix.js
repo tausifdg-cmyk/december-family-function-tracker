@@ -1,11 +1,29 @@
-/* MYBODY 2.0 - isolated food autocomplete positioning without iOS focus/scroll interception. */
+/* MYBODY 2.0 - isolated food autocomplete positioning + focus-scale guard. */
 (function(){
 'use strict';
 const $=(s,r=document)=>r.querySelector(s);
 const FOOD_SELECTOR='.food-name,#customFoodName';
 let activeFoodInput=null;
 let frame=0;
+let restoreTimer=0;
+let originalViewport='';
 
+function viewportMeta(){return document.querySelector('meta[name="viewport"]');}
+function lockFocusScale(){
+  const meta=viewportMeta();
+  if(!meta)return;
+  if(!originalViewport) originalViewport=meta.getAttribute('content')||'width=device-width,initial-scale=1,viewport-fit=cover';
+  /* Set only the scale ceiling before native focus. Do not rewrite safe-area, scroll or layout. */
+  meta.setAttribute('content','width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover');
+}
+function restoreFocusScale(){
+  clearTimeout(restoreTimer);
+  restoreTimer=setTimeout(()=>{
+    if(document.activeElement?.matches?.(FOOD_SELECTOR))return;
+    const meta=viewportMeta();
+    if(meta&&originalViewport) meta.setAttribute('content',originalViewport);
+  },220);
+}
 function visualBounds(){
   const vv=window.visualViewport;
   const top=vv?.offsetTop||0;
@@ -41,10 +59,19 @@ function positionMenu(){
   menu.style.setProperty('transform','none','important');
 }
 function wire(){
+  /* pointerdown runs before iOS focuses the field, so the scale limit is present before keyboard focus. */
+  document.addEventListener('pointerdown',e=>{
+    const input=e.target.closest?.(FOOD_SELECTOR);
+    if(!input)return;
+    activeFoodInput=input;
+    lockFocusScale();
+  },true);
+
   document.addEventListener('focusin',e=>{
     const input=e.target.closest?.(FOOD_SELECTOR);
     if(!input)return;
     activeFoodInput=input;
+    lockFocusScale();
     queuePosition();
     setTimeout(queuePosition,80);
     setTimeout(queuePosition,220);
@@ -56,6 +83,7 @@ function wire(){
   document.addEventListener('focusout',e=>{
     if(e.target===activeFoodInput){
       setTimeout(()=>{if(document.activeElement!==activeFoodInput)activeFoodInput=null;},180);
+      restoreFocusScale();
     }
   },true);
   document.querySelector('.app-shell')?.addEventListener('scroll',queuePosition,{passive:true});
@@ -63,6 +91,9 @@ function wire(){
   window.visualViewport?.addEventListener('resize',queuePosition,{passive:true});
   window.visualViewport?.addEventListener('scroll',queuePosition,{passive:true});
 }
-function init(){wire();}
+function init(){
+  originalViewport=viewportMeta()?.getAttribute('content')||'width=device-width,initial-scale=1,viewport-fit=cover';
+  wire();
+}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init,{once:true}):init();
 })();
