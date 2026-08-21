@@ -1,12 +1,14 @@
 /* MYBODY 2.0 verified YouTube exercise demos.
-   Covers the full exercise library and the admin/default workout names.
+   Covers the exercise library and admin/default workout names with exact-match demos.
+   If an exact vetted YouTube demo is not available, MYBODY intentionally falls back
+   to Offline · Database rather than showing a different exercise variation.
    Uses the YouTube IFrame Player API so blocked/removed videos can fail over
    to another vetted candidate instead of leaving a broken player. */
 (function(){
 'use strict';
 const Library=window.MyBodyExerciseLibrary;
 const $=(s,r=document)=>r.querySelector(s);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const clean=v=>String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 let player=null,renderToken=0,apiPromise=null;
 
@@ -14,7 +16,6 @@ const BY_ID=Object.freeze({
   'dumbbell-bench-press':['CayG6UYqL8g'],
   'incline-dumbbell-press':['HFVwgST_WG4','oZVCBM9f8Eo','4eusnSBHniE','oS2Uy3MAbgs'],
   'dumbbell-chest-fly':['903TCjHpD4Y','Lw6A9NCwReU'],
-  'squeeze-press':['CayG6UYqL8g','HFVwgST_WG4'],
   'dumbbell-pullover':['5YStMv6m2g8','32auHIqgEoM'],
   'one-arm-dumbbell-row':['dFzUjzfih7k','5foJiIVhs8Q'],
   'lat-pulldown':['lueEJGjTuPQ','32auHIqgEoM'],
@@ -41,11 +42,9 @@ const BY_ID=Object.freeze({
   'glute-bridge':['LFvZ-d4rDac'],
   'hip-adduction':['a_hgGryn8CQ'],
   'russian-twist':['wkD8rjkodUI','JyUqwkVpsi8'],
-  'v-sit-twist':['wkD8rjkodUI','JyUqwkVpsi8'],
   'flutter-kicks':['KmwA9FDo13I'],
   'v-sit-hold':['3tQuBuZLma4'],
   'mountain-climber':['hq_0YlyfqGM'],
-  'standing-knee-crunch':['54q250IUEAc'],
   'seated-knee-tuck':['54q250IUEAc','QMEhYqwKj2k'],
   'plank':['mwlp75MS6Rg'],
   'cable-crunch':['3qjoXDTuyOE'],
@@ -58,22 +57,22 @@ const BY_ID=Object.freeze({
 const BY_NAME=Object.freeze({
   'bench press':['CayG6UYqL8g'],
   'barbell bench press':['CayG6UYqL8g'],
-  'machine chest press':['CayG6UYqL8g'],
+  'machine chest press':['RFjvDpDN3ic','sO8lFa9CidE'],
   'incline db press':['HFVwgST_WG4','oZVCBM9f8Eo','oS2Uy3MAbgs'],
   'incline dumbbell press':['HFVwgST_WG4','oZVCBM9f8Eo','oS2Uy3MAbgs'],
   'incline bench press':['BjGLs6KGWUc','HFVwgST_WG4'],
   'incline smith press':['BjGLs6KGWUc','HFVwgST_WG4'],
-  'decline machine press':['CayG6UYqL8g'],
+  'decline machine press':['AABuMGK9H28','H4R-LiTJeH8'],
   'cable chest fly':['903TCjHpD4Y','Lw6A9NCwReU'],
   'cable fly':['903TCjHpD4Y','Lw6A9NCwReU'],
-  'cable crossover lower chest':['903TCjHpD4Y','Lw6A9NCwReU'],
-  'low to high cable fly':['903TCjHpD4Y','Lw6A9NCwReU'],
+  'cable crossover lower chest':['KwvJEXts2lg','EyzmhTd_kds'],
+  'low to high cable fly':['2Tu5s-pl1bo','GNSCJjI5k5s'],
   'pec deck fly':['903TCjHpD4Y','Lw6A9NCwReU'],
   'push ups finisher':['T54umm0lPe4','_l3ySVKYVJ8'],
   'push ups':['T54umm0lPe4','_l3ySVKYVJ8'],
   'cable rope pushdown':['2-LAMcpzODU','b17-9f6SmgA'],
   'rope pushdown':['2-LAMcpzODU','b17-9f6SmgA'],
-  'reverse grip pushdown':['2-LAMcpzODU','b17-9f6SmgA'],
+  'reverse grip pushdown':['GqK6WrZEyEk'],
   'skull crushers':['sDxcKjCqXAo','lcmxokwc3ag','_lZIx3P2BY4'],
   'single arm overhead extension':['_gsUck-7M74','T1EO7u2n7WU'],
   'rope overhead extension':['_gsUck-7M74','T1EO7u2n7WU','hS82Wlo67O0'],
@@ -81,22 +80,22 @@ const BY_NAME=Object.freeze({
   'close grip bench press smith':['Kr1zb_QG3nw','CayG6UYqL8g'],
   'tricep kickback':['qkZBtEHUjfw','b17-9f6SmgA'],
   'dips':['rbcQpIgdvMk'],
-  'wide grip lat pulldown':['lueEJGjTuPQ','32auHIqgEoM'],
-  'single arm lat pulldown':['lueEJGjTuPQ','32auHIqgEoM'],
-  'neutral grip pulldown':['lueEJGjTuPQ','32auHIqgEoM'],
-  'pulldown':['lueEJGjTuPQ','32auHIqgEoM'],
-  'straight arm pulldown':['32auHIqgEoM','lueEJGjTuPQ'],
-  'rope pullovers':['32auHIqgEoM','5YStMv6m2g8'],
-  'chest supported row':['dFzUjzfih7k','xQNrFHEMhI4'],
+  'wide grip lat pulldown':['lueEJGjTuPQ'],
+  'single arm lat pulldown':['pPTbp6Sy1rg'],
+  'neutral grip pulldown':['ywhh5jbw1PI'],
+  'pulldown':['lueEJGjTuPQ'],
+  'straight arm pulldown':['CodDzUxofcs','h1qdFssQTsA'],
+  'rope pullovers':['h1qdFssQTsA','CodDzUxofcs'],
+  'chest supported row':['H75im9fAUMc'],
   't bar row':['5foJiIVhs8Q','dFzUjzfih7k'],
-  'unilateral cable row':['xQNrFHEMhI4','dFzUjzfih7k'],
-  'machine row wide chest supported':['xQNrFHEMhI4','dFzUjzfih7k'],
+  'unilateral cable row':['9Gp3f9KHXTE','kVvgUa9kdEE'],
+  'machine row wide chest supported':['PnXJAd_UUQI'],
   'barbell curl':['ykJmrZ5v0Oo','pQfJR-sSIvA'],
   'alternating db curl':['ykJmrZ5v0Oo','HU2lghjU29Y'],
   'machine preacher curl':['WK5yZMlgMb4','ykJmrZ5v0Oo'],
   'ez bar curl':['ykJmrZ5v0Oo','pQfJR-sSIvA'],
   'incline db curl':['HhHHBj3qTJ4','F5CCxCnGN54'],
-  'spider curl':['ykJmrZ5v0Oo','HhHHBj3qTJ4'],
+  'spider curl':['nvufDW-MSQk'],
   'reverse curl':['3FjPUEF2UJA','ykJmrZ5v0Oo'],
   'seated shoulder press':['qEwKCR5JCog','Ia9DYFMkMmU'],
   'standing ohp':['nhIDkyF4Rvo','qEwKCR5JCog'],
@@ -107,8 +106,8 @@ const BY_NAME=Object.freeze({
   'reverse pec deck':['EA7u4Q_8HQ0'],
   'db upright row':['K0dYqPCaO14'],
   'leg press':['cDGOn-yfKJA','3aYsOsBA7ZE'],
-  'hack squat smith squat':['vNmdIUYmQ0A','kjlfpqXnyL8'],
-  'barbell squat smith squat':['vNmdIUYmQ0A','kjlfpqXnyL8'],
+  'hack squat smith squat':['scs5XcsZuc8','aT-1WbC4YaI'],
+  'barbell squat smith squat':['aT-1WbC4YaI','vNmdIUYmQ0A'],
   'bulgarian split squat':['SkNsa3eBwLA'],
   'leg extension slow reps':['yR_LqZYSIgM'],
   'hamstring curl':['jxctD6fL_FQ','Dq5y4WEcqqo'],
@@ -137,7 +136,7 @@ function destroyPlayer(){renderToken++;try{player?.destroy?.()}catch(_){ }player
 function setStatus(text,kind=''){const el=$('#mbYoutubeStatus');if(el){el.textContent=text;el.dataset.kind=kind}}
 function showFailure(exercise,message){
   const stage=$('#exerciseMotion');if(!stage)return;
-  stage.innerHTML=`<div class="mb-youtube-empty"><strong>YouTube demo unavailable right now</strong><p>${esc(message||`No vetted embedded candidate for ${exercise?.name||currentTitle()} could be played.`)} Use <b>Offline · Database</b> for the cached demonstration.</p><button type="button" class="secondary" data-media-source="offline">Use offline demo</button></div>`;
+  stage.innerHTML=`<div class="mb-youtube-empty"><strong>YouTube demo unavailable right now</strong><p>${esc(message||`No exact vetted embedded candidate for ${exercise?.name||currentTitle()} is available.`)} Use <b>Offline · Database</b> for the cached demonstration.</p><button type="button" class="secondary" data-media-source="offline">Use offline demo</button></div>`;
 }
 function loadApi(){
   ensureReferrerPolicy();
@@ -213,7 +212,7 @@ function init(){
   try{localStorage.removeItem('mybody.youtube.exercise-links.v1')}catch(_){ }
   document.addEventListener('click',intercept,true);
   document.addEventListener('click',e=>{if(e.target.closest?.('[data-action="close-exercise-media"]'))destroyPlayer()},true);
-  const result=coverage();if(result.missing.length)console.warn('MYBODY YouTube coverage missing:',result.missing);
+  const result=coverage();if(result.missing.length)console.warn('MYBODY YouTube exact-match coverage missing:',result.missing);
 }
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
 window.MyBodyYouTubeRecovery=Object.freeze({candidatesFor,renderEmbedded,coverage,destroyPlayer});
