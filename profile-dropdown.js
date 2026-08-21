@@ -2,7 +2,7 @@
 (function(){
   'use strict';
   const DATA_KEY='decemberTracker.v1';
-  const ADMIN_EMAIL='tausif.4946@gmail.com';
+  const ADMIN_EMAIL='tausifdg@gmail.com';
   const SHARE_MESSAGE=`MYBODY 2.0
 iPhone / iPad app: https://tausifdg-cmyk.github.io/december-family-function-tracker/
 
