@@ -23,6 +23,7 @@ function loadCorrections(){
   loadAsset('link','href',`food-keyboard-fix.css?v=${v}`,'foodKeyboardFix');
   loadAsset('script','src',`food-keyboard-fix.js?v=${v}`,'foodKeyboardFix');
   loadAsset('script','src',`supabase-health.js?v=${v}`,'supabaseHealth');
+  loadAsset('script','src',`cloud-status-ui.js?v=${v}`,'cloudStatusUi');
 }
 function removeDuplicateWorkoutCta(){const primary=$('#experienceBrief .xp-coach > [data-xp-action="workout"]');const featured=$('#today .today-workout-card [data-nav="workout"]');if(primary&&featured)primary.remove()}
 function init(){loadCorrections();removeDuplicateWorkoutCta();window.addEventListener('mybody:state',()=>setTimeout(removeDuplicateWorkoutCta,80));document.addEventListener('click',e=>{if(e.target.closest('[data-nav],.tab'))setTimeout(removeDuplicateWorkoutCta,100)},true)}
