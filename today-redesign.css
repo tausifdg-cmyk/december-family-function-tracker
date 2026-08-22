@@ -120,7 +120,7 @@
   #today .tr-coach-compact .coach-readiness{min-width:86px}
   #today .daily-summary.tr-dashboard{padding:13px}
   .tr-summary-head{margin-bottom:11px}.tr-summary-head h3{font-size:21px}.tr-summary-head p{font-size:11px}
-  #today .tr-dashboard .summary-goal{grid-template-columns:44px minmax(0,1fr);gap:8px;min-height:74px;padding:9px}
+  #today .tr-dashboard .summary-goal{grid-template-columns:44px minmax(0,1fr);min-height:74px;padding:9px;gap:8px}
   #today .tr-dashboard .summary-goal:before{width:44px;height:44px;font-size:9px}
   #today .tr-dashboard .summary-goal span{font-size:11px}
   #today .tr-dashboard .summary-goal strong{font-size:18px}
@@ -149,3 +149,11 @@
   .p2-effort button,.wr-effort button{font-size:9px!important}
 }
 @media(prefers-reduced-motion:reduce){.p2-effort button,.wr-effort button{transition:none!important}}
+
+/* Final override for current forecast markup */
+#today .tr-expected-weight .tr-forecast-card.tr-expected-card{padding:13px 15px 12px!important;text-align:left!important}
+#today .tr-expected-weight .tr-forecast-card.tr-expected-card .tr-forecast-label,
+#today .tr-expected-weight .tr-forecast-card.tr-expected-card .tr-forecast-value,
+#today .tr-expected-weight .tr-forecast-card.tr-expected-card .tr-forecast-meta{text-align:left!important}
+#today .tr-expected-weight .tr-forecast-card.tr-expected-card .tr-forecast-meta{display:block!important;width:100%!important;max-width:none!important;margin:7px 0 0!important;font-size:clamp(8px,2.05vw,10px)!important;line-height:1.15!important;letter-spacing:-.02em!important;white-space:nowrap!important;overflow:visible!important}
+@media(max-width:430px){#today .tr-expected-weight .tr-forecast-card.tr-expected-card{padding:12px 14px 11px!important}#today .tr-expected-weight .tr-forecast-card.tr-expected-card .tr-forecast-meta{font-size:clamp(7.2px,1.95vw,8.8px)!important}}
