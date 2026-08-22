@@ -22,6 +22,7 @@ function loadCorrections(){
   loadAsset('script','src',`music-visibility-safe.js?v=${v}`,'musicVisibilitySafe');
   loadAsset('link','href',`food-keyboard-fix.css?v=${v}`,'foodKeyboardFix');
   loadAsset('script','src',`food-keyboard-fix.js?v=${v}`,'foodKeyboardFix');
+  loadAsset('script','src',`history-recovery-guard.js?v=${v}`,'historyRecoveryGuard');
   loadAsset('script','src',`supabase-health.js?v=${v}`,'supabaseHealth');
   loadAsset('script','src',`cloud-status-ui.js?v=${v}`,'cloudStatusUi');
 }
