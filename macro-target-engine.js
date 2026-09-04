@@ -1,10 +1,10 @@
 (function(){
 'use strict';
-const Base=window.MyBodyStore;
-if(!Base)return;
+const BaseStore=window.MyBodyStore;
+if(!BaseStore)return;
 const PAL=Object.freeze({sedentary:1.2,light:1.375,moderate:1.55,active:1.725});
-const clone=Base.clone;
-const number=Base.number;
+const clone=BaseStore.clone;
+const number=BaseStore.number;
 const clamp=(v,min,max)=>Math.min(max,Math.max(min,Number(v)||0));
 const safeRecord=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
 
@@ -54,28 +54,68 @@ function applyTargets(input){
   return state;
 }
 
-function normalise(input){return applyTargets(Base.normalise(input));}
-function read(){return applyTargets(Base.read());}
+function normalise(input){return applyTargets(BaseStore.normalise(input));}
+function read(){return applyTargets(BaseStore.read());}
 function scopedKey(){
-  try{const session=localStorage.getItem(Base.SESSION_KEY);return session?`${Base.DATA_KEY}.user.${session}`:Base.DATA_KEY}catch(_){return Base.DATA_KEY}
+  try{const session=localStorage.getItem(BaseStore.SESSION_KEY);return session?`${BaseStore.DATA_KEY}.user.${session}`:BaseStore.DATA_KEY}catch(_){return BaseStore.DATA_KEY}
 }
 function quotaError(error){return error&&(error.name==='QuotaExceededError'||error.name==='NS_ERROR_DOM_QUOTA_REACHED'||error.code===22||error.code===1014)}
 function write(nextState){
   let state=normalise(nextState);
   const save=()=>{
     const payload=JSON.stringify(state);
-    localStorage.setItem(Base.DATA_KEY,payload);
+    localStorage.setItem(BaseStore.DATA_KEY,payload);
     const scoped=scopedKey();
-    if(scoped!==Base.DATA_KEY)localStorage.setItem(scoped,payload);
+    if(scoped!==BaseStore.DATA_KEY)localStorage.setItem(scoped,payload);
   };
   try{save()}catch(error){
     if(!quotaError(error))throw error;
-    state=applyTargets(Base.prune(state));
+    state=applyTargets(BaseStore.prune(state));
     try{save()}catch(retryError){window.dispatchEvent(new CustomEvent('mybody:storage-error',{detail:retryError}));return{ok:false,state,error:retryError}}
   }
   window.dispatchEvent(new CustomEvent('mybody:state',{detail:clone(state)}));
   return{ok:true,state};
 }
 
-window.MyBodyStore=Object.freeze({...Base,nutritionTargets,normalise,read,write});
+const Store=Object.freeze({...BaseStore,nutritionTargets,normalise,read,write});
+window.MyBodyStore=Store;
+
+function profileTargets(profile){return nutritionTargets(profile||{});}
+function alignPlan(plan,profile){
+  const next=clone(plan||{});
+  const effectiveProfile=profile||next.profile||{};
+  const targets=profileTargets(effectiveProfile);
+  next.metrics={...(next.metrics||{}),...targets};
+  if(Array.isArray(next.meals)){
+    const shares=[0.23,0.30,0.17,0.30];
+    next.meals=next.meals.map((meal,i)=>({...safeRecord(meal),protein:Math.round(targets.protein*(shares[i]||0.25))}));
+  }
+  return next;
+}
+
+function wrapCoach(){
+  const BaseCoach=window.MyBodyCoach;
+  if(!BaseCoach||BaseCoach.__dynamicMacroTargets)return;
+  const wrapped={
+    ...BaseCoach,
+    __dynamicMacroTargets:true,
+    calculate(profile){return {...BaseCoach.calculate(profile),...profileTargets(profile)};},
+    buildPlan(profile){return alignPlan(BaseCoach.buildPlan(profile),profile);},
+    applyPlan(state,plan){
+      const safePlan=alignPlan(plan,plan?.profile||{});
+      const result=BaseCoach.applyPlan(state,safePlan);
+      if(result?.ok){
+        result.state=applyTargets(result.state);
+        result.state.config={...result.state.config,calories:safePlan.metrics.calories,protein:safePlan.metrics.protein,carbs:safePlan.metrics.carbs,fat:safePlan.metrics.fat};
+        if(result.state.profile?.coach?.plan)result.state.profile.coach.plan=alignPlan(result.state.profile.coach.plan,safePlan.profile||{});
+      }
+      return result;
+    }
+  };
+  window.MyBodyCoach=Object.freeze(wrapped);
+}
+
+wrapCoach();
+const migrated=write(read());
+if(!migrated.ok)console.warn('MYBODY macro target migration could not be persisted.');
 })();
