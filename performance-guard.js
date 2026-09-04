@@ -22,4 +22,15 @@ window.addEventListener('pageshow',recoverInteraction);
 window.addEventListener('mybody:state',()=>setTimeout(recoverInteraction,50));
 document.addEventListener('click',e=>{if(e.target.closest('[data-tab],[data-nav],.tab,.sheet-close,.xp-close,.p2-close,.p3-close,.p4-close,.p5-close'))setTimeout(recoverInteraction,40)},true);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{recoverInteraction();setTimeout(recoverInteraction,700)});else{recoverInteraction();setTimeout(recoverInteraction,700)}
+
+function loadNutritionPhilosophy(){
+  if(document.querySelector('script[data-mybody-nutrition-philosophy]'))return;
+  const script=document.createElement('script');
+  script.dataset.mybodyNutritionPhilosophy='1';
+  const build=document.querySelector('meta[name="app-build"]')?.content||Date.now();
+  script.src=`nutrition-philosophy.js?v=${encodeURIComponent(build)}`;
+  script.defer=true;
+  document.head.appendChild(script);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadNutritionPhilosophy,{once:true});else loadNutritionPhilosophy();
 })();
