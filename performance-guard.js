@@ -23,14 +23,24 @@ window.addEventListener('mybody:state',()=>setTimeout(recoverInteraction,50));
 document.addEventListener('click',e=>{if(e.target.closest('[data-tab],[data-nav],.tab,.sheet-close,.xp-close,.p2-close,.p3-close,.p4-close,.p5-close'))setTimeout(recoverInteraction,40)},true);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{recoverInteraction();setTimeout(recoverInteraction,700)});else{recoverInteraction();setTimeout(recoverInteraction,700)}
 
-function loadNutritionPhilosophy(){
-  if(document.querySelector('script[data-mybody-nutrition-philosophy]'))return;
+const build=()=>document.querySelector('meta[name="app-build"]')?.content||Date.now();
+function loadScript(src,dataKey,onload){
+  const selector=`script[data-${dataKey}]`;
+  const existing=document.querySelector(selector);
+  if(existing){if(onload){if(existing.dataset.loaded==='1')onload();else existing.addEventListener('load',onload,{once:true})}return existing}
   const script=document.createElement('script');
-  script.dataset.mybodyNutritionPhilosophy='1';
-  const build=document.querySelector('meta[name="app-build"]')?.content||Date.now();
-  script.src=`nutrition-philosophy.js?v=${encodeURIComponent(build)}`;
-  script.defer=true;
+  script.setAttribute(`data-${dataKey}`,'1');
+  script.src=`${src}?v=${encodeURIComponent(build())}`;
+  script.addEventListener('load',()=>{script.dataset.loaded='1';onload?.()},{once:true});
   document.head.appendChild(script);
+  return script;
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadNutritionPhilosophy,{once:true});else loadNutritionPhilosophy();
+
+function loadEnhancements(){
+  loadScript('macro-target-engine.js','mybody-macro-engine',()=>{
+    loadScript('macro-target-ui.js','mybody-macro-ui');
+  });
+  loadScript('nutrition-philosophy.js','mybody-nutrition-philosophy');
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadEnhancements,{once:true});else loadEnhancements();
 })();
