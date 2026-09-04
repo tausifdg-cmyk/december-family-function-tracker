@@ -8,6 +8,7 @@
   const RETENTION_DAYS = 730;
   const ADMIN_EMAIL = 'tausif.4946@gmail.com';
   const ADMIN_PLAN_VERSION = 'admin-6day-double-muscle-v2';
+  const APPROVED_PROTEIN = 115;
 
   const defaultWorkouts = [
     { name: 'Chest + Triceps', focus: 'Upper chest • chest • triceps', exercises: [['Barbell bench press', 4, 8], ['Incline dumbbell press', 3, 10], ['Machine chest press', 3, 12], ['Cable fly', 3, 15], ['Rope pushdown', 3, 12], ['Overhead cable extension', 3, 12]] },
@@ -28,7 +29,7 @@
 
   const defaults = {
     schemaVersion: SCHEMA_VERSION,
-    config: { age: 40, height: 175, sex: 'male', startWeight: 89, goalWeight: 80, goalDate: '2026-12-15', calories: 2100, protein: 115, steps: 8000, water: 3.5 },
+    config: { age: 40, height: 175, sex: 'male', startWeight: 89, goalWeight: 80, goalDate: '2026-12-15', calories: 2100, protein: APPROVED_PROTEIN, steps: 8000, water: 3.5 },
     weights: [], abdomen: [], pantWaist: [], nutrition: {}, activity: {}, workoutLog: {},
     theme: 'dark', customFoods: [], workouts: defaultWorkouts
   };
@@ -72,6 +73,27 @@
     }
   }
 
+  function normalizeCoachPlanProtein(state) {
+    const plan = state.profile?.coach?.plan;
+    if (!plan || typeof plan !== 'object') return;
+    state.profile = safeRecord(state.profile);
+    state.profile.coach = safeRecord(state.profile.coach);
+    state.profile.coach.plan = safeRecord(state.profile.coach.plan);
+    const metrics = safeRecord(state.profile.coach.plan.metrics);
+    metrics.protein = APPROVED_PROTEIN;
+    const calories = number(metrics.calories, 0, 0, 10000);
+    const fat = number(metrics.fat, 0, 0, 1000);
+    if (calories > 0) metrics.carbs = Math.max(80, Math.round((calories - APPROVED_PROTEIN * 4 - fat * 9) / 4));
+    state.profile.coach.plan.metrics = metrics;
+    if (Array.isArray(state.profile.coach.plan.meals)) {
+      const shares = [0.23, 0.30, 0.17, 0.30];
+      state.profile.coach.plan.meals = state.profile.coach.plan.meals.map((meal, index) => ({
+        ...safeRecord(meal),
+        protein: Math.round(APPROVED_PROTEIN * (shares[index] || 0.25))
+      }));
+    }
+  }
+
   function normalise(input) {
     const source = safeRecord(input);
     const state = clone(defaults);
@@ -85,7 +107,7 @@
       goalWeight: number(config.goalWeight, state.config.goalWeight, 25, 400),
       goalDate: validDate(config.goalDate, state.config.goalDate),
       calories: number(config.calories, state.config.calories, 800, 10000),
-      protein: number(config.protein === 170 ? 115 : config.protein, state.config.protein, 0, 1000),
+      protein: APPROVED_PROTEIN,
       steps: number(config.steps, state.config.steps, 0, 200000),
       water: number(config.water, state.config.water, 0, 20)
     };
@@ -110,8 +132,9 @@
     if (!state.workouts.length) state.workouts = clone(defaultWorkouts);
     state.theme = source.theme === 'light' ? 'light' : 'dark';
     state.schemaVersion = SCHEMA_VERSION;
-    if (source.profile) state.profile = safeRecord(source.profile);
+    if (source.profile) state.profile = clone(safeRecord(source.profile));
     if (source.planSummary) state.planSummary = safeRecord(source.planSummary);
+    normalizeCoachPlanProtein(state);
     if (activeEmail(source) === ADMIN_EMAIL && source.adminWorkoutPlanVersion !== ADMIN_PLAN_VERSION) {
       state.workouts = clone(adminWorkouts);
       state.adminWorkoutPlanVersion = ADMIN_PLAN_VERSION;
@@ -144,7 +167,8 @@
         try { localStorage.setItem(`${DATA_KEY}.corrupt.${Date.now()}`, raw.slice(0, 250000)); } catch (_) {}
       }
       const state = normalise(parsed);
-      if (activeEmail(parsed || {}) === ADMIN_EMAIL && parsed?.adminWorkoutPlanVersion !== ADMIN_PLAN_VERSION) {
+      const needsProteinMigration = Number(parsed?.config?.protein) !== APPROVED_PROTEIN || Number(parsed?.profile?.coach?.plan?.metrics?.protein || APPROVED_PROTEIN) !== APPROVED_PROTEIN;
+      if (needsProteinMigration || (activeEmail(parsed || {}) === ADMIN_EMAIL && parsed?.adminWorkoutPlanVersion !== ADMIN_PLAN_VERSION)) {
         try {
           const payload = JSON.stringify(state);
           localStorage.setItem(DATA_KEY, payload);
@@ -195,5 +219,5 @@
     return { ok: true, state };
   }
 
-  window.MyBodyStore = Object.freeze({ DATA_KEY, SESSION_KEY, defaults: clone(defaults), clone, number, localDate, normalise, read, write, prune });
+  window.MyBodyStore = Object.freeze({ DATA_KEY, SESSION_KEY, APPROVED_PROTEIN, defaults: clone(defaults), clone, number, localDate, normalise, read, write, prune });
 })();
