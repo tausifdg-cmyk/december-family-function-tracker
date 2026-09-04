@@ -2,49 +2,61 @@
   'use strict';
   const Base=window.MyBodyCoach;
   if(!Base)return;
+  const Store=window.MyBodyStore;
   const clone=(x)=>typeof structuredClone==='function'?structuredClone(x):JSON.parse(JSON.stringify(x));
   const clamp=(v,min,max)=>Math.min(max,Math.max(min,Number(v)||0));
+  const APPROVED_PROTEIN=115;
+
+  function fixMetrics(metrics){
+    const next={...(metrics||{})};
+    next.protein=APPROVED_PROTEIN;
+    if(Number(next.calories)>0&&Number(next.fat)>=0){
+      next.carbs=Math.max(80,Math.round((Number(next.calories)-APPROVED_PROTEIN*4-Number(next.fat)*9)/4));
+    }
+    return next;
+  }
 
   function dietMeals(profile,metrics){
+    metrics=fixMetrics(metrics);
     const diet=profile.diet||'non_vegetarian';
     const allergy=String(profile.allergies||'').toLowerCase();
     const dairyFree=/lactose|dairy|milk/.test(allergy);
     const glutenFree=/celiac|coeliac|gluten/.test(allergy);
     const base={
       non_vegetarian:{
-        Breakfast:['Eggs + roti/chapati + vegetables','Oats + protein-rich yogurt or milk + fruit','Egg bhurji + toast/roti + fruit'],
-        Lunch:['Chicken/fish + dal + vegetables + rice/roti','Lean meat curry + vegetables + controlled rice portion','Egg curry + dal + vegetables + rice/roti'],
-        Snack:['Curd/Greek yogurt + fruit','Milk or whey shake','Roasted chana + buttermilk'],
-        Dinner:['Chicken/fish + vegetables + roti/rice','Lean mutton + vegetables + controlled rice portion','Eggs + dal + vegetables + roti']
+        Breakfast:['Oats + fruit + seeds + curd/soy yogurt','Besan chilla + vegetables + fruit','Eggs + roti/chapati + vegetables'],
+        Lunch:['Dal/rajma/chana + vegetables + rice/roti','Chicken/fish + dal + vegetables + rice/roti','Mixed beans + salad + whole grain'],
+        Snack:['Fruit + roasted chana','Curd/soy yogurt + fruit','Nuts/seeds + fruit'],
+        Dinner:['Dal + vegetables + roti/rice','Chana/rajma + vegetables + small rice portion','Chicken/fish + vegetables + roti/rice']
       },
       vegetarian:{
-        Breakfast:['Paneer bhurji + roti + fruit','Oats + milk/curd + fruit','Besan chilla + curd'],
-        Lunch:['Dal + paneer/tofu + vegetables + rice/roti','Rajma/chana + rice + curd + salad','Soy chunks + vegetables + roti'],
-        Snack:['Curd/Greek yogurt + fruit','Roasted chana + buttermilk','Paneer/tofu snack + fruit'],
-        Dinner:['Paneer/tofu curry + vegetables + roti','Dal + soy chunks + vegetables + rice','Khichdi + curd + added paneer/tofu']
+        Breakfast:['Oats + fruit + seeds','Besan chilla + vegetables + fruit','Paneer/tofu bhurji + roti'],
+        Lunch:['Dal + vegetables + rice/roti','Rajma/chana + rice + salad','Tofu/paneer + vegetables + roti'],
+        Snack:['Fruit + roasted chana','Curd/soy yogurt + fruit','Nuts/seeds + fruit'],
+        Dinner:['Dal + mixed vegetables + roti','Chana/rajma + vegetables + small rice portion','Tofu/paneer curry + vegetables + roti']
       },
       eggetarian:{
-        Breakfast:['Eggs + roti + vegetables','Oats + milk/curd + fruit','Egg bhurji + chapati'],
-        Lunch:['Egg curry + dal + vegetables + rice/roti','Paneer/tofu + dal + roti','Rajma/chana + rice + curd'],
-        Snack:['Boiled eggs + fruit','Curd/Greek yogurt + fruit','Roasted chana + buttermilk'],
-        Dinner:['Eggs + vegetables + roti','Paneer/tofu curry + dal + vegetables','Egg curry + controlled rice portion + salad']
+        Breakfast:['Oats + fruit + seeds','Besan chilla + vegetables + fruit','Eggs + roti + vegetables'],
+        Lunch:['Dal/rajma/chana + vegetables + rice/roti','Egg curry + dal + vegetables + rice/roti','Paneer/tofu + dal + roti'],
+        Snack:['Fruit + roasted chana','Curd/soy yogurt + fruit','Nuts/seeds + fruit'],
+        Dinner:['Dal + mixed vegetables + roti','Chana/rajma + vegetables + rice','Eggs + vegetables + roti']
       },
       vegan:{
-        Breakfast:['Tofu bhurji + roti + fruit','Oats + fortified soy milk + fruit','Besan chilla + tofu filling'],
-        Lunch:['Dal + tofu + vegetables + rice/roti','Rajma/chana + rice + salad','Soy chunks + vegetables + roti'],
-        Snack:['Roasted chana + fruit','Unsweetened soy yogurt + fruit','Tofu/soy snack + fruit'],
-        Dinner:['Tofu/soy curry + vegetables + roti','Dal + soy chunks + vegetables + rice','Khichdi + tofu + salad']
+        Breakfast:['Oats + fortified soy milk + fruit + seeds','Tofu bhurji + roti + fruit','Besan chilla + vegetables + fruit'],
+        Lunch:['Dal + vegetables + rice/roti','Rajma/chana + rice + salad','Tofu + vegetables + roti'],
+        Snack:['Fruit + roasted chana','Unsweetened soy yogurt + fruit','Nuts/seeds + fruit'],
+        Dinner:['Dal + mixed vegetables + roti','Chana/rajma + vegetables + rice','Tofu/soy curry + vegetables + roti']
       }
     };
     let options=clone(base[diet]||base.non_vegetarian);
     if(dairyFree){
-      Object.keys(options).forEach((meal)=>{options[meal]=options[meal].map((x)=>x.replace(/milk\/curd|milk or whey|Milk or whey|Curd\/Greek yogurt|curd\/Greek yogurt|buttermilk|curd/gi,'unsweetened fortified soy alternative'));});
+      Object.keys(options).forEach((meal)=>{options[meal]=options[meal].map((x)=>x.replace(/curd\/soy yogurt|curd|milk/gi,'unsweetened fortified soy alternative'));});
     }
     if(glutenFree){
-      Object.keys(options).forEach((meal)=>{options[meal]=options[meal].map((x)=>x.replace(/roti\/chapati|chapati|roti|toast/gi,'rice or certified gluten-free grain'));});
+      Object.keys(options).forEach((meal)=>{options[meal]=options[meal].map((x)=>x.replace(/roti\/chapati|chapati|roti|whole grain/gi,'rice or certified gluten-free grain'));});
     }
     const split=[0.24,0.32,0.12,0.32],proteinSplit=[0.23,0.30,0.17,0.30],labels=['Breakfast','Lunch','Snack','Dinner'];
-    return labels.map((label,i)=>({label,calories:Math.round(metrics.calories*split[i]/25)*25,protein:Math.round(metrics.protein*proteinSplit[i]),options:options[label]}));
+    return labels.map((label,i)=>({label,calories:Math.round(metrics.calories*split[i]/25)*25,protein:Math.round(APPROVED_PROTEIN*proteinSplit[i]),options:options[label]}));
   }
 
   function timeline(profile,metrics){
@@ -64,8 +76,13 @@
     return {status:'informational',rate:Math.round(rate*100)/100,message:'MYBODY treats the goal date as a planning target, not a guarantee.'};
   }
 
+  function calculate(profile){
+    return fixMetrics(Base.calculate(profile));
+  }
+
   function buildPlan(profile){
     const plan=Base.buildPlan(profile);
+    plan.metrics=fixMetrics(plan.metrics);
     plan.meals=dietMeals(profile,plan.metrics);
     plan.timeline=timeline(profile,plan.metrics);
     plan.profile.goalWeight=Number(profile.goalWeight)||plan.profile.weight;
@@ -75,15 +92,39 @@
   }
 
   function applyPlan(state,plan){
-    const result=Base.applyPlan(state,plan);
+    const safePlan=clone(plan);
+    safePlan.metrics=fixMetrics(safePlan.metrics);
+    safePlan.meals=dietMeals(safePlan.profile||{},safePlan.metrics);
+    const result=Base.applyPlan(state,safePlan);
     if(result.ok){
-      result.state.config.goalWeight=clamp(plan.profile.goalWeight||result.state.config.goalWeight,25,400);
+      result.state.config.goalWeight=clamp(safePlan.profile.goalWeight||result.state.config.goalWeight,25,400);
+      result.state.config.protein=APPROVED_PROTEIN;
       result.state.profile=result.state.profile||{};
       result.state.profile.coach=result.state.profile.coach||{};
-      result.state.profile.coach.timeline=plan.timeline||null;
+      result.state.profile.coach.timeline=safePlan.timeline||null;
+      if(result.state.profile.coach.plan){
+        result.state.profile.coach.plan.metrics=fixMetrics(result.state.profile.coach.plan.metrics);
+      }
     }
     return result;
   }
 
-  window.MyBodyCoach=Object.freeze({...Base,buildPlan,applyPlan});
+  function migrateSavedProtein(){
+    if(!Store)return;
+    const state=Store.read();
+    let changed=false;
+    if(Number(state.config?.protein)!==APPROVED_PROTEIN){state.config={...state.config,protein:APPROVED_PROTEIN};changed=true;}
+    if(state.profile?.coach?.plan&&Number(state.profile.coach.plan.metrics?.protein)!==APPROVED_PROTEIN){
+      state.profile=clone(state.profile||{});
+      state.profile.coach=clone(state.profile.coach||{});
+      state.profile.coach.plan=clone(state.profile.coach.plan||{});
+      state.profile.coach.plan.metrics=fixMetrics(state.profile.coach.plan.metrics);
+      state.profile.coach.plan.meals=dietMeals(state.profile.coach.plan.profile||state.profile.coach,state.profile.coach.plan.metrics);
+      changed=true;
+    }
+    if(changed)Store.write(state);
+  }
+
+  window.MyBodyCoach=Object.freeze({...Base,calculate,buildPlan,applyPlan});
+  migrateSavedProtein();
 }());
