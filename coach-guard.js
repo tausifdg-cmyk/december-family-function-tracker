@@ -5,7 +5,7 @@
   const Store=window.MyBodyStore;
   const clone=(x)=>typeof structuredClone==='function'?structuredClone(x):JSON.parse(JSON.stringify(x));
   const clamp=(v,min,max)=>Math.min(max,Math.max(min,Number(v)||0));
-  const APPROVED_PROTEIN=115;
+  const APPROVED_PROTEIN=Number(Store?.APPROVED_PROTEIN)||115;
 
   function fixMetrics(metrics){
     const next={...(metrics||{})};
@@ -13,6 +13,7 @@
     if(Number(next.calories)>0&&Number(next.fat)>=0){
       next.carbs=Math.max(80,Math.round((Number(next.calories)-APPROVED_PROTEIN*4-Number(next.fat)*9)/4));
     }
+    if(!Number(next.fiber)) next.fiber=Math.round(clamp((Number(next.calories)||2000)/1000*14,22,45));
     return next;
   }
 
@@ -25,7 +26,7 @@
     const base={
       non_vegetarian:{
         Breakfast:['Oats + fruit + seeds + curd/soy yogurt','Besan chilla + vegetables + fruit','Eggs + roti/chapati + vegetables'],
-        Lunch:['Dal/rajma/chana + vegetables + rice/roti','Chicken/fish + dal + vegetables + rice/roti','Mixed beans + salad + whole grain'],
+        Lunch:['Dal/rajma/chana + vegetables + rice/roti','Mixed beans + salad + whole grain','Chicken/fish + dal + vegetables + rice/roti'],
         Snack:['Fruit + roasted chana','Curd/soy yogurt + fruit','Nuts/seeds + fruit'],
         Dinner:['Dal + vegetables + roti/rice','Chana/rajma + vegetables + small rice portion','Chicken/fish + vegetables + roti/rice']
       },
@@ -37,7 +38,7 @@
       },
       eggetarian:{
         Breakfast:['Oats + fruit + seeds','Besan chilla + vegetables + fruit','Eggs + roti + vegetables'],
-        Lunch:['Dal/rajma/chana + vegetables + rice/roti','Egg curry + dal + vegetables + rice/roti','Paneer/tofu + dal + roti'],
+        Lunch:['Dal/rajma/chana + vegetables + rice/roti','Paneer/tofu + dal + roti','Egg curry + dal + vegetables + rice/roti'],
         Snack:['Fruit + roasted chana','Curd/soy yogurt + fruit','Nuts/seeds + fruit'],
         Dinner:['Dal + mixed vegetables + roti','Chana/rajma + vegetables + rice','Eggs + vegetables + roti']
       },
@@ -59,7 +60,7 @@
     return labels.map((label,i)=>({label,calories:Math.round(metrics.calories*split[i]/25)*25,protein:Math.round(APPROVED_PROTEIN*proteinSplit[i]),options:options[label]}));
   }
 
-  function timeline(profile,metrics){
+  function timeline(profile){
     if(!profile.goalDate||!/^\d{4}-\d{2}-\d{2}$/.test(profile.goalDate)||!Number(profile.goalWeight))return null;
     const days=Math.ceil((new Date(profile.goalDate+'T12:00:00')-new Date())/86400000);
     if(days<=0)return {status:'past',message:'The selected target date has passed. Choose a new date.'};
@@ -84,7 +85,7 @@
     const plan=Base.buildPlan(profile);
     plan.metrics=fixMetrics(plan.metrics);
     plan.meals=dietMeals(profile,plan.metrics);
-    plan.timeline=timeline(profile,plan.metrics);
+    plan.timeline=timeline(profile);
     plan.profile.goalWeight=Number(profile.goalWeight)||plan.profile.weight;
     plan.profile.allergies=String(profile.allergies||'');
     plan.profile.dislikes=String(profile.dislikes||'');
@@ -104,9 +105,27 @@
       result.state.profile.coach.timeline=safePlan.timeline||null;
       if(result.state.profile.coach.plan){
         result.state.profile.coach.plan.metrics=fixMetrics(result.state.profile.coach.plan.metrics);
+        result.state.profile.coach.plan.meals=dietMeals(result.state.profile.coach.plan.profile||safePlan.profile||{},result.state.profile.coach.plan.metrics);
       }
     }
     return result;
+  }
+
+  function insights(state){
+    const base=Array.isArray(Base.insights?.(state))?Base.insights(state):[];
+    return base.map((item)=>{
+      const title=String(item?.title||'');
+      const body=String(item?.body||'');
+      if(/protein is your clearest opportunity|add one protein-rich serving/i.test(title+' '+body)){
+        return {
+          ...item,
+          type:'nutrition',
+          title:'Improve food quality first',
+          body:'Prioritize vegetables, beans/lentils, whole grains, fruit, nuts and seeds. Aim for the 115 g protein target across the day without trying to exceed it; protein powders are optional.'
+        };
+      }
+      return item;
+    });
   }
 
   function migrateSavedProtein(){
@@ -125,6 +144,6 @@
     if(changed)Store.write(state);
   }
 
-  window.MyBodyCoach=Object.freeze({...Base,calculate,buildPlan,applyPlan});
+  window.MyBodyCoach=Object.freeze({...Base,calculate,buildPlan,applyPlan,insights});
   migrateSavedProtein();
 }());
