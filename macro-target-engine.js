@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 const BaseStore=window.MyBodyStore;
-if(!BaseStore)return;
+if(!BaseStore||BaseStore.__dynamicMacroStore)return;
 const PAL=Object.freeze({sedentary:1.2,light:1.375,moderate:1.55,active:1.725});
 const clone=BaseStore.clone;
 const number=BaseStore.number;
@@ -77,7 +77,7 @@ function write(nextState){
   return{ok:true,state};
 }
 
-const Store=Object.freeze({...BaseStore,nutritionTargets,normalise,read,write});
+const Store=Object.freeze({...BaseStore,__dynamicMacroStore:true,nutritionTargets,normalise,read,write});
 window.MyBodyStore=Store;
 
 function profileTargets(profile){return nutritionTargets(profile||{});}
