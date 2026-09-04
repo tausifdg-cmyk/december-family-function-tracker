@@ -28,7 +28,7 @@
 
   const defaults = {
     schemaVersion: SCHEMA_VERSION,
-    config: { age: 40, height: 175, sex: 'male', startWeight: 89, goalWeight: 80, goalDate: '2026-12-15', calories: 2100, protein: 170, steps: 8000, water: 3.5 },
+    config: { age: 40, height: 175, sex: 'male', startWeight: 89, goalWeight: 80, goalDate: '2026-12-15', calories: 2100, protein: 115, steps: 8000, water: 3.5 },
     weights: [], abdomen: [], pantWaist: [], nutrition: {}, activity: {}, workoutLog: {},
     theme: 'dark', customFoods: [], workouts: defaultWorkouts
   };
@@ -85,7 +85,7 @@
       goalWeight: number(config.goalWeight, state.config.goalWeight, 25, 400),
       goalDate: validDate(config.goalDate, state.config.goalDate),
       calories: number(config.calories, state.config.calories, 800, 10000),
-      protein: number(config.protein, state.config.protein, 0, 1000),
+      protein: number(config.protein === 170 ? 115 : config.protein, state.config.protein, 0, 1000),
       steps: number(config.steps, state.config.steps, 0, 200000),
       water: number(config.water, state.config.water, 0, 20)
     };
