@@ -32,6 +32,18 @@ try{
     assert.deepEqual(labels.map(x=>x.trim()),['View plan','Weekly review','Recalculate']);
     assert.equal(await page.locator('#experienceBrief .xp-coach > [data-xp-action="workout"]').count(),0,'duplicate workout CTA should be removed from Coach card');
     assert.equal(await page.locator('#today .today-workout-card [data-nav="workout"]').count(),1,'Featured workout should keep one Start workout CTA');
+    assert.equal(await page.locator('#quickFoodLog').count(),1,'Today should include the quick food logger');
+    const todayChildren=await page.locator('#today > section').evaluateAll((nodes)=>nodes.map((node)=>node.id||node.className));
+    assert.ok(todayChildren.indexOf('quickFoodLog')<todayChildren.indexOf('experienceBrief'),'Quick food logger should appear before coaching cards');
+    await page.locator('#quickFoodName').fill('Whey protein');
+    await page.locator('#quickFoodName').press('Tab');
+    await page.waitForTimeout(80);
+    assert.equal(await page.locator('#quickFoodAmount').inputValue(),'30','Known foods should receive their default portion');
+    assert.match(await page.locator('#quickFoodPreview').innerText(),/120 kcal/i,'Quick logger should preview calculated calories');
+    await page.locator('#quickFoodSave').click();
+    await page.waitForTimeout(120);
+    assert.match(await page.locator('#scoreProtein').innerText(),/24(?:\.0)? \/ 115g/,'Quick food save should update Today protein');
+    assert.equal(await page.locator('#quickRecentFoods button').count(),1,'Saved food should become a one-tap recent choice');
     assert.equal(await page.evaluate(()=>document.body.classList.contains('modal-open')),false,'Today should not be scroll locked without a modal');
     const scrollInfo=await page.evaluate(()=>({height:document.documentElement.scrollHeight,view:window.innerHeight}));
     if(scrollInfo.height>scrollInfo.view+100){

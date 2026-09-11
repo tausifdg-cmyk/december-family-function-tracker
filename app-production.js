@@ -13,6 +13,8 @@
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const removeIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
   const today = Store.localDate;
+  const mealKeys = ['breakfast', 'lunch', 'eveningSnacks', 'dinner'];
+  const mealNames = { breakfast: 'Breakfast', lunch: 'Lunch', eveningSnacks: 'Snacks', dinner: 'Dinner' };
   let state = Store.read();
   let selectedDay = Math.min(state.workouts.length - 1, Math.max(0, (new Date().getDay() + 6) % 7));
   let resizeObserver;
@@ -125,7 +127,7 @@
 
   function meals(date = today()) {
     const source = state.nutrition[date]?.meals || {};
-    return Object.fromEntries(['breakfast', 'lunch', 'eveningSnacks', 'dinner'].map((key) => [key, Array.isArray(source[key]) ? source[key] : []]));
+    return Object.fromEntries(mealKeys.map((key) => [key, Array.isArray(source[key]) ? source[key] : []]));
   }
 
   function nutritionTotals(date = today()) {
@@ -378,6 +380,11 @@
     return 'g';
   }
 
+  function currentMealKey() {
+    const hour = new Date().getHours();
+    return hour < 11 ? 'breakfast' : hour < 16 ? 'lunch' : hour < 19 ? 'eveningSnacks' : 'dinner';
+  }
+
   function unitGrams(food, unit) {
     return unit === 'each' ? num(food?.defaultGrams, 100, 1, 10000) : 1;
   }
@@ -386,6 +393,112 @@
     if (entry.amount !== undefined && entry.amount !== '') return entry.amount;
     const grams = num(entry.grams, num(food?.defaultGrams, 100, 0, 10000), 0, 10000);
     return unit === 'each' ? round(grams / unitGrams(food, unit), 2) : grams;
+  }
+
+  function recentFoods(limit = 6) {
+    const seen = new Set();
+    const items = [];
+    const logged = Object.keys(state.nutrition || {}).flatMap((date) => mealKeys.flatMap((meal) => meals(date)[meal])).filter((food) => food?.savedAt).sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));
+    logged.some((food) => {
+      const key = String(food?.name || '').trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      items.push(Store.clone(food));
+      return items.length >= limit;
+    });
+    return items;
+  }
+
+  function quickFoodMeal() {
+    const card = $('#quickFoodLog');
+    return mealKeys.includes(card?.dataset.meal) ? card.dataset.meal : currentMealKey();
+  }
+
+  function selectQuickFoodMeal(meal) {
+    const card = $('#quickFoodLog');
+    if (!card) return;
+    card.dataset.meal = mealKeys.includes(meal) ? meal : currentMealKey();
+    $$('#quickFoodMeals [data-meal]').forEach((button) => {
+      const active = button.dataset.meal === card.dataset.meal;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+    const save = $('#quickFoodSave');
+    if (save) save.textContent = `Add to ${mealNames[card.dataset.meal]}`;
+  }
+
+  function quickFoodValues() {
+    const selected = findFood($('#quickFoodName')?.value);
+    if (!selected) return null;
+    const unit = $('#quickFoodUnit')?.value || preferredFoodUnit(selected);
+    const amount = num($('#quickFoodAmount')?.value, 0, 0, 10000);
+    if (amount <= 0) return { selected, unit, amount, grams: 0 };
+    const grams = round(amount * unitGrams(selected, unit), 1);
+    const calculate = (key) => round(num(selected[key]) * grams / 100, 1);
+    return { selected, unit, amount, grams, calories: calculate('calories'), protein: calculate('protein'), carbs: calculate('carbs'), fat: calculate('fat') };
+  }
+
+  function updateQuickFoodPreview() {
+    const preview = $('#quickFoodPreview');
+    const save = $('#quickFoodSave');
+    if (!preview || !save) return;
+    const food = quickFoodValues();
+    if (!food) {
+      preview.innerHTML = '<span>Choose a food to see nutrition</span>';
+      save.disabled = true;
+    } else if (!food.grams) {
+      preview.innerHTML = `<strong>${escapeHtml(food.selected.name)}</strong><span>Enter an amount</span>`;
+      save.disabled = true;
+    } else {
+      preview.innerHTML = `<strong>${Math.round(food.calories)} kcal</strong><span>${escapeHtml(food.selected.name)} · ${round(food.protein, 1)}g protein · ${round(food.carbs, 1)}g carbs · ${round(food.fat, 1)}g fat</span>`;
+      save.disabled = false;
+    }
+    save.textContent = `Add to ${mealNames[quickFoodMeal()]}`;
+  }
+
+  function renderQuickFood() {
+    const card = $('#quickFoodLog');
+    if (!card) return;
+    selectQuickFoodMeal(quickFoodMeal());
+    const recent = recentFoods();
+    const list = $('#quickRecentFoods');
+    if (list) list.innerHTML = recent.length ? recent.map((food, index) => `<button type="button" data-action="quick-food-recent" data-index="${index}" aria-label="Add ${escapeHtml(food.name)} again"><strong>+ ${escapeHtml(food.name)}</strong><span>${Math.round(num(food.calories))} kcal · ${round(num(food.protein), 1)}g P</span></button>`).join('') : '<span class="quick-food-empty">Your recent foods will appear here.</span>';
+    updateQuickFoodPreview();
+  }
+
+  function setQuickFoodDefaults() {
+    const input = $('#quickFoodName');
+    const selected = findFood(input?.value);
+    if (!selected) { updateQuickFoodPreview(); return; }
+    const query = String(input.value || '').trim().toLowerCase();
+    const exact = String(selected.name || '').toLowerCase() === query || (selected.aliases || []).some((alias) => String(alias).toLowerCase() === query);
+    if (exact) {
+      const unit = preferredFoodUnit(selected);
+      value('#quickFoodUnit', unit);
+      value('#quickFoodAmount', unit === 'each' ? 1 : num(selected.defaultGrams, 100));
+    }
+    updateQuickFoodPreview();
+  }
+
+  function saveQuickFood() {
+    const food = quickFoodValues();
+    if (!food) return toast('Choose a food from the list.', 'error');
+    if (!food.grams) return toast('Enter the amount you ate.', 'error');
+    const meal = quickFoodMeal();
+    ensureMeals()[meal].push({ name: food.selected.name, amount: food.amount, unit: food.unit, grams: food.grams, calories: food.calories, protein: food.protein, carbs: food.carbs, fat: food.fat, savedAt: new Date().toISOString() });
+    value('#quickFoodName', '');
+    value('#quickFoodAmount', '');
+    value('#quickFoodUnit', 'g');
+    persist(`${food.selected.name} added to ${mealNames[meal]}`);
+    $('#quickFoodName')?.focus({ preventScroll: true });
+  }
+
+  function addRecentFood(index) {
+    const food = recentFoods()[num(index, -1)];
+    if (!food) return toast('That recent food is no longer available.', 'error');
+    const meal = quickFoodMeal();
+    ensureMeals()[meal].push({ ...Store.clone(food), savedAt: new Date().toISOString() });
+    persist(`${food.name} added to ${mealNames[meal]}`);
   }
 
   function renderFood() {
@@ -525,6 +638,7 @@
     renderDashboard();
     renderWorkout();
     renderFood();
+    renderQuickFood();
     renderProgress();
     renderSettings();
   }
@@ -731,6 +845,9 @@
     if (action === 'remove-food') { const row = button.closest('.food-row'); ensureMeals()[row.dataset.meal].splice(num(row.dataset.index), 1); persist('Food removed'); }
     if (action === 'saveCustomFood') saveCustomFood();
     if (action === 'delete-custom-food') { state.customFoods.splice(num(button.dataset.index), 1); persist('Custom food deleted'); }
+    if (action === 'quick-food-meal') { selectQuickFoodMeal(button.dataset.meal); updateQuickFoodPreview(); }
+    if (action === 'quick-food-save') saveQuickFood();
+    if (action === 'quick-food-recent') addRecentFood(button.dataset.index);
     if (action === 'saveSettings') saveSettings();
   }
 
@@ -753,6 +870,8 @@
       save?.classList.remove('saved');
       if (save) save.textContent = 'Save';
     }
+    if (event.target.matches('#quickFoodName')) setQuickFoodDefaults();
+    if (event.target.matches('#quickFoodAmount,#quickFoodUnit')) updateQuickFoodPreview();
     if (event.target.matches('#workoutMinutes,#workoutIntensity')) {
       const minutes = num($('#workoutMinutes')?.value, 60, 1, 300);
       const met = num($('#workoutIntensity')?.value, 5.5, 1, 20);
@@ -763,6 +882,8 @@
 
   function handleInput(event) {
     if (event.target.matches('#exerciseLibrarySearch')) renderExerciseLibrary();
+    if (event.target.matches('#quickFoodName')) setQuickFoodDefaults();
+    if (event.target.matches('#quickFoodAmount')) updateQuickFoodPreview();
     const exercise = event.target.closest('.exercise');
     if (exercise && event.target.matches('.ex-set,.ex-reps,.ex-weight')) {
       exercise.classList.add('is-dirty');
