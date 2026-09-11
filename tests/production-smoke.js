@@ -23,7 +23,7 @@ function verifyMarkup() {
   const html = read('index-production.html');
   const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, 'HTML must not contain duplicate IDs');
-  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'detectedDeviceLabel', 'iosShortcutSheet', 'androidHealthSheet', 'downloadAndroidAppBtn', 'shortcutSyncEndpoint', 'shortcutSyncToken', 'copyShortcutEndpointBtn', 'copyShortcutTokenBtn', 'createIosShortcutBtn', 'webInstallPrompt', 'openAppInstallBtn', 'appInstallSheet', 'installAndroidApkLink', 'copyIosAppLinkBtn', 'exerciseDetailSheet', 'exerciseSetRows', 'avg7Weight', 'avg7Waist']) {
+  for (const id of ['today', 'workout', 'food', 'progress', 'settings', 'pullRefresh', 'quickFoodLog', 'quickFoodName', 'quickFoodAmount', 'quickFoodUnit', 'quickFoodSave', 'quickRecentFoods', 'todayDetailsTitle', 'workoutHistory', 'foodHistory', 'progressList', 'shareAppBtn', 'manualStepSyncBtn', 'setupIosShortcutBtn', 'detectedDeviceLabel', 'iosShortcutSheet', 'androidHealthSheet', 'downloadAndroidAppBtn', 'shortcutSyncEndpoint', 'shortcutSyncToken', 'copyShortcutEndpointBtn', 'copyShortcutTokenBtn', 'createIosShortcutBtn', 'webInstallPrompt', 'openAppInstallBtn', 'appInstallSheet', 'installAndroidApkLink', 'copyIosAppLinkBtn', 'exerciseDetailSheet', 'exerciseSetRows', 'avg7Weight', 'avg7Waist']) {
     assert.ok(ids.includes(id), `Missing required element #${id}`);
   }
   assert.doesNotMatch(html, /(?:todayDetails|workoutHistorySheet|foodHistorySheet|progressHistorySheet)" class="sheet-backdrop/);
@@ -56,6 +56,8 @@ function verifyMarkup() {
   const app = read('app-production.js');
   assert.match(app, /function preferredFoodUnit/, 'Food logger must infer natural units');
   assert.match(app, /selected\.aliases.*exactMatch/s, 'Exact food names and aliases must update the unit while typing');
+  assert.match(app, /function saveQuickFood\(\)/, 'Today must expose a direct quick-food save flow');
+  assert.match(app, /function addRecentFood\(index\)/, 'Today must support one-tap recent foods');
 }
 
 function verifyHealthSync() {

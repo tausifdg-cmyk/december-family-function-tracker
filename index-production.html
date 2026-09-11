@@ -52,6 +52,29 @@
   <main class="app-shell">
     <section id="today" class="panel active" aria-labelledby="today-tab">
       <div class="section-head"><div><p class="eyebrow">TODAY</p><h3 id="todayLabel">Daily dashboard</h3></div><span class="pill" id="todayStatus">Start logging</span></div>
+      <section id="quickFoodLog" class="card quick-food-log" aria-labelledby="quickFoodTitle">
+        <div class="quick-food-head">
+          <div><span class="eyebrow">QUICK FOOD LOG</span><h3 id="quickFoodTitle">Add what you ate</h3><p>Search, set the portion and save without leaving Today.</p></div>
+          <button type="button" class="text-btn" data-nav="food">Full food log</button>
+        </div>
+        <div id="quickFoodMeals" class="quick-meal-picker" role="group" aria-label="Meal">
+          <button type="button" data-action="quick-food-meal" data-meal="breakfast" aria-pressed="false">Breakfast</button>
+          <button type="button" data-action="quick-food-meal" data-meal="lunch" aria-pressed="false">Lunch</button>
+          <button type="button" data-action="quick-food-meal" data-meal="eveningSnacks" aria-pressed="false">Snacks</button>
+          <button type="button" data-action="quick-food-meal" data-meal="dinner" aria-pressed="false">Dinner</button>
+        </div>
+        <div class="quick-food-form">
+          <label class="quick-food-search">Food<input id="quickFoodName" type="search" list="foodSuggestions" inputmode="search" autocomplete="off" placeholder="e.g. chicken curry, roti, whey"></label>
+          <label>Amount<input id="quickFoodAmount" type="number" inputmode="decimal" min="0.1" max="10000" step="0.1" placeholder="Amount"></label>
+          <label>Unit<select id="quickFoodUnit"><option value="g">g</option><option value="each">each</option><option value="ml">ml</option></select></label>
+        </div>
+        <div class="quick-food-confirm">
+          <div id="quickFoodPreview" class="quick-food-preview" aria-live="polite"><span>Choose a food to see nutrition</span></div>
+          <button id="quickFoodSave" type="button" class="primary" data-action="quick-food-save" disabled>Add food</button>
+        </div>
+        <div class="quick-recent-head"><span>Recent foods</span><small>Tap once to add the same portion</small></div>
+        <div id="quickRecentFoods" class="quick-recent-foods"><span class="quick-food-empty">Your recent foods will appear here.</span></div>
+      </section>
       <section class="card daily-summary" aria-label="Daily summary">
         <div class="summary-metrics">
           <article class="summary-goal summary-calories"><div><span>Calories</span><strong id="scoreCalories">0 / 0</strong></div><div class="mini-progress" aria-hidden="true"><span id="scoreCaloriesBar"></span></div></article>
