@@ -2,23 +2,10 @@
   'use strict';
   const Base=window.MyBodyCoach;
   if(!Base)return;
-  const Store=window.MyBodyStore;
   const clone=(x)=>typeof structuredClone==='function'?structuredClone(x):JSON.parse(JSON.stringify(x));
   const clamp=(v,min,max)=>Math.min(max,Math.max(min,Number(v)||0));
-  const APPROVED_PROTEIN=Number(Store?.APPROVED_PROTEIN)||115;
-
-  function fixMetrics(metrics){
-    const next={...(metrics||{})};
-    next.protein=APPROVED_PROTEIN;
-    if(Number(next.calories)>0&&Number(next.fat)>=0){
-      next.carbs=Math.max(80,Math.round((Number(next.calories)-APPROVED_PROTEIN*4-Number(next.fat)*9)/4));
-    }
-    if(!Number(next.fiber)) next.fiber=Math.round(clamp((Number(next.calories)||2000)/1000*14,22,45));
-    return next;
-  }
 
   function dietMeals(profile,metrics){
-    metrics=fixMetrics(metrics);
     const diet=profile.diet||'non_vegetarian';
     const allergy=String(profile.allergies||'').toLowerCase();
     const dairyFree=/lactose|dairy|milk/.test(allergy);
@@ -47,6 +34,12 @@
         Lunch:['Dal + vegetables + rice/roti','Rajma/chana + rice + salad','Tofu + vegetables + roti'],
         Snack:['Fruit + roasted chana','Unsweetened soy yogurt + fruit','Nuts/seeds + fruit'],
         Dinner:['Dal + mixed vegetables + roti','Chana/rajma + vegetables + rice','Tofu/soy curry + vegetables + roti']
+      },
+      proteinaholic:{
+        Breakfast:['Oats + fruit + seeds','Besan/moong chilla + vegetables + fruit','Whole grain + fruit + nuts/seeds'],
+        Lunch:['Dal/rajma/chana + mixed vegetables + whole grain','Mixed beans + salad + brown rice','Lentils + vegetables + millet/roti'],
+        Snack:['Whole fruit + roasted chana','Nuts/seeds + fruit','Vegetables + hummus'],
+        Dinner:['Dal + mixed vegetables + roti','Chana/rajma + vegetables + small rice portion','Tofu/beans + vegetables + whole grain']
       }
     };
     let options=clone(base[diet]||base.non_vegetarian);
@@ -57,7 +50,7 @@
       Object.keys(options).forEach((meal)=>{options[meal]=options[meal].map((x)=>x.replace(/roti\/chapati|chapati|roti|whole grain/gi,'rice or certified gluten-free grain'));});
     }
     const split=[0.24,0.32,0.12,0.32],proteinSplit=[0.23,0.30,0.17,0.30],labels=['Breakfast','Lunch','Snack','Dinner'];
-    return labels.map((label,i)=>({label,calories:Math.round(metrics.calories*split[i]/25)*25,protein:Math.round(APPROVED_PROTEIN*proteinSplit[i]),options:options[label]}));
+    return labels.map((label,i)=>({label,calories:Math.round(metrics.calories*split[i]/25)*25,protein:Math.round(metrics.protein*proteinSplit[i]),options:options[label]}));
   }
 
   function timeline(profile){
@@ -77,13 +70,8 @@
     return {status:'informational',rate:Math.round(rate*100)/100,message:'MYBODY treats the goal date as a planning target, not a guarantee.'};
   }
 
-  function calculate(profile){
-    return fixMetrics(Base.calculate(profile));
-  }
-
   function buildPlan(profile){
     const plan=Base.buildPlan(profile);
-    plan.metrics=fixMetrics(plan.metrics);
     plan.meals=dietMeals(profile,plan.metrics);
     plan.timeline=timeline(profile);
     plan.profile.goalWeight=Number(profile.goalWeight)||plan.profile.weight;
@@ -94,56 +82,19 @@
 
   function applyPlan(state,plan){
     const safePlan=clone(plan);
-    safePlan.metrics=fixMetrics(safePlan.metrics);
     safePlan.meals=dietMeals(safePlan.profile||{},safePlan.metrics);
     const result=Base.applyPlan(state,safePlan);
     if(result.ok){
       result.state.config.goalWeight=clamp(safePlan.profile.goalWeight||result.state.config.goalWeight,25,400);
-      result.state.config.protein=APPROVED_PROTEIN;
       result.state.profile=result.state.profile||{};
       result.state.profile.coach=result.state.profile.coach||{};
       result.state.profile.coach.timeline=safePlan.timeline||null;
       if(result.state.profile.coach.plan){
-        result.state.profile.coach.plan.metrics=fixMetrics(result.state.profile.coach.plan.metrics);
         result.state.profile.coach.plan.meals=dietMeals(result.state.profile.coach.plan.profile||safePlan.profile||{},result.state.profile.coach.plan.metrics);
       }
     }
     return result;
   }
 
-  function insights(state){
-    const base=Array.isArray(Base.insights?.(state))?Base.insights(state):[];
-    return base.map((item)=>{
-      const title=String(item?.title||'');
-      const body=String(item?.body||'');
-      if(/protein is your clearest opportunity|add one protein-rich serving/i.test(title+' '+body)){
-        return {
-          ...item,
-          type:'nutrition',
-          title:'Improve food quality first',
-          body:'Prioritize vegetables, beans/lentils, whole grains, fruit, nuts and seeds. Aim for the 115 g protein target across the day without trying to exceed it; protein powders are optional.'
-        };
-      }
-      return item;
-    });
-  }
-
-  function migrateSavedProtein(){
-    if(!Store)return;
-    const state=Store.read();
-    let changed=false;
-    if(Number(state.config?.protein)!==APPROVED_PROTEIN){state.config={...state.config,protein:APPROVED_PROTEIN};changed=true;}
-    if(state.profile?.coach?.plan&&Number(state.profile.coach.plan.metrics?.protein)!==APPROVED_PROTEIN){
-      state.profile=clone(state.profile||{});
-      state.profile.coach=clone(state.profile.coach||{});
-      state.profile.coach.plan=clone(state.profile.coach.plan||{});
-      state.profile.coach.plan.metrics=fixMetrics(state.profile.coach.plan.metrics);
-      state.profile.coach.plan.meals=dietMeals(state.profile.coach.plan.profile||state.profile.coach,state.profile.coach.plan.metrics);
-      changed=true;
-    }
-    if(changed)Store.write(state);
-  }
-
-  window.MyBodyCoach=Object.freeze({...Base,calculate,buildPlan,applyPlan,insights});
-  migrateSavedProtein();
+  window.MyBodyCoach=Object.freeze({...Base,buildPlan,applyPlan});
 }());

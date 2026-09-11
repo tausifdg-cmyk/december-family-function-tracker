@@ -2,6 +2,10 @@
 'use strict';
 const Store=window.MyBodyStore;
 if(!Store)return;
+const isProteinaholic=()=>{
+  const state=Store.read();
+  return String(state.profile?.coach?.diet||state.profile?.coach?.plan?.profile?.diet||state.config?.diet||'non_vegetarian')==='proteinaholic';
+};
 
 const classify=name=>{
   const n=String(name||'').toLowerCase();
@@ -39,6 +43,10 @@ function summary(){
 }
 
 function addCard(){
+  if(!isProteinaholic()){
+    document.querySelector('#wholeFoodFocusCard')?.remove();
+    return;
+  }
   const food=document.querySelector('#food');
   if(!food||document.querySelector('#wholeFoodFocusCard'))return;
   const grid=food.querySelector('.nutrition-grid');
@@ -53,6 +61,10 @@ function addCard(){
 }
 
 function refreshCard(){
+  if(!isProteinaholic()){
+    document.querySelector('#wholeFoodFocusCard')?.remove();
+    return;
+  }
   const s=summary();
   const count=document.querySelector('#wholeFoodPlantCount');
   const msg=document.querySelector('#wholeFoodMessage');
@@ -69,6 +81,7 @@ function transformMeal(text){
 }
 
 function alignDietModal(){
+  if(!isProteinaholic())return;
   const modal=document.querySelector('#weeklyDietPlanModal');
   if(!modal||modal.dataset.wholeFoodAligned==='1')return;
   modal.querySelectorAll('.mb-diet-meal p').forEach(p=>{p.textContent=transformMeal(p.textContent)});
@@ -78,6 +91,7 @@ function alignDietModal(){
 }
 
 function softenProteinCoachMessages(){
+  if(!isProteinaholic())return;
   document.querySelectorAll('.coach-insight,.xp-insight,.p2-insight,.p3-insight,.p4-insight,.p5-insight').forEach(node=>{
     if(/protein is your clearest opportunity|add one protein-rich serving/i.test(node.textContent||'')){
       const title=node.querySelector('h3,strong,b');
@@ -100,7 +114,7 @@ function boot(){
     softenProteinCoachMessages();
   });
   obs.observe(document.body,{childList:true,subtree:true});
-  window.addEventListener('mybody:state',()=>setTimeout(refreshCard,30));
+  window.addEventListener('mybody:state',()=>setTimeout(()=>{addCard();refreshCard();alignDietModal();softenProteinCoachMessages()},30));
   document.addEventListener('click',()=>setTimeout(()=>{refreshCard();alignDietModal();softenProteinCoachMessages()},60),true);
 }
 

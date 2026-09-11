@@ -7,6 +7,8 @@ const clone=BaseStore.clone;
 const number=BaseStore.number;
 const clamp=(v,min,max)=>Math.min(max,Math.max(min,Number(v)||0));
 const safeRecord=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
+const dietMode=source=>String(source?.diet??source?.profile?.coach?.diet??source?.profile?.coach?.plan?.profile?.diet??source?.config?.diet??'non_vegetarian');
+const isProteinaholic=source=>dietMode(source)==='proteinaholic';
 
 function nutritionTargets(source={}){
   const config=safeRecord(source.config);
@@ -37,6 +39,7 @@ function nutritionTargets(source={}){
 
 function applyTargets(input){
   const state=clone(input||{});
+  if(!isProteinaholic(state))return state;
   state.config=safeRecord(state.config);
   const targets=nutritionTargets(state);
   state.config={...state.config,calories:targets.calories,protein:targets.protein,carbs:targets.carbs,fat:targets.fat};
@@ -84,6 +87,7 @@ function profileTargets(profile){return nutritionTargets(profile||{});}
 function alignPlan(plan,profile){
   const next=clone(plan||{});
   const effectiveProfile=profile||next.profile||{};
+  if(!isProteinaholic(effectiveProfile))return next;
   const targets=profileTargets(effectiveProfile);
   next.metrics={...(next.metrics||{}),...targets};
   if(Array.isArray(next.meals)){
@@ -99,9 +103,10 @@ function wrapCoach(){
   const wrapped={
     ...BaseCoach,
     __dynamicMacroTargets:true,
-    calculate(profile){return {...BaseCoach.calculate(profile),...profileTargets(profile)};},
-    buildPlan(profile){return alignPlan(BaseCoach.buildPlan(profile),profile);},
+    calculate(profile){return isProteinaholic(profile)?{...BaseCoach.calculate(profile),...profileTargets(profile)}:BaseCoach.calculate(profile);},
+    buildPlan(profile){return isProteinaholic(profile)?alignPlan(BaseCoach.buildPlan(profile),profile):BaseCoach.buildPlan(profile);},
     applyPlan(state,plan){
+      if(!isProteinaholic(plan?.profile||state))return BaseCoach.applyPlan(state,plan);
       const safePlan=alignPlan(plan,plan?.profile||{});
       const result=BaseCoach.applyPlan(state,safePlan);
       if(result?.ok){
@@ -116,6 +121,9 @@ function wrapCoach(){
 }
 
 wrapCoach();
-const migrated=write(read());
-if(!migrated.ok)console.warn('MYBODY macro target migration could not be persisted.');
+const existing=read();
+if(isProteinaholic(existing)){
+  const migrated=write(existing);
+  if(!migrated.ok)console.warn('MYBODY macro target migration could not be persisted.');
+}
 })();

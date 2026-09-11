@@ -42,8 +42,19 @@ try{
     assert.match(await page.locator('#quickFoodPreview').innerText(),/120 kcal/i,'Quick logger should preview calculated calories');
     await page.locator('#quickFoodSave').click();
     await page.waitForTimeout(120);
-    assert.match(await page.locator('#scoreProtein').innerText(),/24(?:\.0)? \/ 115g/,'Quick food save should update Today protein');
+    assert.match(await page.locator('#scoreProtein').innerText(),/24(?:\.0)? \/ 170g/,'Quick food save should update Today protein');
     assert.equal(await page.locator('#quickRecentFoods button').count(),1,'Saved food should become a one-tap recent choice');
+    await page.locator('#experienceBrief [data-xp-coach="build"]').click();
+    await page.locator('#coachPlannerModal').waitFor({state:'visible'});
+    await page.locator('#coachPlannerModal [data-planner="next"]').click();
+    await page.locator('#coachPlannerModal [data-planner="next"]').click();
+    assert.equal(await page.locator('#coachPlannerModal select[name="diet"] option[value="proteinaholic"]').count(),1,'Proteinaholic must be an explicit diet choice');
+    await page.locator('#coachPlannerModal select[name="diet"]').selectOption('non_vegetarian');
+    await page.locator('#coachPlannerModal [data-planner="next"]').click();
+    await page.locator('#coachPlannerModal [data-planner="generate"]').click();
+    assert.match(await page.locator('#coachPlannerModal .coach-macro-row').innerText(),/178g\s+Protein/i,'Non-vegetarian Recalculate must retain the original protein formula');
+    assert.match(await page.locator('#coachPlannerModal .coach-meal-list').innerText(),/chicken|fish/i,'Non-vegetarian Recalculate must retain omnivore meal options');
+    await page.locator('#coachPlannerModal .coach-close').click();
     assert.equal(await page.evaluate(()=>document.body.classList.contains('modal-open')),false,'Today should not be scroll locked without a modal');
     const scrollInfo=await page.evaluate(()=>({height:document.documentElement.scrollHeight,view:window.innerHeight}));
     if(scrollInfo.height>scrollInfo.view+100){

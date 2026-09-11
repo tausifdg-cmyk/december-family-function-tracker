@@ -192,6 +192,56 @@ function verifyFoodDatabase() {
   }
 }
 
+function verifyCoachDietModes() {
+  const storage = new Map();
+  const context = {
+    console,
+    Date,
+    structuredClone,
+    localStorage: {
+      getItem: (key) => storage.get(key) || null,
+      setItem: (key, value) => storage.set(key, String(value)),
+      removeItem: (key) => storage.delete(key)
+    },
+    CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options?.detail; } },
+    dispatchEvent() {}
+  };
+  context.window = context;
+  for (const file of ['core-storage.js', 'coach-engine.js', 'coach-guard.js', 'macro-target-engine.js']) {
+    vm.runInNewContext(read(file), context, { filename: file });
+  }
+
+  const baseProfile = {
+    sex: 'male', age: 40, height: 175, weight: 89, bodyFat: '', goal: 'fat_loss',
+    goalWeight: 80, goalDate: '2027-12-15', days: 4, location: 'gym', minutes: 60,
+    activity: 'moderate', steps: 8000, cuisine: 'indian_mixed', allergies: '', dislikes: '',
+    equipment: '', limitations: '', conditions: [], sleepHours: 7, experience: 'intermediate'
+  };
+
+  const nonVegetarian = { ...baseProfile, diet: 'non_vegetarian' };
+  const nonVegetarianMetrics = context.MyBodyCoach.calculate(nonVegetarian);
+  assert.equal(nonVegetarianMetrics.protein, 178, 'Non-vegetarian must retain the original 2.0 g/kg fat-loss target');
+  const nonVegetarianPlan = context.MyBodyCoach.buildPlan(nonVegetarian);
+  assert.equal(nonVegetarianPlan.metrics.protein, 178, 'Non-vegetarian Recalculate must not apply the Proteinaholic target');
+  assert.match(nonVegetarianPlan.meals.flatMap((meal) => meal.options).join(' '), /chicken|fish/i, 'Non-vegetarian plan must retain omnivore meal choices');
+
+  const startingState = context.MyBodyStore.normalise({
+    config: { age: 40, height: 175, sex: 'male', startWeight: 89, goalWeight: 80, goalDate: '2027-12-15', calories: 2100, protein: 115, steps: 8000, water: 3.5, diet: 'non_vegetarian' },
+    weights: [], abdomen: [], pantWaist: [], nutrition: {}, activity: {}, workoutLog: {}, customFoods: [], workouts: []
+  });
+  const appliedNonVegetarian = context.MyBodyCoach.applyPlan(startingState, nonVegetarianPlan);
+  assert.equal(appliedNonVegetarian.ok, true);
+  assert.equal(appliedNonVegetarian.state.config.protein, 178, 'Applying a non-vegetarian recalculation must replace the stale 115 g value');
+  assert.equal(context.MyBodyStore.write(appliedNonVegetarian.state).state.config.protein, 178, 'Storage must preserve the recalculated non-vegetarian target');
+
+  const proteinaholic = { ...baseProfile, diet: 'proteinaholic' };
+  const proteinaholicPlan = context.MyBodyCoach.buildPlan(proteinaholic);
+  assert.equal(proteinaholicPlan.metrics.protein, 71, 'Proteinaholic mode must keep its 0.8 g/kg target');
+  assert.doesNotMatch(proteinaholicPlan.meals.flatMap((meal) => meal.options).join(' '), /chicken|fish|whey/i, 'Proteinaholic mode must use its whole-food meal framework');
+
+  assert.match(read('coach-ui.js'), /\['proteinaholic','Proteinaholic whole-food approach'\]/, 'Coach diet selector must expose Proteinaholic as an explicit choice');
+}
+
 function verifyAndroidNativeProject() {
   const manifest = read('android-native/app/src/main/AndroidManifest.xml');
   const activity = read('android-native/app/src/main/java/com/mybody/tracker/MainActivity.kt');
@@ -323,6 +373,7 @@ async function main() {
   verifyNavigation();
   verifyHealthSync();
   verifyFoodDatabase();
+  verifyCoachDietModes();
   verifyAndroidNativeProject();
   verifyExerciseAliases();
   await verifyServiceWorkerMediaCache();
